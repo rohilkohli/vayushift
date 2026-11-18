@@ -256,3 +256,33 @@ export function calculateHouseholdImpact(
     components,
   };
 }
+
+export interface FilterComparison {
+  id: Exclude<FiltrationMode, "none">;
+  modelledReductionPct: number;
+  indoorPm25: number;
+  cadrFieldM3h: number;
+  meetsTargetAch: boolean;
+}
+
+/** Compares every filter option for one room, using the same mass-balance as the receipt. */
+export function compareFilters(
+  hourly: readonly HourlyAir[],
+  profile: HouseholdProfile,
+  sealed: boolean,
+): FilterComparison[] {
+  const volume = roomVolumeM3(profile.roomAreaSqFt, profile.ceilingHeightFt);
+  const outdoor = meanBetween(hourly, 0, 23);
+  const none = modelIndoor({ outdoorPm25: outdoor, volumeM3: volume, profile, sealed, filtration: "none" }).pm25;
+  const need = requiredCadrM3h(volume);
+  return (Object.keys(FILTERS) as Array<Exclude<FiltrationMode, "none">>).map((id) => {
+    const pm = modelIndoor({ outdoorPm25: outdoor, volumeM3: volume, profile, sealed, filtration: id }).pm25;
+    return {
+      id,
+      modelledReductionPct: none > 0 ? roundTo(((none - pm) / none) * 100, 0) : 0,
+      indoorPm25: roundTo(pm, 1),
+      cadrFieldM3h: Math.round(fieldCadrM3h(id)),
+      meetsTargetAch: fieldCadrM3h(id) >= need,
+    };
+  });
+}

@@ -80,3 +80,19 @@ export const GRAP_INFO: Record<GrapStage, GrapInfo> = {
 
 export const GRAP_DISCLAIMER =
   "Summary of typical GRAP measures for awareness only. Official restrictions change by order: confirm at caqm.nic.in.";
+
+export type VehicleClass = "petrol_bs3" | "diesel_bs4" | "petrol_bs6" | "diesel_bs6" | "cng_ev";
+
+export const VEHICLE_LABELS: Record<VehicleClass, string> = {
+  petrol_bs3: "Petrol car, BS-III or older",
+  diesel_bs4: "Diesel car, BS-IV",
+  petrol_bs6: "Petrol car, BS-VI",
+  diesel_bs6: "Diesel car, BS-VI",
+  cng_ev: "CNG or electric",
+};
+
+/** Light-vehicle restriction check for Stage III and above (Delhi-NCR). Awareness only. */
+export function vehicleRestricted(stage: GrapStage, v: VehicleClass): boolean {
+  const high = stage === "STAGE_3" || stage === "STAGE_4";
+  return high && (v === "petrol_bs3" || v === "diesel_bs4");
+}

@@ -140,3 +140,45 @@ describe("RWA tools", () => {
     expect(a.combined).toContain(a.hi);
   });
 });
+
+import { compareFilters } from "./impactEngine";
+import { vehicleRestricted } from "./grapRules";
+import { parseHourly, parseInterventions, parseProfile } from "./requestSchemas";
+
+describe("compareFilters", () => {
+  it("ranks cube above fan and meets the 5 ACH target for a 180 sq ft room", () => {
+    const out = compareFilters(PRESET_SCENARIOS[0].hourly, SAMPLE_PROFILE, false);
+    const by = Object.fromEntries(out.map((o) => [o.id, o]));
+    expect(by.quad_merv13_cr_box.modelledReductionPct).toBeGreaterThan(by.single_merv13_fan.modelledReductionPct);
+    expect(by.quad_merv13_cr_box.meetsTargetAch).toBe(true);
+    expect(by.single_merv13_fan.meetsTargetAch).toBe(false);
+  });
+});
+
+describe("vehicleRestricted", () => {
+  it("restricts old petrol and BS-IV diesel only from Stage III", () => {
+    expect(vehicleRestricted("STAGE_2", "petrol_bs3")).toBe(false);
+    expect(vehicleRestricted("STAGE_3", "petrol_bs3")).toBe(true);
+    expect(vehicleRestricted("STAGE_4", "diesel_bs4")).toBe(true);
+    expect(vehicleRestricted("STAGE_4", "cng_ev")).toBe(false);
+  });
+});
+
+describe("request schemas", () => {
+  it("accepts a valid household and rejects out-of-range or unknown values", () => {
+    expect(parseProfile(SAMPLE_PROFILE)).not.toBeNull();
+    expect(parseProfile({ ...SAMPLE_PROFILE, roomAreaSqFt: 1e9 })).toBeNull();
+    expect(parseProfile({ ...SAMPLE_PROFILE, windowType: "x" })).toBeNull();
+    expect(parseProfile(null)).toBeNull();
+  });
+  it("requires exactly 24 finite hourly values", () => {
+    expect(parseHourly(PRESET_SCENARIOS[0].hourly.map((h) => h.pm25))).toHaveLength(24);
+    expect(parseHourly([1, 2, 3])).toBeNull();
+    expect(parseHourly(Array(24).fill("a"))).toBeNull();
+    expect(parseHourly(Array(24).fill(-1))).toBeNull();
+  });
+  it("validates interventions", () => {
+    expect(parseInterventions({ filtrationMode: "none" })).not.toBeNull();
+    expect(parseInterventions({ filtrationMode: "bogus" })).toBeNull();
+  });
+});
