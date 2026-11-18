@@ -46,6 +46,24 @@ export function App() {
     document.documentElement.dataset.sky = night ? "night" : "day";
   }, [night]);
 
+  // Tabs are deep-linkable (#lab, #community) and work with the browser Back button.
+  useEffect(() => {
+    const fromHash = () => {
+      const id = globalThis.location.hash.slice(1);
+      setTab(TABS.some((t) => t.id === id) ? (id as Tab) : "choreographer");
+    };
+    fromHash();
+    globalThis.addEventListener("popstate", fromHash);
+    return () => globalThis.removeEventListener("popstate", fromHash);
+  }, []);
+
+  const selectTab = useCallback((id: Tab) => {
+    setTab(id);
+    if (globalThis.location.hash.slice(1) !== id) {
+      globalThis.history.pushState(null, "", `#${id}`);
+    }
+  }, []);
+
   const ventWindow = useMemo(() => findVentilationWindow(scenario.hourly), [scenario]);
   const receipt = useMemo(
     () => calculateHouseholdImpact(scenario.hourly, profile, interventions, ventWindow),
@@ -109,7 +127,7 @@ export function App() {
         loadingLive={loadingLive}
         tabs={TABS}
         tab={tab}
-        onTab={(id) => setTab(id as Tab)}
+        onTab={(id) => selectTab(id as Tab)}
         tabRefs={tabRefs}
       />
 

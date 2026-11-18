@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "Turn hourly smog forecasts and a room photo into a timed daily routine, low-cost indoor air fixes and a verifiable impact receipt.",
 };
 
-export const viewport: Viewport = { themeColor: "#0f2a44", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#0f2a44", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

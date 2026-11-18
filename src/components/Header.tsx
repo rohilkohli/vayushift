@@ -52,12 +52,12 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
                   type="button"
                   aria-pressed={scenario.id === p.id}
                   onClick={() => onSelect(p)}
-                  className="pill !min-h-9 whitespace-nowrap !px-3 !text-[11px]"
+                  className="pill whitespace-nowrap !px-3 !text-[11px]"
                 >
                   {p.name}
                 </button>
               ))}
-              <button type="button" onClick={onLocate} disabled={loadingLive} className="pill !min-h-9 whitespace-nowrap !px-3 !text-[11px]" aria-label="Use my location">
+              <button type="button" onClick={onLocate} disabled={loadingLive} className="pill whitespace-nowrap !px-3 !text-[11px]" aria-label="Use my location">
                 <Icon name="near_me" />
                 <span className="hidden md:inline">{loadingLive ? "Locating…" : "My location"}</span>
               </button>
@@ -68,7 +68,8 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
         <div
           role="tablist"
           aria-label="Sections"
-          className="pointer-events-auto glass fixed inset-x-5 bottom-4 z-50 flex items-center justify-between gap-1 rounded-full p-1.5 lg:static lg:inset-auto lg:justify-start"
+          style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
+          className="pointer-events-auto glass fixed inset-x-5 z-50 flex items-center justify-between gap-1 rounded-full p-1.5 lg:static lg:inset-auto lg:justify-start"
         >
           {tabs.map((t, i) => (
             <button

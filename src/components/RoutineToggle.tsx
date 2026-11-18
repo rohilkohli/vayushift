@@ -21,7 +21,7 @@ export function RoutineToggle({ checked, onChange, title, subtitle, icon, cig, d
       aria-checked={checked}
       aria-describedby={describedBy}
       onClick={() => onChange(!checked)}
-      className={`glass flex min-h-16 w-full items-center justify-between gap-3 rounded-[2rem] px-5 py-3 text-left transition-transform hover:-translate-y-0.5 ${
+      className={`glass flex min-h-16 w-full cursor-pointer items-center justify-between gap-3 rounded-[2rem] px-5 py-3 text-left transition-transform hover:-translate-y-0.5 ${
         checked ? "ring-2 ring-[#ffad8f]" : ""
       }`}
       style={checked ? { boxShadow: "0 12px 28px -6px rgba(255,173,143,0.55)" } : undefined}
