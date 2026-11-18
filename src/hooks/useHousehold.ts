@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { NO_INTERVENTIONS } from "@/lib/impactEngine";
+import { parseInterventions, parseProfile } from "@/lib/requestSchemas";
 import type { ActiveInterventions, HouseholdProfile } from "@/lib/types";
 
 export const DEFAULT_PROFILE: HouseholdProfile = {
@@ -34,9 +35,12 @@ export function useHousehold() {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) {
+        // Stored data is untrusted: only accept it if it passes the same validation as API input.
         const saved = JSON.parse(raw) as Partial<Saved>;
-        if (saved.profile) setProfile({ ...DEFAULT_PROFILE, ...saved.profile });
-        if (saved.interventions) setInterventions({ ...NO_INTERVENTIONS, ...saved.interventions });
+        const p = parseProfile(saved.profile);
+        const i = parseInterventions(saved.interventions);
+        if (p) setProfile(p);
+        if (i) setInterventions(i);
       }
     } catch {
       /* ignore corrupt or blocked storage */

@@ -9,6 +9,7 @@ import {
   roomVolumeM3,
 } from "./impactEngine";
 import { PRESET_SCENARIOS } from "./airQualityPresets";
+import { findVentilationWindow } from "./airQuality";
 import { FILTERS, METRO_CO2_SAVED_G_PER_KM } from "./constants";
 import type { HouseholdProfile } from "./types";
 
@@ -135,5 +136,12 @@ describe("calculateHouseholdImpact", () => {
     const severe = calculateHouseholdImpact(PRESET_SCENARIOS[0].hourly, profile, on);
     const mild = calculateHouseholdImpact(PRESET_SCENARIOS[2].hourly, profile, on);
     expect(mild.avoidedCigarettesHouseholdDay).toBeLessThan(severe.avoidedCigarettesHouseholdDay);
+  });
+  it("walk shift credits both the cleaner hour and the N95 mask", () => {
+    const w = findVentilationWindow(hourly);
+    const r = calculateHouseholdImpact(hourly, profile, { ...NO_INTERVENTIONS, shiftWalkToTrough: true }, w);
+    const walk = r.components.find((c) => c.key === "walk")!;
+    const expected = ((w.morningPeakMeanPm25 - w.meanPm25 * 0.15) / 22) * (0.75 / 24);
+    expect(walk.avoidedCigarettes).toBeCloseTo(expected, 2);
   });
 });

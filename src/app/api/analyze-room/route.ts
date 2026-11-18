@@ -14,7 +14,10 @@ export async function POST(req: Request) {
 
   let body: { mimeType?: unknown; data?: unknown };
   try {
-    body = await req.json();
+    // Content-Length can be absent or wrong, so bound the body we actually read.
+    const raw = await req.text();
+    if (raw.length > MAX_BODY) return NextResponse.json({ error: "Image is larger than 5 MB." }, { status: 413 });
+    body = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }

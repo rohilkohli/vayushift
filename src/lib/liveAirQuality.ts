@@ -46,9 +46,9 @@ export async function fetchLiveScenario(lat: number, lng: number, apiKey: string
   const start = new Date();
   start.setMinutes(0, 0, 0);
   const end = new Date(start.getTime() + 24 * 3600 * 1000);
-  const res = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
+  const res = await fetch(ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey },
     body: JSON.stringify({
       location: { latitude: lat, longitude: lng },
       startTime: start.toISOString(),

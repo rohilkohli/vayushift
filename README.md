@@ -39,7 +39,7 @@ demo scenarios, sample rooms and template text.
 npm install
 cp .env.example .env.local   # optional: add GEMINI_API_KEY and GOOGLE_MAPS_API_KEY
 npm run dev                  # http://localhost:3000
-npm test                     # 74 unit tests
+npm test                     # 85 tests
 npm run lint                 # type-check
 ```
 
@@ -81,7 +81,7 @@ found no violations on any tab at desktop and 375 px widths.
 
 ## Testing
 
-`npm test` runs Vitest across the engine and the security helpers: cigarette equivalence (220 µg/m³ for 24 h is
+`npm test` runs Vitest across the engine, the security helpers and the three API routes (including key-in-header, error-leak, body-size and rate-limit checks): cigarette equivalence (220 µg/m³ for 24 h is
 10), CPCB conversion, GRAP boundaries (200/201/300/301/400/401/450/451), window search and the 250/300 overrides,
 CADR sizing (180 sq ft at 10 ft needs 255 m³/h), 20 km by metro is 648 g CO₂, heater cost (₹64 a flat),
 filter ordering, determinism, input validation, image sniffing, rate limiting, prompt-injection hardening and the

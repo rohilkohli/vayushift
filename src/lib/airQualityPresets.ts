@@ -35,6 +35,3 @@ export const PRESET_SCENARIOS: readonly AirScenario[] = [
 
 export const DEFAULT_SCENARIO = PRESET_SCENARIOS[0];
 
-export function getPreset(id: string): AirScenario | undefined {
-  return PRESET_SCENARIOS.find((s) => s.id === id);
-}
