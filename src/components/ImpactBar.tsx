@@ -1,4 +1,5 @@
 import type { DirectImpactReceipt } from "@/lib/types";
+import { AnimatedNumber } from "./AnimatedNumber";
 
 /** Persistent summary shown on tabs that don't already have the Daily Sanctuary Delta card. */
 export function ImpactBar({ receipt, onOpen }: { receipt: DirectImpactReceipt; onOpen: () => void }) {
@@ -7,11 +8,11 @@ export function ImpactBar({ receipt, onOpen }: { receipt: DirectImpactReceipt; o
       <div aria-live="polite" aria-atomic="true" className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <p className="m-0 text-sm">
           <span className="label">Lungs protected</span>{" "}
-          <strong className="serif text-2xl italic">−{receipt.avoidedCigarettesHouseholdDay}</strong>{" "}
+          <strong className="serif text-2xl italic">−<AnimatedNumber value={receipt.avoidedCigarettesHouseholdDay} decimals={2} /></strong>{" "}
           <abbr title="cigarette-equivalents" className="no-underline">cig-eq</abbr>/day
         </p>
         <p className="m-0 text-sm">
-          <span className="label">Sky protected</span> <strong className="serif text-2xl italic">−{receipt.savedCo2GramsDay}</strong> g CO₂/day
+          <span className="label">Sky protected</span> <strong className="serif text-2xl italic">−<AnimatedNumber value={receipt.savedCo2GramsDay} /></strong> g CO₂/day
         </p>
       </div>
       <button type="button" onClick={onOpen} aria-label="View full receipt" className="btn-primary ml-auto shrink-0">

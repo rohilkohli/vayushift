@@ -6,6 +6,7 @@ import { compareFilters, fieldCadrM3h } from "@/lib/impactEngine";
 import { downscaleToJpegBase64 } from "@/lib/imageResize";
 import { SAMPLE_ROOMS, type RoomScan } from "@/lib/roomScan";
 import type { ActiveInterventions, AirScenario, DirectImpactReceipt, FiltrationMode, HouseholdProfile, WindowType } from "@/lib/types";
+import { AnimatedNumber } from "./AnimatedNumber";
 import { Icon } from "./Icon";
 import { RoutineToggle } from "./RoutineToggle";
 
@@ -110,7 +111,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
           <div className="glass relative mx-auto flex aspect-square w-full max-w-[400px] flex-col items-center justify-center rounded-full p-10 text-center" role="group" aria-label="Clean air delivery dial">
             <svg viewBox="0 0 260 260" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
               <circle cx="130" cy="130" r={R} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="6" />
-              <circle cx="130" cy="130" r={R} fill="none" stroke="#c25a32" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * progress} ${C}`} />
+              <circle cx="130" cy="130" r={R} fill="none" className="ring-progress" stroke="#c25a32" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * progress} ${C}`} />
               <circle cx="130" cy="130" r={R - 14} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="3 6" />
             </svg>
             <p className="chip relative m-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
@@ -118,7 +119,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
               {active ? "Active sanctuary" : "No filter selected"}
             </p>
             <p className="serif relative m-0 mt-3 text-7xl leading-none" aria-live="polite">
-              {active ? fieldCadr : receipt.requiredCadrM3h}
+              <AnimatedNumber value={active ? fieldCadr : receipt.requiredCadrM3h} />
               <span className="ink-soft ml-1 text-2xl">m³/h</span>
             </p>
             <p className="label relative m-0 mt-2">{active ? "Clean air delivery (CADR)" : "Target CADR for 5 ACH"}</p>
@@ -189,7 +190,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
 
         <div className="space-y-4">
           <p className="label scrim inline-flex items-center gap-2 rounded-full px-4 py-1.5"><span className="h-2 w-2 rounded-full bg-[#ffad8f]" aria-hidden="true" /> Deployable filter arrays · Needs {receipt.requiredCadrM3h} m³/h for your room</p>
-          <ul className="m-0 list-none space-y-4 p-0">
+          <ul className="stagger m-0 list-none space-y-4 p-0">
             {options.map((o, idx) => {
               const f = FILTERS[o.id];
               const selected = interventions.filtrationMode === o.id;
@@ -243,7 +244,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
         </div>
       </div>
 
-      <dl className="m-0 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <dl className="stagger m-0 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           ["Exterior PM2.5, 24 h avg", `${outdoorAvg}`, "µg/m³", "Outdoor average for this scenario"],
           ["Modelled sanctuary PM2.5", `${receipt.managedIndoorPm25}`, "µg/m³", "A model, not a sensor reading"],

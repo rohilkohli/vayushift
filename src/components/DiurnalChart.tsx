@@ -39,7 +39,7 @@ export function DiurnalChart({ hourly, window }: { hourly: HourlyAir[]; window: 
 
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="chart-title chart-desc" className="h-28 w-full overflow-visible" preserveAspectRatio="none">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="chart-title chart-desc" className="chart-reveal h-28 w-full overflow-visible" preserveAspectRatio="none">
         <title id="chart-title">24-hour outdoor PM2.5 forecast</title>
         <desc id="chart-desc">{summary}</desc>
         <defs>

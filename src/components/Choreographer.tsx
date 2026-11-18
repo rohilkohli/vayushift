@@ -12,6 +12,7 @@ import type {
   HouseholdProfile,
   VentilationWindow,
 } from "@/lib/types";
+import { AnimatedNumber } from "./AnimatedNumber";
 import { DiurnalChart } from "./DiurnalChart";
 import { Icon } from "./Icon";
 import { RoutineToggle } from "./RoutineToggle";
@@ -80,7 +81,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
         <div className="max-w-2xl flex-1">
           <p className="scrim inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider">
             <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ffdbce] opacity-75" />
+              <span className="absolute inline-flex h-full w-full ping-soft rounded-full bg-[#ffdbce] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ffad8f]" />
             </span>
             {inWindow ? `${formatHour(hour)} · Low-smog window open` : `Next low-smog window ${span}`}
@@ -114,7 +115,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
           </div>
           <div className="relative mt-6" aria-live="polite" aria-atomic="true">
             <p className="m-0 flex items-baseline gap-2">
-              <span className="serif text-[54px] italic leading-none">−{receipt.avoidedCigarettesHouseholdDay}</span>
+              <span className="serif text-[54px] italic leading-none">−<AnimatedNumber value={receipt.avoidedCigarettesHouseholdDay} decimals={2} /></span>
               <span className="accent text-[13px] font-semibold">cig equivalent</span>
             </p>
             <p className="ink-soft m-0 mt-1 text-[13px]">never inhaled by your household today</p>
@@ -122,7 +123,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
             <div className="flex items-end justify-between gap-3">
               <div>
                 <p className="m-0 flex items-baseline gap-2">
-                  <span className="serif text-4xl italic leading-none">−{receipt.savedCo2GramsDay} g</span>
+                  <span className="serif text-4xl italic leading-none">−<AnimatedNumber value={receipt.savedCo2GramsDay} /> g</span>
                   <span className="label">CO₂</span>
                 </p>
                 <p className="ink-soft m-0 mt-1 text-[13px]">
@@ -146,7 +147,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
             Low-smog window ({span})
           </p>
         </div>
-        <DiurnalChart hourly={scenario.hourly} window={w} />
+        <DiurnalChart key={scenario.id} hourly={scenario.hourly} window={w} />
         <ol className="m-0 mt-2 grid list-none grid-cols-2 gap-2 p-0 text-center sm:grid-cols-5">
           {steps.map((s) => (
             <li key={s.label} className={`flex flex-col items-center rounded-2xl p-1.5 ${s.best ? "chip" : ""}`}>
@@ -160,7 +161,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
 
       <section aria-labelledby="shifts-h">
         <h3 id="shifts-h" className="label page-ink mb-3 px-2">Routine shifts · switch on to see the effect</h3>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <RoutineToggle
             icon="wb_sunny"
             title="Afternoon air shift"

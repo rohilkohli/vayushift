@@ -36,7 +36,7 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
         <div className="pointer-events-auto glass flex max-w-full items-center gap-2 self-start rounded-full py-1.5 pl-4 pr-1.5">
           <span className="flex items-center gap-2 pr-1">
             <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ffb59a] opacity-75" />
+              <span className="absolute inline-flex h-full w-full ping-soft rounded-full bg-[#ffb59a] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8c4e35]" />
             </span>
             <h1 className="serif m-0 text-[22px] font-medium leading-none tracking-tight">VayuShift</h1>
