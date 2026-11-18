@@ -1,11 +1,13 @@
 "use client";
 import { useMemo, useRef, useState } from "react";
+import { meanBetween } from "@/lib/airQuality";
 import { EPDM_COST_INR, FILTERS } from "@/lib/constants";
-import { compareFilters } from "@/lib/impactEngine";
+import { compareFilters, fieldCadrM3h } from "@/lib/impactEngine";
 import { downscaleToJpegBase64 } from "@/lib/imageResize";
 import { SAMPLE_ROOMS, type RoomScan } from "@/lib/roomScan";
 import type { ActiveInterventions, AirScenario, DirectImpactReceipt, FiltrationMode, HouseholdProfile, WindowType } from "@/lib/types";
-import { Switch } from "./Switch";
+import { Icon } from "./Icon";
+import { RoutineToggle } from "./RoutineToggle";
 
 interface Props {
   scenario: AirScenario;
@@ -86,57 +88,56 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
         ? "Run DIY boxes on high in the evening and on low overnight."
         : "DIY boxes can run on a low setting overnight.";
 
+  const outdoorAvg = Math.round(meanBetween(scenario.hourly, 0, 23));
+  const fieldCadr = Math.round(fieldCadrM3h(interventions.filtrationMode));
+  const ach = receipt.roomVolumeM3 > 0 ? fieldCadr / receipt.roomVolumeM3 : 0;
+  const progress = Math.min(1, fieldCadr / Math.max(1, receipt.requiredCadrM3h));
+  const R = 118;
+  const C = 2 * Math.PI * R;
+  const active = interventions.filtrationMode !== "none";
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
-      <div className="space-y-6">
-        <div>
-          <p className="label">Indoor Air Lab</p>
-          <h2 className="serif mt-2 text-4xl font-medium leading-tight">Size clean air for your room.</h2>
-          <p className="mt-3 text-lg text-[#3b4f66]">
-            Choose a sample room, or upload a photo. Photos are resized on your device, stripped of location data, analysed once
-            and never stored.
-          </p>
-        </div>
-
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="scan-h">
-          <h3 id="scan-h" className="label">Scan a room</h3>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {SAMPLE_ROOMS.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => applyScan(r.scan, `Loaded sample: ${r.label}.`)}
-                className="min-h-11 rounded-full border-2 border-[#0f2a44] bg-white px-4 text-sm font-bold"
-              >
-                {r.label}
-              </button>
-            ))}
+    <div className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-[1fr_1.25fr]">
+        <div className="space-y-6">
+          <div>
+            <p className="label scrim inline-block rounded-full px-4 py-1.5">Indoor purity dynamics · Room sanctuary</p>
+            <h2 className="serif hero-ink mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
+              Sculpting an island of pure alpine breath indoors.
+            </h2>
           </div>
-          <div className="mt-3">
-            <label htmlFor="room-photo" className="block text-sm font-semibold">Upload a room photo (JPEG, PNG or WebP)</label>
-            <input
-              id="room-photo"
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              disabled={busy}
-              onChange={(e) => onFile(e.target.files?.[0])}
-              className="mt-1 block min-h-11 w-full text-sm"
-            />
-          </div>
-          <p role="status" aria-live="polite" className="mt-3 min-h-6 text-sm font-semibold">{message}</p>
-          {scan && (
-            <ul className="mt-2 list-disc pl-5 text-sm text-[#3b4f66]">
-              {scan.infiltrationRiskNotes.map((n) => <li key={n}>{n}</li>)}
-              {scan.recommendedPlacementSpot && <li>Placement: {scan.recommendedPlacementSpot}</li>}
-            </ul>
-          )}
-        </section>
 
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="room-h">
-          <h3 id="room-h" className="label">Room details</h3>
-          <div className="mt-3 space-y-4">
-            <label className="block text-sm font-semibold">
+          <div className="glass relative mx-auto flex aspect-square w-full max-w-[400px] flex-col items-center justify-center rounded-full p-10 text-center" role="group" aria-label="Clean air delivery dial">
+            <svg viewBox="0 0 260 260" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
+              <circle cx="130" cy="130" r={R} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="6" />
+              <circle cx="130" cy="130" r={R} fill="none" stroke="#c25a32" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * progress} ${C}`} />
+              <circle cx="130" cy="130" r={R - 14} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="3 6" />
+            </svg>
+            <p className="chip relative m-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
+              <span className="h-2 w-2 rounded-full bg-[#c25a32]" aria-hidden="true" />
+              {active ? "Active sanctuary" : "No filter selected"}
+            </p>
+            <p className="serif relative m-0 mt-3 text-7xl leading-none" aria-live="polite">
+              {active ? fieldCadr : receipt.requiredCadrM3h}
+              <span className="ink-soft ml-1 text-2xl">m³/h</span>
+            </p>
+            <p className="label relative m-0 mt-2">{active ? "Clean air delivery (CADR)" : "Target CADR for 5 ACH"}</p>
+            <p className="chip relative m-0 mt-4 rounded-full px-4 py-1.5 text-xs font-semibold">
+              PM2.5 {receipt.baselineIndoorPm25} → {receipt.managedIndoorPm25} µg/m³
+              {receipt.indoorReductionPct > 0 && <span className="accent ml-2 font-bold">−{Math.round(receipt.indoorReductionPct)}%</span>}
+            </p>
+            <p className="ink-soft relative m-0 mt-3 flex items-center gap-1 text-xs font-medium">
+              <Icon name="autorenew" />
+              {active && ach > 0 ? `Air turnover: ${Math.round(60 / ach)} min · ${ach.toFixed(1)} ACH` : `Room volume ${receipt.roomVolumeM3} m³`}
+            </p>
+          </div>
+
+          <section className="glass rounded-[2rem] p-6" aria-labelledby="env-h">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 id="env-h" className="serif m-0 flex items-center gap-2 text-xl font-medium"><Icon name="crop_square" /> Room envelope</h3>
+              <p className="chip m-0 rounded-full px-3 py-1 text-xs font-bold">{profile.roomAreaSqFt} sq ft · {profile.ceilingHeightFt} ft ceiling</p>
+            </div>
+            <label className="mt-4 block text-sm font-semibold">
               Floor area: {profile.roomAreaSqFt} sq ft
               <input type="range" min={60} max={500} step={10} value={profile.roomAreaSqFt}
                 onChange={(e) => onProfile({ roomAreaSqFt: Number(e.target.value) })} className="mt-1 block h-11 w-full" />
@@ -144,98 +145,120 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
             <label className="block text-sm font-semibold">
               Ceiling height: {profile.ceilingHeightFt} ft
               <input type="range" min={8} max={12} step={0.5} value={profile.ceilingHeightFt}
-                onChange={(e) => onProfile({ ceilingHeightFt: Number(e.target.value) })} className="mt-1 block h-11 w-full" />
+                onChange={(e) => onProfile({ ceilingHeightFt: Number(e.target.value) })} className="block h-11 w-full" />
             </label>
-            <label className="block text-sm font-semibold">
-              Windows
-              <select value={profile.windowType} onChange={(e) => onProfile({ windowType: e.target.value as WindowType })}
-                className="mt-1 min-h-11 w-full rounded-xl border-2 border-[#0f2a44] bg-white px-3">
-                {Object.entries(WINDOW_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-            </label>
-            <label className="block text-sm font-semibold">
-              Sensitivity to night-time noise
-              <select value={profile.sleepNoiseSensitivity}
-                onChange={(e) => onProfile({ sleepNoiseSensitivity: e.target.value as HouseholdProfile["sleepNoiseSensitivity"] })}
-                className="mt-1 min-h-11 w-full rounded-xl border-2 border-[#0f2a44] bg-white px-3">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High (light sleeper)</option>
-              </select>
-            </label>
-          </div>
-        </section>
-
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="cadr-h">
-          <h3 id="cadr-h" className="label">Target</h3>
-          <p className="serif m-0 mt-2 text-5xl">{receipt.requiredCadrM3h} <span className="text-xl">m³/h</span></p>
-          <p className="m-0 text-sm text-[#3b4f66]">
-            Clean air delivery needed for 5 air changes an hour in {receipt.roomVolumeM3} m³.
-          </p>
-          <p className="mt-3 text-sm font-semibold">
-            Modelled indoor PM2.5 now: {receipt.baselineIndoorPm25} µg/m³ → with your choices: {receipt.managedIndoorPm25} µg/m³
-            ({receipt.indoorReductionPct}% lower). This is a model, not a sensor reading.
-          </p>
-        </section>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="label">Filtration options</h3>
-        <ul className="m-0 list-none space-y-4 p-0">
-          {options.map((o) => {
-            const f = FILTERS[o.id];
-            const selected = interventions.filtrationMode === o.id;
-            return (
-              <li key={o.id} className={`glass rounded-[2rem] p-5 ${selected ? "ring-4 ring-[#0a6b63]" : ""}`}>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h4 className="serif m-0 text-2xl font-medium">{f.name}</h4>
-                  <p className="serif m-0 text-2xl">₹{f.costInr.toLocaleString("en-IN")}</p>
-                </div>
-                <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0 text-sm font-semibold">
-                  <li className="rounded-full bg-white px-3 py-1">Modelled in your room: {o.modelledReductionPct}% lower PM2.5</li>
-                  <li className="rounded-full bg-white px-3 py-1">Published result: about {f.literatureReductionPct}%</li>
-                  <li className="rounded-full bg-white px-3 py-1">Field CADR ≈ {o.cadrFieldM3h} m³/h</li>
-                  <li className="rounded-full bg-white px-3 py-1">
-                    Noise: {f.noiseDeltaDbDay ? `+${f.noiseDeltaDbDay} dB day, +${f.noiseDeltaDbNight} dB night` : "quiet"}
-                  </li>
-                </ul>
-                <p className="mt-3 text-sm text-[#3b4f66]">{f.note}</p>
-                <p className="m-0 text-sm font-semibold">
-                  {o.meetsTargetAch ? "Meets the 5 air-change target for this room." : "Below the 5 air-change target alone; fine for a smaller room or paired with sealing."}
-                </p>
-                <button
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => onInterventions({ filtrationMode: (selected ? "none" : o.id) as FiltrationMode })}
-                  className={`mt-3 min-h-11 rounded-full border-2 border-[#0f2a44] px-5 text-sm font-bold ${
-                    selected ? "bg-[#0f2a44] text-white" : "bg-white text-[#0f2a44]"
-                  }`}
-                >
-                  {selected ? "✓ Selected" : "Select this option"}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SAMPLE_ROOMS.map((r) => (
+                <button key={r.id} type="button" className="pill" aria-pressed={scan === r.scan} onClick={() => applyScan(r.scan, `Loaded sample: ${r.label}.`)}>
+                  {r.label}
                 </button>
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="glass flex items-center gap-4 rounded-[2rem] p-5">
-          <div className="flex-1">
-            <p id="epdm-d" className="m-0 font-bold">EPDM foam seal for window tracks · ₹{EPDM_COST_INR}</p>
-            <p className="m-0 text-sm text-[#3b4f66]">Cuts outdoor air leaking into the room by about 30%.</p>
-          </div>
-          <Switch checked={interventions.sealWindowsWithEpdm} onChange={(v) => onInterventions({ sealWindowsWithEpdm: v })} label="Add EPDM window seal" describedBy="epdm-d" />
+              ))}
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block text-sm font-semibold">
+                Windows
+                <select value={profile.windowType} onChange={(e) => onProfile({ windowType: e.target.value as WindowType })} className="field">
+                  {Object.entries(WINDOW_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </label>
+              <label className="block text-sm font-semibold">
+                Night-time noise sensitivity
+                <select value={profile.sleepNoiseSensitivity}
+                  onChange={(e) => onProfile({ sleepNoiseSensitivity: e.target.value as HouseholdProfile["sleepNoiseSensitivity"] })} className="field">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High (light sleeper)</option>
+                </select>
+              </label>
+            </div>
+            <div className="mt-4">
+              <label htmlFor="room-photo" className="block text-sm font-semibold">Or scan your own room (JPEG, PNG or WebP)</label>
+              <input id="room-photo" ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
+                onChange={(e) => onFile(e.target.files?.[0])} className="mt-1 block min-h-11 w-full text-sm" />
+              <p className="ink-soft m-0 text-xs">Resized on your device, stripped of location data, analysed once, never stored.</p>
+            </div>
+            <p role="status" aria-live="polite" className="m-0 mt-2 min-h-6 text-sm font-semibold">{message}</p>
+            {scan && (
+              <ul className="ink-soft m-0 list-disc pl-5 text-sm">
+                {scan.infiltrationRiskNotes.map((n) => <li key={n}>{n}</li>)}
+                {scan.recommendedPlacementSpot && <li>Placement: {scan.recommendedPlacementSpot}</li>}
+              </ul>
+            )}
+          </section>
         </div>
 
-        <aside className="glass rounded-[2rem] p-5 text-sm" aria-labelledby="tips-h">
-          <h4 id="tips-h" className="label">Sleep and safety</h4>
-          <p className="mt-2">{noiseTip}</p>
-          <ul className="list-disc pl-5">
-            <li>Use only a certified box fan with thermal protection. Never leave a damaged fan running.</li>
-            <li>Use pleated filters rated MERV-13 or better; swap them when visibly dirty.</li>
-            <li>Avoid purifiers that make ozone.</li>
+        <div className="space-y-4">
+          <p className="label scrim inline-flex items-center gap-2 rounded-full px-4 py-1.5"><span className="h-2 w-2 rounded-full bg-[#ffad8f]" aria-hidden="true" /> Deployable filter arrays · Needs {receipt.requiredCadrM3h} m³/h for your room</p>
+          <ul className="m-0 list-none space-y-4 p-0">
+            {options.map((o, idx) => {
+              const f = FILTERS[o.id];
+              const selected = interventions.filtrationMode === o.id;
+              return (
+                <li key={o.id} className={`glass rounded-[2.2rem] p-6 ${selected ? "ring-2 ring-[#c25a32]" : ""}`}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="m-0 flex flex-wrap items-center gap-2">
+                        {idx === 0 && <span className="rounded-full bg-[#ffdbce] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#6f3720]">Best value</span>}
+                        <span className="label">{o.meetsTargetAch ? "Meets 5-ACH target" : "Below 5-ACH target alone"}</span>
+                      </p>
+                      <h4 className="serif m-0 mt-1 text-2xl font-medium">{f.name}</h4>
+                    </div>
+                    <p className="serif m-0 text-2xl">₹{f.costInr.toLocaleString("en-IN")}</p>
+                  </div>
+                  <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0 text-xs font-semibold">
+                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="blur_on" /> Modelled: {o.modelledReductionPct}% lower PM2.5</li>
+                    <li className="chip rounded-full px-3 py-1">Published: ~{f.literatureReductionPct}%</li>
+                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="air" /> CADR ≈ {o.cadrFieldM3h} m³/h</li>
+                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="volume_up" /> {f.noiseDeltaDbDay ? `+${f.noiseDeltaDbDay} dB day, +${f.noiseDeltaDbNight} dB night` : "Quiet"}</li>
+                  </ul>
+                  <p className="ink-soft m-0 mt-3 text-sm">{f.note}</p>
+                  <div className="mt-4 flex justify-end">
+                    <button type="button" aria-pressed={selected} onClick={() => onInterventions({ filtrationMode: (selected ? "none" : o.id) as FiltrationMode })} className="pill">
+                      {selected ? "✓ Configured & active" : "Select configuration"}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
-        </aside>
+
+          <RoutineToggle
+            icon="door_front"
+            title={`+ ₹${EPDM_COST_INR} EPDM window track seal`}
+            subtitle="Blocks about 30% of exterior seepage"
+            checked={interventions.sealWindowsWithEpdm}
+            onChange={(v) => onInterventions({ sealWindowsWithEpdm: v })}
+            describedBy="t-epdm"
+          />
+
+          <aside className="glass rounded-[2rem] p-5 text-sm" aria-labelledby="tips-h">
+            <h4 id="tips-h" className="label m-0">Sleep and safety</h4>
+            <p className="mt-2">{noiseTip}</p>
+            <ul className="m-0 list-disc pl-5">
+              <li>Use only a certified box fan with thermal protection. Never leave a damaged fan running.</li>
+              <li>Use pleated filters rated MERV-13 or better; swap them when visibly dirty.</li>
+              <li>Avoid purifiers that make ozone.</li>
+            </ul>
+          </aside>
+        </div>
       </div>
+
+      <dl className="m-0 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          ["Exterior PM2.5, 24 h avg", `${outdoorAvg}`, "µg/m³", "Outdoor average for this scenario"],
+          ["Modelled sanctuary PM2.5", `${receipt.managedIndoorPm25}`, "µg/m³", "A model, not a sensor reading"],
+          ["Filter air changes", ach.toFixed(1), "per hour", active ? "From the selected option" : "Select an option above"],
+          ["Target CADR", `${receipt.requiredCadrM3h}`, "m³/h", "5 air changes per hour"],
+        ].map(([k, v, u, n]) => (
+          <div key={k} className="glass rounded-[2rem] p-5">
+            <dt className="label">{k}</dt>
+            <dd className="m-0 mt-2">
+              <span className="serif text-4xl">{v}</span> <span className="ink-soft text-xs">{u}</span>
+              <span className="ink-soft mt-1 block text-xs font-medium">{n}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }

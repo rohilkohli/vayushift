@@ -71,12 +71,12 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
       ref={ref}
       onClose={onClose}
       aria-labelledby="receipt-title"
-      className="m-auto w-[min(42rem,calc(100%-2rem))] rounded-[2rem] bg-[#fffaf3] p-0 text-[#0f2a44]"
+      className="glass m-auto w-[min(42rem,calc(100%-2rem))] rounded-[2.5rem] border-0 p-0"
     >
       <div className="max-h-[85vh] overflow-y-auto p-6">
         <div className="flex items-start justify-between gap-4">
           <h2 id="receipt-title" className="serif m-0 text-3xl font-medium">Lungs &amp; Sky receipt</h2>
-          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-full border-2 border-[#0f2a44] bg-white px-3 font-bold">
+          <button type="button" onClick={onClose} className="pill">
             Close
           </button>
         </div>
@@ -90,9 +90,9 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
             ["CO₂ saved", `${receipt.savedCo2GramsDay} g`],
             ["Indoor PM2.5 (modelled)", `${receipt.baselineIndoorPm25} → ${receipt.managedIndoorPm25} µg/m³`],
           ].map(([k, v]) => (
-            <div key={k} className="rounded-2xl bg-white p-3">
+            <div key={k} className="chip rounded-2xl p-3">
               <dt className="label">{k}</dt>
-              <dd className="serif m-0 text-xl">{v}</dd>
+              <dd className="serif m-0 text-xl italic">{v}</dd>
             </div>
           ))}
         </dl>
@@ -110,7 +110,7 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
 
         <h3 className="label mt-5">Why your choices mattered</h3>
         <p aria-live="polite" className="mt-2">{loading ? "Writing your explanation…" : text}</p>
-        <p className="text-xs text-[#3b4f66]">
+        <p className="text-xs ink-soft">
           {source === "gemini" ? "Explained by Gemini using only the numbers above." : "Template explanation using only the numbers above."}
         </p>
 
@@ -132,7 +132,7 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
         </details>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button type="button" onClick={copy} className="min-h-11 rounded-full bg-[#0f2a44] px-5 text-sm font-bold text-white">Copy receipt</button>
+          <button type="button" onClick={copy} className="btn-primary">Copy receipt</button>
           <p role="status" aria-live="polite" className="m-0 text-sm font-semibold">{toast}</p>
         </div>
       </div>

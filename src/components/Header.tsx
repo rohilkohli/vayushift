@@ -1,5 +1,12 @@
-import { GRAP_INFO } from "@/lib/grapRules";
-import type { AirScenario, GrapStage } from "@/lib/types";
+import type { RefObject } from "react";
+import type { AirScenario } from "@/lib/types";
+import { Icon } from "./Icon";
+
+export interface TabDef {
+  id: string;
+  label: string;
+  icon: string;
+}
 
 interface Props {
   scenario: AirScenario;
@@ -7,52 +14,83 @@ interface Props {
   onSelect: (s: AirScenario) => void;
   onLocate: () => void;
   loadingLive: boolean;
-  aqi: number;
-  pm25: number;
-  stage: GrapStage;
+  tabs: readonly TabDef[];
+  tab: string;
+  onTab: (id: string) => void;
+  tabRefs: RefObject<Array<HTMLButtonElement | null>>;
 }
 
-export function Header({ scenario, presets, onSelect, onLocate, loadingLive, aqi, pm25, stage }: Props) {
-  const info = GRAP_INFO[stage];
-  const isLive = scenario.source === "live";
+export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tabs, tab, onTab, tabRefs }: Props) {
+  const onKey = (e: React.KeyboardEvent, i: number) => {
+    const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!dir) return;
+    e.preventDefault();
+    const next = (i + dir + tabs.length) % tabs.length;
+    onTab(tabs[next].id);
+    tabRefs.current[next]?.focus();
+  };
+
   return (
-    <header className="mx-auto max-w-6xl px-5 pt-5">
-      <div className="glass flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[2rem] px-5 py-4">
-        <h1 className="serif text-3xl font-medium">VayuShift</h1>
-        <fieldset className="m-0 border-0 p-0">
-          <legend className="sr-only">Choose a scenario</legend>
-          <div className="flex flex-wrap gap-2">
-            {presets.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                aria-pressed={scenario.id === p.id}
-                onClick={() => onSelect(p)}
-                className={`min-h-11 rounded-full border-2 border-[#0f2a44] px-4 text-sm font-bold ${
-                  scenario.id === p.id ? "bg-[#0f2a44] text-white" : "bg-white text-[#0f2a44]"
-                }`}
-              >
-                {p.name}
+    <header className="fixed inset-x-0 top-0 z-50 pointer-events-none">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-5 pt-3 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:pt-5">
+        <div className="pointer-events-auto glass flex max-w-full items-center gap-2 self-start rounded-full py-1.5 pl-4 pr-1.5">
+          <span className="flex items-center gap-2 pr-1">
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ffb59a] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8c4e35]" />
+            </span>
+            <h1 className="serif m-0 text-[22px] font-medium leading-none tracking-tight">VayuShift</h1>
+            <span className="label hidden sm:inline">· New Delhi</span>
+          </span>
+          <span className="hidden h-4 w-px bg-current opacity-20 sm:block" aria-hidden="true" />
+          <fieldset className="m-0 min-w-0 border-0 p-0">
+            <legend className="sr-only">Choose a scenario</legend>
+            <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">
+              {presets.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-pressed={scenario.id === p.id}
+                  onClick={() => onSelect(p)}
+                  className="pill !min-h-9 whitespace-nowrap !px-3 !text-[11px]"
+                >
+                  {p.name}
+                </button>
+              ))}
+              <button type="button" onClick={onLocate} disabled={loadingLive} className="pill !min-h-9 whitespace-nowrap !px-3 !text-[11px]" aria-label="Use my location">
+                <Icon name="near_me" />
+                <span className="hidden md:inline">{loadingLive ? "Locating…" : "My location"}</span>
               </button>
-            ))}
+            </div>
+          </fieldset>
+        </div>
+
+        <div
+          role="tablist"
+          aria-label="Sections"
+          className="pointer-events-auto glass fixed inset-x-5 bottom-4 z-50 flex items-center justify-between gap-1 rounded-full p-1.5 lg:static lg:inset-auto lg:justify-start"
+        >
+          {tabs.map((t, i) => (
             <button
+              key={t.id}
+              ref={(el) => {
+                tabRefs.current[i] = el;
+              }}
+              id={`tab-${t.id}`}
+              role="tab"
               type="button"
-              onClick={onLocate}
-              disabled={loadingLive}
-              className="min-h-11 rounded-full border-2 border-[#8c3f22] bg-white px-4 text-sm font-bold text-[#8c3f22] disabled:opacity-60"
+              aria-selected={tab === t.id}
+              aria-controls={`panel-${t.id}`}
+              tabIndex={tab === t.id ? 0 : -1}
+              onClick={() => onTab(t.id)}
+              onKeyDown={(e) => onKey(e, i)}
+              className="pill flex-1 !px-4 !text-[13px] lg:flex-none lg:!px-5"
+              style={{ background: tab === t.id ? undefined : "transparent" }}
             >
-              {loadingLive ? "Locating…" : "Use my location"}
+              <Icon name={t.icon} className="lg:hidden" />
+              {t.label}
             </button>
-          </div>
-        </fieldset>
-        <div className="ml-auto flex flex-wrap items-center gap-2 text-sm font-bold">
-          <span className="rounded-full bg-white px-3 py-2">
-            Now: AQI {aqi} · PM2.5 {pm25} µg/m³
-          </span>
-          <span className="rounded-full bg-[#fde7d3] px-3 py-2 text-[#6b2d14]">
-            {stage === "NONE" ? "GRAP: not active" : `GRAP Stage ${info.roman} · ${info.category}`}
-          </span>
-          <span className="rounded-full bg-white px-3 py-2">{isLive ? "Live forecast" : "Demo telemetry"}</span>
+          ))}
         </div>
       </div>
     </header>

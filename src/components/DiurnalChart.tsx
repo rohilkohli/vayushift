@@ -1,56 +1,70 @@
 import { formatHour, pm25ToAqi } from "@/lib/airQuality";
 import type { HourlyAir, VentilationWindow } from "@/lib/types";
 
-const W = 480;
-const H = 260;
-const PAD = { l: 48, r: 12, t: 16, b: 34 };
+const W = 1200;
+const H = 150;
+const PAD = { l: 8, r: 8, t: 26, b: 10 };
 
-/** Dependency-free SVG. Window band is labelled and hatched so it is not colour-only. */
+/** Smooth Catmull-Rom to Bezier path through the hourly points. */
+function smoothPath(pts: Array<[number, number]>): string {
+  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
+/**
+ * Horizon ribbon. Dependency-free SVG. The low-smog window is a labelled, dashed and
+ * hatched band, so it never relies on colour alone.
+ */
 export function DiurnalChart({ hourly, window }: { hourly: HourlyAir[]; window: VentilationWindow }) {
-  const max = Math.max(...hourly.map((h) => h.pm25)) * 1.1;
+  const max = Math.max(...hourly.map((h) => h.pm25)) * 1.05;
+  const min = Math.min(...hourly.map((h) => h.pm25)) * 0.9;
   const x = (hr: number) => PAD.l + (hr / 23) * (W - PAD.l - PAD.r);
-  const y = (v: number) => PAD.t + (1 - v / max) * (H - PAD.t - PAD.b);
-  const path = hourly.map((h, i) => `${i ? "L" : "M"}${x(h.hour).toFixed(1)},${y(h.pm25).toFixed(1)}`).join(" ");
+  const y = (v: number) => PAD.t + (1 - (v - min) / (max - min)) * (H - PAD.t - PAD.b);
+  const pts = hourly.map((h) => [x(h.hour), y(h.pm25)] as [number, number]);
+  const line = smoothPath(pts);
+  const area = `${line} L${x(23)},${H} L${x(0)},${H} Z`;
   const bandX = x(window.startHour);
   const bandW = x(window.endHour) - bandX;
-  const ticks = [0, 6, 12, 18, 23];
+  const best = Math.round(window.startHour);
   const summary = `Outdoor PM2.5 by hour. Morning peak ${window.morningPeakMeanPm25} micrograms per cubic metre; lowest 90-minute window ${formatHour(window.startHour)} to ${formatHour(window.endHour)} at ${window.meanPm25}.`;
 
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="chart-title chart-desc" className="h-auto w-full">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="chart-title chart-desc" className="h-28 w-full overflow-visible" preserveAspectRatio="none">
         <title id="chart-title">24-hour outdoor PM2.5 forecast</title>
         <desc id="chart-desc">{summary}</desc>
         <defs>
-          <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="6" stroke="#0a6b63" strokeWidth="2" />
+          <linearGradient id="horizonGlow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffb59a" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#ffdf96" stopOpacity="0.03" />
+          </linearGradient>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#436182" />
+            <stop offset="45%" stopColor="#b9603c" />
+            <stop offset="65%" stopColor="#c98a12" />
+            <stop offset="100%" stopColor="#2a4968" />
+          </linearGradient>
+          <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#8c4e35" strokeWidth="2" strokeOpacity="0.45" />
           </pattern>
         </defs>
-        <rect x={bandX} y={PAD.t} width={bandW} height={H - PAD.t - PAD.b} fill="url(#hatch)" opacity="0.35" />
-        <rect x={bandX} y={PAD.t} width={bandW} height={H - PAD.t - PAD.b} fill="none" stroke="#0a6b63" strokeWidth="2" strokeDasharray="6 4" />
-        <text x={bandX + bandW / 2} y={PAD.t + 14} textAnchor="middle" fontSize="13" fontWeight="700" fill="#064e47">
-          Low-smog window
-        </text>
-        {[0, 0.5, 1].map((f) => (
-          <g key={f}>
-            <line x1={PAD.l} x2={W - PAD.r} y1={y(max * f * 0.909)} y2={y(max * f * 0.909)} stroke="#0f2a44" strokeOpacity="0.15" />
-            <text x={PAD.l - 6} y={y(max * f * 0.909) + 4} textAnchor="end" fontSize="13" fill="#3b4f66">
-              {Math.round(max * f * 0.909)}
-            </text>
-          </g>
+        <rect x={bandX} y={4} width={bandW} height={H - 8} rx="18" fill="url(#horizonGlow)" />
+        <rect x={bandX} y={4} width={bandW} height={H - 8} rx="18" fill="url(#hatch)" />
+        <rect x={bandX} y={4} width={bandW} height={H - 8} rx="18" fill="none" stroke="#8c4e35" strokeWidth="2" strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />
+        <path d={area} fill="url(#horizonGlow)" opacity="0.5" />
+        <path d={line} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        {[6, 12, best, 19, 23].map((h) => (
+          <circle key={h} cx={x(h)} cy={y(hourly[h].pm25)} r={h === best ? 7 : 4.5} fill={h === best ? "#fff" : "#2a4968"} stroke={h === best ? "#c25a32" : "none"} strokeWidth="3" vectorEffect="non-scaling-stroke" />
         ))}
-        <path d={path} fill="none" stroke="#0f2a44" strokeWidth="3" strokeLinejoin="round" />
-        {hourly.map((h) => (
-          <circle key={h.hour} cx={x(h.hour)} cy={y(h.pm25)} r={h.hour >= Math.floor(window.startHour) && h.hour <= window.endHour ? 4 : 2} fill="#0f2a44" />
-        ))}
-        {ticks.map((t) => (
-          <text key={t} x={x(t)} y={H - 10} textAnchor="middle" fontSize="13" fill="#3b4f66">
-            {String(t).padStart(2, "0")}:00
-          </text>
-        ))}
-        <text x={12} y={H / 2} fontSize="13" fill="#3b4f66" transform={`rotate(-90 12 ${H / 2})`} textAnchor="middle">
-          PM2.5 µg/m³
-        </text>
       </svg>
       <figcaption className="sr-only">{summary}</figcaption>
       <details className="mt-2 text-sm">

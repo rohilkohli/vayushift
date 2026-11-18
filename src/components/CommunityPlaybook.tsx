@@ -40,16 +40,16 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-6">
         <div>
-          <p className="label">Community and GRAP playbook</p>
-          <h2 className="serif mt-2 text-4xl font-medium leading-tight">
+          <p className="label scrim inline-block rounded-full px-4 py-1.5">Community and GRAP playbook</p>
+          <h2 className="serif hero-ink mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
             {stage === "NONE" ? "No GRAP stage is active right now." : `GRAP Stage ${info.roman}: ${info.category}.`}
           </h2>
-          <p className="mt-3 text-lg text-[#3b4f66]">
+          <p className="scrim mt-3 inline-block rounded-3xl px-5 py-3 text-lg">
             Current AQI {aqi}; today's peak AQI {peakAqi}. {peakAqi > aqi ? "Conditions can worsen later today." : ""}
           </p>
         </div>
 
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="measures-h">
+        <section className="glass rounded-[2rem] p-6" aria-labelledby="measures-h">
           <h3 id="measures-h" className="label">What typically applies</h3>
           <ul className="mt-2 list-disc pl-5">
             {info.measures.map((m) => <li key={m}>{m}</li>)}
@@ -58,10 +58,10 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           <ul className="mt-2 list-disc pl-5">
             {info.householdActions.map((m) => <li key={m}>{m}</li>)}
           </ul>
-          <p className="mt-3 text-sm text-[#3b4f66]">{GRAP_DISCLAIMER}</p>
+          <p className="mt-3 text-sm ink-soft">{GRAP_DISCLAIMER}</p>
         </section>
 
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="matrix-h">
+        <section className="glass rounded-[2rem] p-6" aria-labelledby="matrix-h">
           <h3 id="matrix-h" className="label">All stages</h3>
           <table className="mt-2 w-full text-left text-sm">
             <caption className="sr-only">GRAP stages and AQI bands</caption>
@@ -78,12 +78,12 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           </table>
         </section>
 
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="veh-h">
+        <section className="glass rounded-[2rem] p-6" aria-labelledby="veh-h">
           <h3 id="veh-h" className="label">Vehicle check</h3>
           <label className="mt-2 block text-sm font-semibold">
             Your vehicle
             <select value={vehicle} onChange={(e) => setVehicle(e.target.value as VehicleClass)}
-              className="mt-1 min-h-11 w-full rounded-xl border-2 border-[#0f2a44] bg-white px-3">
+              className="field">
               {Object.entries(VEHICLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           </label>
@@ -96,20 +96,20 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
       </div>
 
       <div className="space-y-6">
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="rwa-h">
+        <section className="glass rounded-[2rem] p-6" aria-labelledby="rwa-h">
           <h3 id="rwa-h" className="label">Night-guard heater calculator</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-semibold">
               Flats in society
               <input type="number" min={1} max={500} value={flats}
                 onChange={(e) => setFlats(Math.min(500, Math.max(1, Number(e.target.value) || 1)))}
-                className="mt-1 min-h-11 w-full rounded-xl border-2 border-[#0f2a44] bg-white px-3" />
+                className="field" />
             </label>
             <label className="block text-sm font-semibold">
               Night guards
               <input type="number" min={0} max={50} value={guards}
                 onChange={(e) => setGuards(Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
-                className="mt-1 min-h-11 w-full rounded-xl border-2 border-[#0f2a44] bg-white px-3" />
+                className="field" />
             </label>
           </div>
           <p className="mt-3" aria-live="polite">
@@ -118,27 +118,27 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           </p>
         </section>
 
-        <section className="glass rounded-[2rem] p-5" aria-labelledby="adv-h">
+        <section className="glass rounded-[2rem] p-6" aria-labelledby="adv-h">
           <h3 id="adv-h" className="label">WhatsApp advisory (English + हिन्दी)</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <div>
               <p className="label">English</p>
-              <pre lang="en" className="m-0 whitespace-pre-wrap rounded-2xl bg-white p-3 font-sans text-sm">{advisory.en}</pre>
+              <pre lang="en" className="m-0 whitespace-pre-wrap chip rounded-2xl p-3 font-sans text-sm">{advisory.en}</pre>
             </div>
             <div>
               <p className="label">हिन्दी</p>
-              <pre lang="hi" className="m-0 whitespace-pre-wrap rounded-2xl bg-white p-3 font-sans text-sm">{advisory.hi}</pre>
+              <pre lang="hi" className="m-0 whitespace-pre-wrap chip rounded-2xl p-3 font-sans text-sm">{advisory.hi}</pre>
             </div>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={copy} className="min-h-11 rounded-full bg-[#0f2a44] px-5 text-sm font-bold text-white">
+            <button type="button" onClick={copy} className="btn-primary">
               Copy advisory
             </button>
             <a
               href={`https://wa.me/?text=${encodeURIComponent(advisory.combined)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center rounded-full border-2 border-[#0f2a44] bg-white px-5 text-sm font-bold"
+              className="pill no-underline"
             >
               Share on WhatsApp
             </a>

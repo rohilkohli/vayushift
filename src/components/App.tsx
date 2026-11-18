@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { findVentilationWindow, pm25ToAqi } from "@/lib/airQuality";
 import { DEFAULT_SCENARIO, PRESET_SCENARIOS } from "@/lib/airQualityPresets";
-import { grapStageFromAqi } from "@/lib/grapRules";
+import { GRAP_INFO, grapStageFromAqi } from "@/lib/grapRules";
 import { calculateHouseholdImpact } from "@/lib/impactEngine";
 import type { AirScenario } from "@/lib/types";
 import { useHousehold } from "@/hooks/useHousehold";
@@ -14,10 +14,10 @@ import { IndoorLab } from "./IndoorLab";
 import { ReceiptDialog } from "./ReceiptDialog";
 
 type Tab = "choreographer" | "lab" | "community";
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "choreographer", label: "Living Sky" },
-  { id: "lab", label: "Indoor Air Lab" },
-  { id: "community", label: "Community" },
+const TABS: Array<{ id: Tab; label: string; icon: string }> = [
+  { id: "choreographer", label: "Living Sky", icon: "cloud" },
+  { id: "lab", label: "Room Sanctuary", icon: "meeting_room" },
+  { id: "community", label: "Community", icon: "groups" },
 ];
 
 const istHour = () =>
@@ -33,12 +33,23 @@ export function App() {
   const [hour, setHour] = useState(8);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  useEffect(() => setHour(istHour()), []);
+  const [night, setNight] = useState(false);
 
-  const window = useMemo(() => findVentilationWindow(scenario.hourly), [scenario]);
+  useEffect(() => {
+    const h = istHour();
+    setHour(h);
+    const forced = new URLSearchParams(globalThis.location.search).get("sky");
+    setNight(forced ? forced === "night" : h >= 19 || h < 6);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.sky = night ? "night" : "day";
+  }, [night]);
+
+  const ventWindow = useMemo(() => findVentilationWindow(scenario.hourly), [scenario]);
   const receipt = useMemo(
-    () => calculateHouseholdImpact(scenario.hourly, profile, interventions, window),
-    [scenario, profile, interventions, window],
+    () => calculateHouseholdImpact(scenario.hourly, profile, interventions, ventWindow),
+    [scenario, profile, interventions, ventWindow],
   );
   const currentPm = scenario.hourly[hour].pm25;
   const currentAqi = pm25ToAqi(currentPm);
@@ -79,18 +90,14 @@ export function App() {
     );
   }, []);
 
-  const onTabKey = (e: React.KeyboardEvent, i: number) => {
-    const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-    if (!dir) return;
-    e.preventDefault();
-    const next = (i + dir + TABS.length) % TABS.length;
-    setTab(TABS[next].id);
-    tabRefs.current[next]?.focus();
-  };
-
   return (
     <>
       <a href="#main" className="skip-link">Skip to content</a>
+      <div className="sky" aria-hidden="true">
+        <div className="sun-orb" />
+        <div className="dust" />
+      </div>
+
       <Header
         scenario={scenario}
         presets={PRESET_SCENARIOS}
@@ -100,50 +107,39 @@ export function App() {
         }}
         onLocate={useMyLocation}
         loadingLive={loadingLive}
-        aqi={currentAqi}
-        pm25={currentPm}
-        stage={stage}
+        tabs={TABS}
+        tab={tab}
+        onTab={(id) => setTab(id as Tab)}
+        tabRefs={tabRefs}
       />
-      <p role="status" aria-live="polite" className="mx-auto max-w-6xl px-5 text-sm font-semibold empty:hidden">{status}</p>
 
-      <div className="sticky top-0 z-20 mx-auto max-w-6xl px-5 pt-3">
-        <ImpactBar receipt={receipt} onOpen={() => setReceiptOpen(true)} />
-      </div>
-
-      <main id="main" className="mx-auto max-w-6xl px-5 pb-28 pt-6">
-        <div role="tablist" aria-label="Sections" className="glass mb-6 inline-flex max-w-full overflow-x-auto rounded-full p-1">
-          {TABS.map((t, i) => (
-            <button
-              key={t.id}
-              ref={(el) => {
-                tabRefs.current[i] = el;
-              }}
-              id={`tab-${t.id}`}
-              role="tab"
-              type="button"
-              aria-selected={tab === t.id}
-              aria-controls={`panel-${t.id}`}
-              tabIndex={tab === t.id ? 0 : -1}
-              onClick={() => setTab(t.id)}
-              onKeyDown={(e) => onTabKey(e, i)}
-              className={`min-h-11 whitespace-nowrap rounded-full px-5 text-sm font-bold ${
-                tab === t.id ? "bg-[#0f2a44] text-white" : "text-[#0f2a44]"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+      <main id="main" className="relative z-10 mx-auto max-w-[1440px] px-5 pb-32 pt-32 lg:px-8 lg:pb-16 lg:pt-28">
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-xs font-bold">
+          <span className="glass rounded-full px-4 py-2">Now · AQI {currentAqi} · PM2.5 {currentPm} µg/m³</span>
+          <span className="glass rounded-full px-4 py-2">
+            {stage === "NONE" ? "GRAP: not active" : `GRAP Stage ${GRAP_INFO[stage].roman} · ${GRAP_INFO[stage].category}`}
+          </span>
+          <span className="glass rounded-full px-4 py-2">{scenario.source === "live" ? "Live forecast" : "Demo telemetry"}</span>
+          <p role="status" aria-live="polite" className="glass m-0 rounded-full px-4 py-2 empty:hidden">{status}</p>
         </div>
+
+        {tab !== "choreographer" && (
+          <div className="mb-6">
+            <ImpactBar receipt={receipt} onOpen={() => setReceiptOpen(true)} />
+          </div>
+        )}
 
         <section id="panel-choreographer" role="tabpanel" aria-labelledby="tab-choreographer" hidden={tab !== "choreographer"}>
           <Choreographer
             scenario={scenario}
-            window={window}
+            window={ventWindow}
+            hour={hour}
             profile={profile}
             interventions={interventions}
             receipt={receipt}
             onProfile={patchProfile}
             onInterventions={patchInterventions}
+            onOpenReceipt={() => setReceiptOpen(true)}
           />
         </section>
         <section id="panel-lab" role="tabpanel" aria-labelledby="tab-lab" hidden={tab !== "lab"}>
@@ -161,8 +157,8 @@ export function App() {
         </section>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-5 pb-10 text-sm text-[#3b4f66]">
-        <p>
+      <footer className="relative z-10 mx-auto max-w-[1440px] px-5 pb-28 lg:px-8 lg:pb-8">
+        <p className="glass m-0 max-w-3xl rounded-[2rem] px-5 py-3 text-xs">
           VayuShift gives general guidance, not medical advice. Indoor figures are modelled estimates, not sensor readings.
           Demo scenarios are illustrative, not recorded station data.
         </p>

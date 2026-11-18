@@ -76,8 +76,11 @@ src/components/*            UI; no chart library, plain SVG
 Skip link; tabs with arrow-key support; real `role="switch"` buttons whose state is also written as text;
 the chart has a title, description and a table alternative, and its window is hatched as well as coloured;
 labelled form controls; live regions for results; native `<dialog>` with focus handling; 44 px touch targets;
-reduced-motion and forced-colours support; Hindi text is marked `lang="hi"`. An axe-core scan (WCAG 2.1 A/AA)
-found no violations on any tab at desktop and 375 px widths.
+reduced-motion and forced-colours support; Hindi text is marked `lang="hi"`. The UI follows the supplied Stitch "Living Sky" design (sky gradient, frosted glass, Playfair + Plus Jakarta Sans) with a
+night variant that switches on after 19:00 IST (`?sky=day` or `?sky=night` overrides it). Translucent glass is made more
+opaque than the mock, and hero copy sits on a dark scrim, so text stays legible. An axe-core scan (WCAG 2.1 A/AA) found
+no violations on any tab in day and night mode at desktop and 390 px widths, and a separate pixel check of the rendered
+backdrop confirmed every text element meets 4.5:1 (3:1 for large text).
 
 ## Testing
 
