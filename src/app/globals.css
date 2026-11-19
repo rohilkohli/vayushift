@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
-/* Living Sky design tokens (from the Stitch export), with a night variant. */
-/* Sky stops are registered colours so a change of hour crossfades instead of snapping.
-   JavaScript overwrites --s0..--s6, --orb, --sun-x/y and --wind-speed as you scrub (see useLivingSky). */
+/* Living Sky design tokens (from the Stitch export), with a night variant.
+   Every colour token is a registered <color>, so when the hour changes the whole interface crossfades
+   (sky, glass, ink) instead of snapping. JavaScript sets the --s*, --orb, --cloud and body variables as you
+   scrub (see useLivingSky); --dur-sky / --ease-sky slow down to match Play 24h sky. */
 @property --s0 { syntax: "<color>"; inherits: true; initial-value: #1b3b5a; }
 @property --s1 { syntax: "<color>"; inherits: true; initial-value: #2a4968; }
 @property --s2 { syntax: "<color>"; inherits: true; initial-value: #436182; }
@@ -11,14 +12,42 @@
 @property --s5 { syntax: "<color>"; inherits: true; initial-value: #ffdf96; }
 @property --s6 { syntax: "<color>"; inherits: true; initial-value: #fff2e1; }
 @property --orb { syntax: "<color>"; inherits: true; initial-value: rgba(255, 240, 200, 0.6); }
+@property --cloud { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #0b2540; }
+@property --ink-soft { syntax: "<color>"; inherits: true; initial-value: #3a4d63; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #76391f; }
+@property --glass { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.72); }
+@property --glass-weak { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.55); }
+@property --chip { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.9); }
+@property --sel-bg { syntax: "<color>"; inherits: true; initial-value: #1b3b5a; }
+@property --sel-fg { syntax: "<color>"; inherits: true; initial-value: #ffecd1; }
+@property --good { syntax: "<color>"; inherits: true; initial-value: #0a6b63; }
+@property --wind { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --page-ink { syntax: "<color>"; inherits: true; initial-value: #0b2540; }
+@property --sheen { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.5); }
+@property --hairline { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.75); }
+@property --edge { syntax: "<color>"; inherits: true; initial-value: rgba(11, 37, 64, 0.08); }
+@property --solid { syntax: "<color>"; inherits: true; initial-value: #fff8f3; }
 
 :root {
   --s0: #1b3b5a; --s1: #2a4968; --s2: #436182; --s3: #87a5ca; --s4: #ffb59a; --s5: #ffdf96; --s6: #fff2e1;
   --orb: rgba(255, 240, 200, 0.6);
-  --sun-x: 82; --sun-y: 10; --wind-speed: 1;
+  --cloud: #ffffff;
+  /* Scene state (all driven by the hour). Opacities and positions are eased by the transitions below. */
+  --sun-x: 82; --sun-y: 10; --sun-o: 0;
+  --moon-x: 20; --moon-y: 60; --moon-o: 0;
+  --stars-o: 0; --day-o: 1; --wind-speed: 1;
+  --dur-sky: 1100ms; --ease-sky: cubic-bezier(0.4, 0, 0.2, 1);
   --sky: linear-gradient(178deg, var(--s0) 0%, var(--s1) 34%, var(--s2) 66%, var(--s3) 82%, var(--s4) 90%, var(--s5) 96%, var(--s6) 100%);
-  transition: --s0 900ms ease-out, --s1 900ms ease-out, --s2 900ms ease-out, --s3 900ms ease-out,
-    --s4 900ms ease-out, --s5 900ms ease-out, --s6 900ms ease-out, --orb 900ms ease-out;
+  transition:
+    --s0 var(--dur-sky) var(--ease-sky), --s1 var(--dur-sky) var(--ease-sky), --s2 var(--dur-sky) var(--ease-sky),
+    --s3 var(--dur-sky) var(--ease-sky), --s4 var(--dur-sky) var(--ease-sky), --s5 var(--dur-sky) var(--ease-sky),
+    --s6 var(--dur-sky) var(--ease-sky), --orb var(--dur-sky) var(--ease-sky), --cloud var(--dur-sky) var(--ease-sky),
+    --ink var(--dur-sky) var(--ease-sky), --ink-soft var(--dur-sky) var(--ease-sky), --accent var(--dur-sky) var(--ease-sky),
+    --glass var(--dur-sky) var(--ease-sky), --glass-weak var(--dur-sky) var(--ease-sky), --chip var(--dur-sky) var(--ease-sky),
+    --sel-bg var(--dur-sky) var(--ease-sky), --sel-fg var(--dur-sky) var(--ease-sky), --good var(--dur-sky) var(--ease-sky),
+    --wind var(--dur-sky) var(--ease-sky), --page-ink var(--dur-sky) var(--ease-sky), --sheen var(--dur-sky) var(--ease-sky),
+    --hairline var(--dur-sky) var(--ease-sky), --edge var(--dur-sky) var(--ease-sky), --solid var(--dur-sky) var(--ease-sky);
   --ink: #0b2540;
   --ink-soft: #3a4d63;
   --accent: #76391f;
@@ -38,6 +67,10 @@
   --hairline: rgba(255, 255, 255, 0.75);
   --edge: rgba(11, 37, 64, 0.08);
 }
+/* While "Play 24h sky" runs, ease linearly over one step so the sky glides instead of pulsing. */
+html[data-playing] { --dur-sky: 650ms; --ease-sky: linear; }
+/* No animation on the very first paint. */
+html[data-boot] { --dur-sky: 0ms; }
 
 :root[data-sky="night"] {
   --s0: #0a1422; --s1: #12233a; --s2: #1b3050; --s3: #2d3552; --s4: #4a3b53; --s5: #5a4350; --s6: #5a4350;
@@ -78,22 +111,61 @@ body {
 h1, h2, h3 { text-wrap: balance; }
 ::selection { background: #ffdbce; color: #380d00; }
 
-/* Fixed atmosphere behind everything */
+/* Fixed atmosphere behind everything. Layer order, back to front: stars, moon, sun, clouds, birds, dust, wind. */
 .sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-/* The track carries the sun (or moon) along its arc; the orb inside keeps the gentle pulse. */
-.sun-track {
+
+/* Sun and moon each ride their own arc. Position and opacity are eased, so a body rises, crosses and
+   sets (fading at the horizon) rather than jumping when the hour changes. */
+.body-track {
   position: absolute; left: 0; top: 0; width: 0; height: 0;
-  transform: translate3d(calc(var(--sun-x) * 1vw), calc(var(--sun-y) * 1vh), 0);
-  transition: transform 900ms var(--ease-out, ease-out);
+  transition: transform var(--dur-sky) var(--ease-sky), opacity var(--dur-sky) var(--ease-sky);
 }
-.sun-orb {
-  --sun-size: 380px;
-  position: absolute; left: 0; top: 0; width: var(--sun-size); height: var(--sun-size);
-  margin: calc(var(--sun-size) / -2) 0 0 calc(var(--sun-size) / -2); border-radius: 9999px; filter: blur(28px);
-  background: radial-gradient(circle, var(--orb) 0%, rgba(255, 240, 200, 0.22) 38%, rgba(255, 255, 255, 0) 72%);
+.sun-track { transform: translate3d(calc(var(--sun-x) * 1vw), calc(var(--sun-y) * 1vh), 0); opacity: var(--sun-o); }
+.moon-track { transform: translate3d(calc(var(--moon-x) * 1vw), calc(var(--moon-y) * 1vh), 0); opacity: var(--moon-o); }
+.glow {
+  --glow-size: 380px;
+  position: absolute; left: 0; top: 0; width: var(--glow-size); height: var(--glow-size);
+  margin: calc(var(--glow-size) / -2) 0 0 calc(var(--glow-size) / -2); border-radius: 9999px; filter: blur(28px);
   animation: pulse-sun 14s ease-in-out infinite;
 }
-@media (min-width: 1024px) { .sun-orb { --sun-size: 560px; } }
+.sun-orb { background: radial-gradient(circle, var(--orb) 0%, rgba(255, 240, 200, 0.22) 38%, rgba(255, 255, 255, 0) 72%); }
+.moon-orb { background: radial-gradient(circle, rgba(190, 205, 255, 0.34) 0%, rgba(160, 180, 240, 0.12) 40%, rgba(255, 255, 255, 0) 72%); }
+.sun-body, .moon-body {
+  --body-size: 84px;
+  position: absolute; left: 0; top: 0; width: var(--body-size); height: var(--body-size);
+  margin: calc(var(--body-size) / -2) 0 0 calc(var(--body-size) / -2); overflow: visible;
+}
+@media (min-width: 1024px) {
+  .glow { --glow-size: 520px; }
+  .sun-body, .moon-body { --body-size: 112px; }
+}
+.sun-rays { transform-box: fill-box; transform-origin: 50% 50%; animation: spin 120s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Stars fade in after dusk and out before dawn; each twinkles on its own rhythm. */
+.stars { opacity: var(--stars-o); transition: opacity var(--dur-sky) var(--ease-sky); }
+.star { animation: twinkle var(--tw, 4s) ease-in-out infinite alternate; animation-delay: var(--td, 0s); }
+@keyframes twinkle { from { opacity: 0.25; } to { opacity: 1; } }
+
+/* Daytime clouds drift slowly; they take the colour of the light (white, peach at sunset). */
+.clouds { opacity: var(--day-o); color: var(--cloud); transition: opacity var(--dur-sky) var(--ease-sky); }
+.cloud {
+  position: absolute; left: 0; height: auto; filter: blur(0.6px);
+  animation: cloud-drift linear infinite; animation-duration: calc(var(--dur) / var(--wind-speed, 1)); animation-delay: var(--delay);
+}
+@keyframes cloud-drift { from { transform: translate3d(-40vw, 0, 0); } to { transform: translate3d(125vw, 0, 0); } }
+
+/* A flock crosses the sky by day; wings flap on their own pivots. */
+.birds { opacity: calc(var(--day-o) * 0.85); transition: opacity var(--dur-sky) var(--ease-sky); }
+.flock { position: absolute; left: 0; animation: bird-fly linear infinite; animation-duration: var(--dur); animation-delay: var(--delay); }
+@keyframes bird-fly { from { transform: translate3d(-15vw, 0, 0); } to { transform: translate3d(118vw, var(--rise, -7vh), 0); } }
+.wing { transform-box: view-box; transform-origin: 50% 50%; animation: flap var(--flap, 0.8s) ease-in-out infinite alternate; }
+@keyframes flap { from { transform: rotate(calc(var(--dir) * 28deg)); } to { transform: rotate(calc(var(--dir) * -22deg)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud { animation: none; transform: translate3d(var(--x0, 20vw), 0, 0); }
+  .birds { display: none; }
+}
 .dust { position: absolute; inset: 0; opacity: 0.6; background: radial-gradient(ellipse at 40% 60%, rgba(255,255,255,0.18) 0%, transparent 65%); animation: drift 26s ease-in-out infinite alternate; }
 @keyframes drift { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-2%,1.5%,0) scale(1.04); } 100% { transform: translate3d(0,0,0) scale(1); } }
 @keyframes pulse-sun { 0%,100% { opacity: 0.88; transform: scale(1); } 50% { opacity: 0.98; transform: scale(1.06); } }

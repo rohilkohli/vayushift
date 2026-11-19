@@ -13,6 +13,7 @@ import { ImpactBar } from "./ImpactBar";
 import { IndoorLab } from "./IndoorLab";
 import { ReceiptDialog } from "./ReceiptDialog";
 import { LiquidFilter } from "./LiquidFilter";
+import { SkyScene } from "./SkyScene";
 import { WindLayer } from "./WindLayer";
 import { useLiquidGlass } from "@/hooks/useLiquidGlass";
 import { useLivingSky } from "@/hooks/useLivingSky";
@@ -52,7 +53,7 @@ export function App() {
   }, []);
 
   // The sky, sun or moon, wind speed and day/night theme all follow the scrubbed hour.
-  useLivingSky(selHour, forcedTheme);
+  useLivingSky(selHour, forcedTheme, playing);
 
   // "Play 24h sky": advance one hour every 650 ms and loop.
   useEffect(() => {
@@ -133,9 +134,7 @@ export function App() {
       <a href="#main" className="skip-link">Skip to content</a>
       <LiquidFilter />
       <div className="sky" aria-hidden="true">
-        <div className="sun-track">
-          <div className="sun-orb" />
-        </div>
+        <SkyScene />
         <div className="dust" />
         <WindLayer />
       </div>

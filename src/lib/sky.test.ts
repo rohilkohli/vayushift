@@ -28,11 +28,60 @@ describe("skyForHour", () => {
   it("wraps 24 to midnight", () => {
     expect(skyForHour(24).stops).toEqual(skyForHour(0).stops);
   });
-  it("moves the sun along an arc: low at the ends, highest around midday", () => {
-    expect(skyForHour(0).sunY).toBeCloseTo(62, 0);
-    expect(skyForHour(11.5).sunY).toBeLessThan(skyForHour(0).sunY);
-    expect(skyForHour(11.5).sunY).toBeCloseTo(18, 0);
-    expect(skyForHour(20).sunX).toBeGreaterThan(skyForHour(8).sunX);
+  it("moves the sun along an arc: low at sunrise and sunset, highest at noon, travelling left to right", () => {
+    expect(skyForHour(12).sun.y).toBeCloseTo(16, 0);
+    expect(skyForHour(6).sun.y).toBeCloseTo(72, 0);
+    expect(skyForHour(18).sun.y).toBeCloseTo(72, 0);
+    expect(skyForHour(9).sun.x).toBeLessThan(skyForHour(12).sun.x);
+    expect(skyForHour(12).sun.x).toBeLessThan(skyForHour(16).sun.x);
+  });
+  it("hands over to the moon: it is high at midnight and travels left to right", () => {
+    expect(skyForHour(0).moon.y).toBeCloseTo(16, 0);
+    expect(skyForHour(20).moon.x).toBeLessThan(skyForHour(0).moon.x);
+    expect(skyForHour(0).moon.x).toBeLessThan(skyForHour(4).moon.x);
+  });
+  it("shows the sun by day only and the moon by night only, with a smooth overlap at the horizon", () => {
+    expect(skyForHour(12).sun.opacity).toBe(1);
+    expect(skyForHour(12).moon.opacity).toBe(0);
+    expect(skyForHour(0).moon.opacity).toBe(1);
+    expect(skyForHour(0).sun.opacity).toBe(0);
+    // Dawn and dusk: one fades out while the other fades in, never both fully off.
+    for (const h of [5.5, 6, 6.5, 18, 18.5, 19]) {
+      const s = skyForHour(h);
+      expect(s.sun.opacity + s.moon.opacity).toBeGreaterThan(0.05);
+    }
+  });
+  it("fades stars in after dusk and out before dawn, and keeps them out of the day", () => {
+    expect(skyForHour(0).stars).toBe(1);
+    expect(skyForHour(12).stars).toBe(0);
+    expect(skyForHour(19.5).stars).toBeGreaterThan(0);
+    expect(skyForHour(19.5).stars).toBeLessThan(1);
+    expect(skyForHour(22).stars).toBeGreaterThan(skyForHour(19.5).stars);
+    expect(skyForHour(5).stars).toBeGreaterThan(skyForHour(5.8).stars);
+  });
+  it("brings clouds and birds out by day and not at night", () => {
+    expect(skyForHour(12).day).toBe(1);
+    expect(skyForHour(0).day).toBe(0);
+    expect(skyForHour(23).day).toBe(0);
+  });
+  it("changes every scene value gradually: no step between adjacent half hours exceeds 0.45", () => {
+    for (let h = 0; h < 24; h += 0.5) {
+      const a = skyForHour(h);
+      const b = skyForHour(h + 0.5);
+      for (const [x, y] of [
+        [a.sun.opacity, b.sun.opacity],
+        [a.moon.opacity, b.moon.opacity],
+        [a.stars, b.stars],
+        [a.day, b.day],
+      ]) {
+        expect(Math.abs(x - y)).toBeLessThan(0.45);
+      }
+    }
+  });
+  it("tints clouds with the light: white at noon, warmer at sunset, dim at night", () => {
+    expect(skyForHour(12).cloud).toBe("#ffffff");
+    expect(luminance(skyForHour(0).cloud)).toBeLessThan(luminance(skyForHour(18).cloud));
+    expect(luminance(skyForHour(18).cloud)).toBeLessThan(luminance(skyForHour(12).cloud));
   });
   it("flags night from 21:00 to 04:59 only", () => {
     expect([20, 21, 23, 0, 4, 5, 6, 12].map(isNightHour)).toEqual([false, true, true, true, true, false, false, false]);
