@@ -49,7 +49,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           </p>
         </div>
 
-        <section className="glass rounded-[2rem] p-6" aria-labelledby="measures-h">
+        <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="measures-h">
           <h3 id="measures-h" className="label">What typically applies</h3>
           <ul className="mt-2 list-disc pl-5">
             {info.measures.map((m) => <li key={m}>{m}</li>)}
@@ -61,7 +61,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           <p className="mt-3 text-sm ink-soft">{GRAP_DISCLAIMER}</p>
         </section>
 
-        <section className="glass rounded-[2rem] p-6" aria-labelledby="matrix-h">
+        <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="matrix-h">
           <h3 id="matrix-h" className="label">All stages</h3>
           <table className="mt-2 w-full text-left text-sm">
             <caption className="sr-only">GRAP stages and AQI bands</caption>
@@ -78,7 +78,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           </table>
         </section>
 
-        <section className="glass rounded-[2rem] p-6" aria-labelledby="veh-h">
+        <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="veh-h">
           <h3 id="veh-h" className="label">Vehicle check</h3>
           <label className="mt-2 block text-sm font-semibold">
             Your vehicle
@@ -96,7 +96,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
       </div>
 
       <div className="space-y-6">
-        <section className="glass rounded-[2rem] p-6" aria-labelledby="rwa-h">
+        <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="rwa-h">
           <h3 id="rwa-h" className="label">Night-guard heater calculator</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-semibold">
@@ -118,7 +118,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           </p>
         </section>
 
-        <section className="glass rounded-[2rem] p-6" aria-labelledby="adv-h">
+        <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="adv-h">
           <h3 id="adv-h" className="label">WhatsApp advisory (English + हिन्दी)</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <div>

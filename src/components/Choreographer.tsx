@@ -108,7 +108,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
           </div>
         </div>
 
-        <aside className="glass lift relative w-full max-w-[390px] overflow-hidden rounded-[44px] p-8" aria-labelledby="delta-h">
+        <aside className="glass liquid lift relative w-full max-w-[390px] overflow-hidden rounded-[44px] p-8" aria-labelledby="delta-h">
           <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#ffdbce] opacity-50 blur-2xl" aria-hidden="true" />
           <div className="relative flex items-center justify-between">
             <h3 id="delta-h" className="label m-0 flex items-center gap-2"><Icon name="wb_twilight" className="accent" /> Daily Sanctuary Delta</h3>
@@ -139,7 +139,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
         </aside>
       </section>
 
-      <section className="glass rounded-[32px] p-6" aria-labelledby="ribbon-h">
+      <section className="glass liquid rounded-[32px] p-6" aria-labelledby="ribbon-h">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 id="ribbon-h" className="label m-0 flex items-center gap-2"><Icon name="waves" className="accent" /> {scenario.name} diurnal dispersion forecast</h3>
           <p className="label m-0 flex items-center gap-2">
@@ -201,7 +201,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
         </div>
       </section>
 
-      <details className="glass rounded-[32px] p-5" open>
+      <details className="glass liquid rounded-[32px] p-5" open>
         <summary className="label min-h-11 cursor-pointer py-2">Your household</summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block text-sm font-semibold">

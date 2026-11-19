@@ -12,7 +12,9 @@ import { Header } from "./Header";
 import { ImpactBar } from "./ImpactBar";
 import { IndoorLab } from "./IndoorLab";
 import { ReceiptDialog } from "./ReceiptDialog";
+import { LiquidFilter } from "./LiquidFilter";
 import { WindLayer } from "./WindLayer";
+import { useLiquidGlass } from "@/hooks/useLiquidGlass";
 
 type Tab = "choreographer" | "lab" | "community";
 const TABS: Array<{ id: Tab; label: string; icon: string }> = [
@@ -25,6 +27,7 @@ const istHour = () =>
   Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hourCycle: "h23", timeZone: "Asia/Kolkata" }).format(new Date()));
 
 export function App() {
+  useLiquidGlass();
   const { profile, interventions, patchProfile, patchInterventions } = useHousehold();
   const [scenario, setScenario] = useState<AirScenario>(DEFAULT_SCENARIO);
   const [tab, setTab] = useState<Tab>("choreographer");
@@ -112,6 +115,7 @@ export function App() {
   return (
     <>
       <a href="#main" className="skip-link">Skip to content</a>
+      <LiquidFilter />
       <div className="sky" aria-hidden="true">
         <div className="sun-orb" />
         <div className="dust" />

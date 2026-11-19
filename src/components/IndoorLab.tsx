@@ -139,7 +139,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
             </p>
           </div>
 
-          <section className="glass rounded-[2rem] p-6" aria-labelledby="env-h">
+          <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="env-h">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 id="env-h" className="serif m-0 flex items-center gap-2 text-xl font-medium"><Icon name="crop_square" /> Room envelope</h3>
               <p className="chip m-0 rounded-full px-3 py-1 text-xs font-bold">{profile.roomAreaSqFt} sq ft · {profile.ceilingHeightFt} ft ceiling</p>
@@ -201,7 +201,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
               const f = FILTERS[o.id];
               const selected = interventions.filtrationMode === o.id;
               return (
-                <li key={o.id} className={`glass lift rounded-[2.2rem] p-6 ${selected ? "ring-2 ring-[#c25a32]" : ""}`}>
+                <li key={o.id} className={`glass liquid lift rounded-[2.2rem] p-6 ${selected ? "ring-2 ring-[#c25a32]" : ""}`}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="m-0 flex flex-wrap items-center gap-2">
@@ -238,7 +238,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
             describedBy="t-epdm"
           />
 
-          <aside className="glass rounded-[2rem] p-5 text-sm" aria-labelledby="tips-h">
+          <aside className="glass liquid rounded-[2rem] p-5 text-sm" aria-labelledby="tips-h">
             <h4 id="tips-h" className="label m-0">Sleep and safety</h4>
             <p className="mt-2">{noiseTip}</p>
             <ul className="m-0 list-disc pl-5">
@@ -257,7 +257,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
           ["Filter air changes", ach.toFixed(1), "per hour", active ? "From the selected option" : "Select an option above"],
           ["Target CADR", `${receipt.requiredCadrM3h}`, "m³/h", "5 air changes per hour"],
         ].map(([k, v, u, n]) => (
-          <div key={k} className="glass lift rounded-[2rem] p-5">
+          <div key={k} className="glass liquid lift rounded-[2rem] p-5">
             <dt className="label">{k}</dt>
             <dd className="m-0 mt-2">
               <span className="serif num text-4xl">{v}</span> <span className="ink-soft text-xs">{u}</span>

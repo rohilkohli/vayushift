@@ -224,3 +224,45 @@ dialog[open]::backdrop { animation: fade var(--dur-base) ease-out; }
 }
 .wind-streak { opacity: 0; animation: wind-drift linear infinite; will-change: transform, opacity; }
 @media (prefers-reduced-motion: reduce) { .wind { display: none; } }
+
+/* ---- Liquid glass (cards) --------------------------------------------------
+   Specular rim (bright top-left, soft bottom-right), inner glow, a highlight that follows the
+   pointer, and optional refraction (Chromium only, switched on by html[data-liquid]). */
+@property --spec-a { syntax: "<number>"; inherits: false; initial-value: 0; }
+:root {
+  --rim-hi: rgba(255, 255, 255, 0.95);
+  --rim-lo: rgba(255, 255, 255, 0.42);
+  --rim-glow: rgba(255, 255, 255, 0.24);
+  --spec-max: 0.42;
+}
+:root[data-sky="night"] {
+  --rim-hi: rgba(255, 255, 255, 0.38);
+  --rim-lo: rgba(255, 255, 255, 0.14);
+  --rim-glow: rgba(255, 255, 255, 0.06);
+  --spec-max: 0.13;
+}
+.liquid {
+  background:
+    radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, var(--spec-a)), rgba(255, 255, 255, 0) 65%),
+    linear-gradient(180deg, var(--sheen) 0%, rgba(255, 255, 255, 0) 38%),
+    var(--glass);
+  box-shadow:
+    var(--shadow),
+    0 0 0 1px var(--edge),
+    inset 1.5px 1.5px 0 var(--rim-hi),
+    inset -1px -1px 0 var(--rim-lo),
+    inset 0 0 26px var(--rim-glow);
+  transition: --spec-a 350ms ease-out, transform var(--dur-base, 280ms) var(--ease-out, ease-out), box-shadow var(--dur-base, 280ms) var(--ease-out, ease-out);
+}
+.liquid:hover { --spec-a: var(--spec-max); }
+.liquid.lift:hover {
+  box-shadow: var(--shadow-lift), 0 0 0 1px var(--edge), inset 1.5px 1.5px 0 var(--rim-hi), inset -1px -1px 0 var(--rim-lo), inset 0 0 26px var(--rim-glow);
+}
+html[data-liquid] .liquid {
+  backdrop-filter: url(#liquid) blur(10px) saturate(170%);
+}
+/* Respect users who ask for less transparency: solid cards, no refraction, no grain. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .liquid { background: var(--solid); backdrop-filter: none !important; -webkit-backdrop-filter: none; }
+  .sky::after { display: none; }
+}
