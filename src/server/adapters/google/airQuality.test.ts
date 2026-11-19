@@ -50,6 +50,23 @@ describe("GoogleAirQualityProvider", () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
+  it("asks for the next 24 hours using the `period` field, which is the shape Google's API accepts", async () => {
+    // Verified against the live API: top-level startTime/endTime are rejected with HTTP 400 ("Cannot find field").
+    const fetchImpl = ok(body(24));
+    const before = Date.now();
+    await new GoogleAirQualityProvider("k", fetchImpl as unknown as typeof fetch).fetchScenario(28.615, 77.21);
+    const sent = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    expect(sent).not.toHaveProperty("startTime");
+    expect(sent).not.toHaveProperty("endTime");
+    const start = Date.parse(sent.period.startTime);
+    const end = Date.parse(sent.period.endTime);
+    expect(start).toBeGreaterThan(before); // a forecast never starts in the past
+    expect(start % 3_600_000).toBe(0); // on a whole hour
+    expect(end - start).toBe(24 * 3_600_000);
+    expect(sent.pageSize).toBe(24);
+    expect(sent.extraComputations).toEqual(["POLLUTANT_CONCENTRATION"]);
+  });
+
   it("returns a live scenario for the queried point", async () => {
     const s = await new GoogleAirQualityProvider("k", ok(body(24)) as unknown as typeof fetch).fetchScenario(28.615, 77.21);
     expect(s).toMatchObject({ id: "live", source: "live", lat: 28.615, lng: 77.21 });

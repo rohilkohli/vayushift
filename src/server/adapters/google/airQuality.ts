@@ -49,16 +49,18 @@ export class GoogleAirQualityProvider implements AirQualityProvider {
   ) {}
 
   async fetchScenario(lat: number, lng: number): Promise<AirScenario> {
+    // The next whole hour onward: the API forecasts the future, and a period must not start in the past.
     const start = new Date();
     start.setMinutes(0, 0, 0);
+    start.setTime(start.getTime() + 3600 * 1000);
     const end = new Date(start.getTime() + 24 * 3600 * 1000);
     const res = await this.fetchImpl(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Goog-Api-Key": this.apiKey },
       body: JSON.stringify({
         location: { latitude: lat, longitude: lng },
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
+        // startTime / endTime are NOT top-level fields: they live inside `period` (Google answers 400 otherwise).
+        period: { startTime: start.toISOString(), endTime: end.toISOString() },
         extraComputations: ["POLLUTANT_CONCENTRATION"],
         pageSize: 24,
       }),
