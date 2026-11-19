@@ -14,6 +14,7 @@
   --good: #0a6b63;
   --hero-ink: #ffffff;
   --hero-soft: #e6edf6;
+  --wind: #ffffff;
   --page-ink: #0b2540;
   --shadow: 0 24px 48px -12px rgba(27, 59, 90, 0.18);
 }
@@ -23,6 +24,7 @@
   --ink: #f7eee3;
   --ink-soft: #cdd7e4;
   --accent: #ffb59a;
+  --wind: #cdd7e4;
   --glass: rgba(16, 32, 54, 0.78);
   --glass-weak: rgba(255, 255, 255, 0.08);
   --chip: rgba(255, 255, 255, 0.14);
@@ -171,3 +173,14 @@ dialog.glass { background: var(--solid); }
 
 dialog[open] { animation: dialog-in var(--dur-base) var(--ease-out); }
 dialog[open]::backdrop { animation: fade var(--dur-base) ease-out; }
+
+/* Wind: streaks drift left to right and fade in and out. Transform and opacity only. */
+@keyframes wind-drift {
+  0% { transform: translate3d(-30vw, 0, 0); opacity: 0; }
+  12% { opacity: var(--o); }
+  50% { transform: translate3d(50vw, -8px, 0); }
+  88% { opacity: var(--o); }
+  100% { transform: translate3d(115vw, 6px, 0); opacity: 0; }
+}
+.wind-streak { opacity: 0; animation: wind-drift linear infinite; will-change: transform, opacity; }
+@media (prefers-reduced-motion: reduce) { .wind { display: none; } }

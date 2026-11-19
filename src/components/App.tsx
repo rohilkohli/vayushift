@@ -12,6 +12,7 @@ import { Header } from "./Header";
 import { ImpactBar } from "./ImpactBar";
 import { IndoorLab } from "./IndoorLab";
 import { ReceiptDialog } from "./ReceiptDialog";
+import { WindLayer } from "./WindLayer";
 
 type Tab = "choreographer" | "lab" | "community";
 const TABS: Array<{ id: Tab; label: string; icon: string }> = [
@@ -114,6 +115,7 @@ export function App() {
       <div className="sky" aria-hidden="true">
         <div className="sun-orb" />
         <div className="dust" />
+        <WindLayer />
       </div>
 
       <Header
