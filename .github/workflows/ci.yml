@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Type-check, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  firestore-contract:
+    name: Storage contract on the Firestore emulator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: cloud-firestore-emulator
+      - run: npm ci
+      - name: Start the Firestore emulator
+        run: |
+          gcloud emulators firestore start --host-port=127.0.0.1:8080 > emulator.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080 > /dev/null; then echo "emulator ready"; exit 0; fi
+            sleep 1
+          done
+          cat emulator.log
+          echo "emulator did not start"; exit 1
+      - name: Run the storage contract against Firestore
+        env:
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
+        run: npx vitest run src/server/adapters/storage.contract.test.ts
+
+  container:
+    name: Build and smoke-test the container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t vayushift:ci .
+      - name: Run it and call the health endpoints
+        run: |
+          docker run -d --name vayushift -p 8080:8080 vayushift:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8080/api/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8080/api/healthz
+          curl -sf http://127.0.0.1:8080/api/readyz
+          docker logs vayushift
+      - name: A bad configuration must stop the container
+        run: |
+          set +e
+          docker run --rm -e STORAGE_BACKEND=firestore vayushift:ci
+          code=$?
+          echo "exit code: $code"
+          test "$code" -ne 0

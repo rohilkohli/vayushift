@@ -1,0 +1,69 @@
+name: Deploy to Cloud Run
+
+# Manual, or on a version tag (v1.0.0). Needs the one-time setup in infra/setup.sh and these repository
+# variables: GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_DEPLOY_SERVICE_ACCOUNT,
+# GCP_RUNTIME_SERVICE_ACCOUNT, PUBLIC_ORIGIN. No keys are stored in GitHub: authentication uses Workload Identity Federation.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write # lets the job exchange its GitHub identity for short-lived Google credentials
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: vayushift
+          region: ${{ vars.GCP_REGION }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          source: .
+          env_vars: |
+            STORAGE_BACKEND=firestore
+            GOOGLE_CLOUD_PROJECT=${{ vars.GCP_PROJECT_ID }}
+            PUBLIC_ORIGIN=${{ vars.PUBLIC_ORIGIN }}
+            TRUSTED_PROXY_HOPS=1
+            LOG_LEVEL=info
+          secrets: |
+            GEMINI_API_KEY=gemini-api-key:latest
+            GOOGLE_MAPS_API_KEY=maps-api-key:latest
+          flags: >-
+            --service-account=${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}
+            --allow-unauthenticated
+            --min-instances=0
+            --max-instances=10
+            --concurrency=80
+            --cpu=1
+            --memory=512Mi
+            --timeout=30s
+            --cpu-throttling
+
+      - name: Smoke test the new revision
+        run: |
+          curl --fail --retry 5 --retry-delay 3 "${{ steps.deploy.outputs.url }}/api/healthz"
+          curl --fail --retry 5 --retry-delay 3 "${{ steps.deploy.outputs.url }}/api/readyz"

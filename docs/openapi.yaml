@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: VayuShift API
+  version: 1.0.0
+  description: |
+    The server side of VayuShift. Every response carries `X-Request-Id`. Every error uses the same envelope.
+    Cost-bearing endpoints refuse requests that a browser marks as cross-site, and all endpoints are rate limited
+    per client (`429` with `Retry-After`). Nothing here requires an account.
+servers:
+  - url: https://{host}
+    variables:
+      host:
+        default: localhost:3000
+paths:
+  /api/air-quality:
+    get:
+      summary: Hourly PM2.5 forecast for a location
+      description: |
+        Cached by ~550 m grid cell and shared across users; falls back to a recent cached forecast and then to a
+        demo curve if the upstream fails, is unconfigured, or the daily budget is spent.
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number, minimum: -90, maximum: 90 } }
+        - { name: lng, in: query, required: true, schema: { type: number, minimum: -180, maximum: 180 } }
+      responses:
+        "200":
+          description: A scenario (live or demo)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [scenario, mode]
+                properties:
+                  scenario: { $ref: "#/components/schemas/AirScenario" }
+                  mode: { type: string, enum: [live, demo] }
+                  reason: { type: string, enum: [no_api_key, budget_exhausted, upstream_unavailable] }
+        "400": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /api/analyze-room:
+    post:
+      summary: Describe a room from a photo
+      description: |
+        Stateless. The image is processed in memory and never stored or logged. When the model is unavailable,
+        over budget, or the image is not a room, the response is a `fallback` and the client uses manual input.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mimeType, data]
+              properties:
+                mimeType: { type: string, enum: [image/jpeg, image/png, image/webp] }
+                data: { type: string, format: byte, description: "Base64, at most 5 MB decoded. Checked by file signature." }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    required: [scan]
+                    properties: { scan: { $ref: "#/components/schemas/RoomScan" } }
+                  - type: object
+                    required: [fallback, reason]
+                    properties:
+                      fallback: { type: boolean, enum: [true] }
+                      reason: { type: string, enum: [ai_unavailable, not_a_room, budget_exhausted] }
+        "400": { $ref: "#/components/responses/Error" }
+        "413": { $ref: "#/components/responses/Error" }
+        "415": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /api/explain:
+    post:
+      summary: Plain-language explanation of a receipt
+      description: The client sends inputs, never numbers. The server computes the receipt and rejects any model text containing a number the engine did not produce.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReceiptInputs" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [text, source]
+                properties:
+                  text: { type: string }
+                  source: { type: string, enum: [gemini, template] }
+        "400": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /api/receipts:
+    post:
+      summary: Create a shareable receipt link
+      description: Stores inputs and the server-computed receipt behind an unguessable id. Contains no personal data. Valid for 90 days by default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: "#/components/schemas/ReceiptInputs" }
+                - type: object
+                  required: [scenarioName]
+                  properties:
+                    scenarioName: { type: string, maxLength: 40, pattern: "^[\\p{L}\\p{N} .'-]{1,40}$", example: Anand Vihar }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, url, expiresAt]
+                properties:
+                  id: { type: string, pattern: "^[0-9A-Za-z]{10}$" }
+                  url: { type: string, format: uri }
+                  expiresAt: { type: integer, description: "Epoch milliseconds" }
+        "400": { $ref: "#/components/responses/Error" }
+        "413": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
+  /api/receipts/{id}:
+    get:
+      summary: Fetch a stored receipt
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, pattern: "^[0-9A-Za-z]{10}$" } }
+      responses:
+        "200":
+          description: "Immutable until it expires (Cache-Control: public, max-age=300)"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoredReceipt" }
+        "404": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
+  /api/events:
+    post:
+      summary: Anonymous product analytics
+      description: |
+        Only the five PRD events are accepted, each with a closed set of values. Only daily counters are stored.
+        Requests carrying `Sec-GPC: 1` or `DNT: 1` are acknowledged and not counted. A storage failure still
+        returns 204.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event]
+              properties:
+                event:
+                  type: string
+                  enum: [scenario_loaded, routine_shift_toggled, room_scan_completed, filtration_option_selected, impact_receipt_shared]
+                props: { type: object, additionalProperties: true }
+            examples:
+              toggle:
+                value: { event: routine_shift_toggled, props: { intervention_key: purgeAtTrough, enabled: true } }
+      responses:
+        "204": { description: Accepted (or ignored for an opted-out visitor) }
+        "400": { $ref: "#/components/responses/Error" }
+        "415": { $ref: "#/components/responses/Error" }
+  /api/healthz:
+    get:
+      summary: Liveness
+      description: The process is up. Touches no dependency.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [ok] }
+                  service: { type: string }
+                  revision: { type: string }
+                  uptimeSec: { type: integer }
+  /api/readyz:
+    get:
+      summary: Readiness
+      description: Pings storage and reports which optional upstreams are configured (booleans only).
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Readiness" }
+        "503":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Readiness" }
+components:
+  responses:
+    Error:
+      description: Uniform error envelope
+      headers:
+        Retry-After: { schema: { type: integer }, description: "Present on 429" }
+        X-Request-Id: { schema: { type: string } }
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error]
+            properties:
+              error:
+                type: object
+                required: [code, message, requestId]
+                properties:
+                  code: { type: string, example: invalid_coordinates }
+                  message: { type: string }
+                  requestId: { type: string }
+  schemas:
+    Readiness:
+      type: object
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        storage: { type: string, enum: [memory, firestore] }
+        checks: { type: object, additionalProperties: { type: string, enum: [ok, fail, skipped] } }
+        upstreams:
+          type: object
+          properties:
+            airQuality: { type: boolean }
+            gemini: { type: boolean }
+    AirScenario:
+      type: object
+      required: [id, name, hourly, source]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        area: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        source: { type: string, enum: [preset, live] }
+        hourly:
+          type: array
+          minItems: 24
+          maxItems: 24
+          items:
+            type: object
+            properties:
+              hour: { type: integer, minimum: 0, maximum: 23 }
+              pm25: { type: number, description: "µg/m³" }
+    RoomScan:
+      type: object
+      properties:
+        isIndoorRoom: { type: boolean }
+        roomCategory: { type: string }
+        estimatedAreaSqFt: { type: number }
+        estimatedCeilingHeightFt: { type: number }
+        windowType: { type: string }
+        cookingApplianceDetected: { type: string }
+        exhaustTypeDetected: { type: string }
+        infiltrationRiskNotes: { type: array, items: { type: string } }
+        recommendedPlacementSpot: { type: string }
+    ReceiptInputs:
+      type: object
+      required: [hourly, profile, interventions]
+      properties:
+        hourly: { type: array, minItems: 24, maxItems: 24, items: { type: number, minimum: 0, maximum: 2000 } }
+        profile:
+          type: object
+          required: [memberCount, commuterCount, walkerCount, roomAreaSqFt, ceilingHeightFt, windowType, sleepNoiseSensitivity, commuteKmRoundTrip, baselineCommuteMode, baselineCookingFuel]
+          properties:
+            memberCount: { type: integer, minimum: 1, maximum: 15 }
+            commuterCount: { type: integer, minimum: 0, maximum: 15 }
+            walkerCount: { type: integer, minimum: 0, maximum: 15 }
+            hasVulnerableMembers: { type: boolean }
+            roomAreaSqFt: { type: number, minimum: 40, maximum: 800 }
+            ceilingHeightFt: { type: number, minimum: 7, maximum: 14 }
+            windowType: { type: string, enum: [sliding_aluminum_unsealed, casement_wood_unsealed, upvc_sealed] }
+            sleepNoiseSensitivity: { type: string, enum: [low, medium, high] }
+            commuteKmRoundTrip: { type: number, minimum: 0, maximum: 200 }
+            baselineCommuteMode: { type: string, enum: [private_petrol_car, private_diesel_car, auto_rickshaw, two_wheeler] }
+            baselineCookingFuel: { type: string, enum: [lpg_unvented, lpg_chimney, electric_induction] }
+        interventions:
+          type: object
+          required: [filtrationMode]
+          properties:
+            shiftWalkToTrough: { type: boolean }
+            purgeAtTrough: { type: boolean }
+            sealWindowsWithEpdm: { type: boolean }
+            filtrationMode: { type: string, enum: [none, single_merv13_fan, quad_merv13_cr_box, commercial_h13_hepa] }
+            switchToInduction: { type: boolean }
+            switchCommuteToMetroN95: { type: boolean }
+    StoredReceipt:
+      type: object
+      properties:
+        id: { type: string }
+        createdAt: { type: integer }
+        expiresAt: { type: integer }
+        engineVersion: { type: string }
+        scenarioName: { type: string }
+        hourly: { type: array, items: { type: number } }
+        profile: { type: object }
+        interventions: { type: object }
+        receipt:
+          type: object
+          description: Computed by the server; never supplied by a client.
+          properties:
+            avoidedCigarettesPerPersonDay: { type: number }
+            avoidedCigarettesHouseholdDay: { type: number }
+            avoidedCigarettesSeason90Days: { type: number }
+            avoidedPm25MicrogramsDay: { type: number }
+            savedCo2GramsDay: { type: number }
+            baselineIndoorPm25: { type: number }
+            managedIndoorPm25: { type: number }
+            indoorReductionPct: { type: number }
