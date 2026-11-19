@@ -38,16 +38,17 @@
   --moon-x: 20; --moon-y: 60; --moon-o: 0;
   --stars-o: 0; --day-o: 1; --wind-speed: 1;
   --dur-sky: 1100ms; --ease-sky: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-theme: 1600ms; /* the one-time day/night flip of text, glass and chips: slow enough to read as dusk */
   --sky: linear-gradient(178deg, var(--s0) 0%, var(--s1) 34%, var(--s2) 66%, var(--s3) 82%, var(--s4) 90%, var(--s5) 96%, var(--s6) 100%);
   transition:
     --s0 var(--dur-sky) var(--ease-sky), --s1 var(--dur-sky) var(--ease-sky), --s2 var(--dur-sky) var(--ease-sky),
     --s3 var(--dur-sky) var(--ease-sky), --s4 var(--dur-sky) var(--ease-sky), --s5 var(--dur-sky) var(--ease-sky),
     --s6 var(--dur-sky) var(--ease-sky), --orb var(--dur-sky) var(--ease-sky), --cloud var(--dur-sky) var(--ease-sky),
-    --ink var(--dur-sky) var(--ease-sky), --ink-soft var(--dur-sky) var(--ease-sky), --accent var(--dur-sky) var(--ease-sky),
-    --glass var(--dur-sky) var(--ease-sky), --glass-weak var(--dur-sky) var(--ease-sky), --chip var(--dur-sky) var(--ease-sky),
-    --sel-bg var(--dur-sky) var(--ease-sky), --sel-fg var(--dur-sky) var(--ease-sky), --good var(--dur-sky) var(--ease-sky),
-    --wind var(--dur-sky) var(--ease-sky), --page-ink var(--dur-sky) var(--ease-sky), --sheen var(--dur-sky) var(--ease-sky),
-    --hairline var(--dur-sky) var(--ease-sky), --edge var(--dur-sky) var(--ease-sky), --solid var(--dur-sky) var(--ease-sky);
+    --ink var(--dur-theme) var(--ease-sky), --ink-soft var(--dur-theme) var(--ease-sky), --accent var(--dur-theme) var(--ease-sky),
+    --glass var(--dur-theme) var(--ease-sky), --glass-weak var(--dur-theme) var(--ease-sky), --chip var(--dur-theme) var(--ease-sky),
+    --sel-bg var(--dur-theme) var(--ease-sky), --sel-fg var(--dur-theme) var(--ease-sky), --good var(--dur-theme) var(--ease-sky),
+    --wind var(--dur-theme) var(--ease-sky), --page-ink var(--dur-theme) var(--ease-sky), --sheen var(--dur-theme) var(--ease-sky),
+    --hairline var(--dur-theme) var(--ease-sky), --edge var(--dur-theme) var(--ease-sky), --solid var(--dur-theme) var(--ease-sky);
   --ink: #0b2540;
   --ink-soft: #3a4d63;
   --accent: #76391f;
@@ -67,10 +68,10 @@
   --hairline: rgba(255, 255, 255, 0.75);
   --edge: rgba(11, 37, 64, 0.08);
 }
-/* While "Play 24h sky" runs, ease linearly over one step so the sky glides instead of pulsing. */
-html[data-playing] { --dur-sky: 650ms; --ease-sky: linear; }
+/* useLivingSky animates the hour itself every frame, so scene values must not also ease in CSS. */
+html[data-raf] { --dur-sky: 0ms; }
 /* No animation on the very first paint. */
-html[data-boot] { --dur-sky: 0ms; }
+html[data-boot] { --dur-sky: 0ms; --dur-theme: 0ms; }
 
 :root[data-sky="night"] {
   --s0: #0a1422; --s1: #12233a; --s2: #1b3050; --s3: #2d3552; --s4: #4a3b53; --s5: #5a4350; --s6: #5a4350;
