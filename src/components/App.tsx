@@ -17,10 +17,10 @@ import { WindLayer } from "./WindLayer";
 import { useLiquidGlass } from "@/hooks/useLiquidGlass";
 
 type Tab = "choreographer" | "lab" | "community";
-const TABS: Array<{ id: Tab; label: string; icon: string }> = [
-  { id: "choreographer", label: "Living Sky", icon: "cloud" },
-  { id: "lab", label: "Room Sanctuary", icon: "meeting_room" },
-  { id: "community", label: "Community", icon: "groups" },
+const TABS: Array<{ id: Tab; label: string; short: string; icon: string }> = [
+  { id: "choreographer", label: "Living Sky", short: "Sky", icon: "cloud" },
+  { id: "lab", label: "Room Sanctuary", short: "Sanctuary", icon: "meeting_room" },
+  { id: "community", label: "Community", short: "Community", icon: "groups" },
 ];
 
 const istHour = () =>
@@ -138,8 +138,15 @@ export function App() {
       />
 
       <main id="main" className="relative z-10 mx-auto max-w-[1440px] px-5 pb-32 pt-32 lg:px-8 lg:pb-16 lg:pt-28">
-        <div className="mb-6 flex flex-wrap items-center gap-2 text-xs font-bold">
-          <span className="glass rounded-full px-4 py-2">Now · AQI {currentAqi} · PM2.5 {currentPm} µg/m³</span>
+        <div role="region" aria-label="Air quality status" tabIndex={0} className="no-scrollbar fade-x -mx-5 mb-6 flex items-center gap-2 overflow-x-auto px-5 pb-1 text-xs font-bold lg:mx-0 lg:flex-wrap lg:px-0 [&>*]:shrink-0 [&>*]:whitespace-nowrap">
+          {loadingLive ? (
+            <span className="glass rounded-full px-4 py-2" aria-busy="true">
+              <span className="skeleton inline-block w-40 align-middle" aria-hidden="true" />
+              <span className="sr-only">Loading air quality for your location</span>
+            </span>
+          ) : (
+            <span className="glass rounded-full px-4 py-2">Now · AQI {currentAqi} · PM2.5 {currentPm} µg/m³</span>
+          )}
           <span className="glass rounded-full px-4 py-2">
             {stage === "NONE" ? "GRAP: not active" : `GRAP Stage ${GRAP_INFO[stage].roman} · ${GRAP_INFO[stage].category}`}
           </span>

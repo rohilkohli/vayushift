@@ -5,6 +5,8 @@ import { Icon } from "./Icon";
 export interface TabDef {
   id: string;
   label: string;
+  /** Shorter label for the phone bottom bar so it never wraps. */
+  short: string;
   icon: string;
 }
 
@@ -33,7 +35,7 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
   return (
     <header className="fixed inset-x-0 top-0 z-50 pointer-events-none">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-5 pt-3 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:pt-5">
-        <div className="pointer-events-auto glass flex max-w-full items-center gap-2 self-start rounded-full py-1.5 pl-4 pr-1.5">
+        <div className="pointer-events-auto glass flex w-full min-w-0 items-center gap-2 self-start rounded-full py-1.5 pl-4 pr-1.5 lg:w-auto">
           <span className="flex items-center gap-2 pr-1">
             <span className="relative flex h-2 w-2" aria-hidden="true">
               <span className="absolute inline-flex h-full w-full ping-soft rounded-full bg-[#ffb59a] opacity-75" />
@@ -45,7 +47,7 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
           <span className="hidden h-4 w-px bg-current opacity-20 sm:block" aria-hidden="true" />
           <fieldset className="m-0 min-w-0 border-0 p-0">
             <legend className="sr-only">Choose a scenario</legend>
-            <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">
+            <div className="no-scrollbar fade-x flex snap-x items-center gap-1 overflow-x-auto pr-4">
               {presets.map((p) => (
                 <button
                   key={p.id}
@@ -89,7 +91,9 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
               style={{ background: tab === t.id ? undefined : "transparent" }}
             >
               <Icon name={t.icon} className="lg:hidden" />
-              {t.label}
+              <span aria-hidden="true" className="lg:hidden">{t.short}</span>
+              <span aria-hidden="true" className="hidden lg:inline">{t.label}</span>
+              <span className="sr-only">{t.label}</span>
             </button>
           ))}
         </div>

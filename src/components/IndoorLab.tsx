@@ -147,11 +147,13 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
             <label className="mt-4 block text-sm font-semibold">
               Floor area: {profile.roomAreaSqFt} sq ft
               <input type="range" min={60} max={500} step={10} value={profile.roomAreaSqFt}
+                style={{ "--p": `${((profile.roomAreaSqFt - 60) / (500 - 60)) * 100}%` } as React.CSSProperties}
                 onChange={(e) => onProfile({ roomAreaSqFt: Number(e.target.value) })} className="mt-1 block h-11 w-full" />
             </label>
             <label className="block text-sm font-semibold">
               Ceiling height: {profile.ceilingHeightFt} ft
               <input type="range" min={8} max={12} step={0.5} value={profile.ceilingHeightFt}
+                style={{ "--p": `${((profile.ceilingHeightFt - 8) / (12 - 8)) * 100}%` } as React.CSSProperties}
                 onChange={(e) => onProfile({ ceilingHeightFt: Number(e.target.value) })} className="block h-11 w-full" />
             </label>
             <div className="mt-2 flex flex-wrap gap-2">

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { templateExplanation } from "@/lib/explain";
 import { SOURCES } from "@/lib/sources";
+import { Icon } from "./Icon";
 import type { ActiveInterventions, AirScenario, DirectImpactReceipt, HouseholdProfile } from "@/lib/types";
 
 interface Props {
@@ -57,6 +58,8 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
     `My VayuShift receipt (${scenario.name}): ${receipt.avoidedCigarettesHouseholdDay} cigarette-equivalents of PM2.5 avoided ` +
     `and ${receipt.savedCo2GramsDay} g CO2 saved today. Estimates, not medical advice.`;
 
+  const empty = receipt.avoidedCigarettesHouseholdDay <= 0 && receipt.savedCo2GramsDay <= 0;
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(shareText);
@@ -81,6 +84,17 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
           </button>
         </div>
 
+        {empty ? (
+          <div className="chip mt-5 rounded-3xl p-6 text-center">
+            <Icon name="wb_twilight" className="accent !text-4xl" />
+            <p className="serif m-0 mt-2 text-2xl">Nothing switched on yet</p>
+            <p className="ink-soft mx-auto mb-4 mt-1 max-w-sm text-sm">
+              Turn on a routine shift, add a sealed window or choose a filter, and your receipt fills in with what each choice saves.
+            </p>
+            <button type="button" onClick={onClose} className="btn-primary">Back to routines</button>
+          </div>
+        ) : (
+        <>
         <dl className="mt-4 grid grid-cols-2 gap-3">
           {[
             ["Per person, per day", `${receipt.avoidedCigarettesPerPersonDay} cig-eq`],
@@ -109,10 +123,21 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
         </table>
 
         <h3 className="label mt-5">Why your choices mattered</h3>
-        <p aria-live="polite" className="mt-2">{loading ? "Writing your explanation…" : text}</p>
+        {loading ? (
+          <div className="mt-3 space-y-2" aria-busy="true">
+            <span className="skeleton w-full" aria-hidden="true" />
+            <span className="skeleton w-11/12" aria-hidden="true" />
+            <span className="skeleton w-2/3" aria-hidden="true" />
+            <span className="sr-only" role="status">Writing your explanation</span>
+          </div>
+        ) : (
+          <p aria-live="polite" className="mt-2">{text}</p>
+        )}
         <p className="text-xs ink-soft">
           {source === "gemini" ? "Explained by Gemini using only the numbers above." : "Template explanation using only the numbers above."}
         </p>
+        </>
+        )}
 
         <details className="mt-4">
           <summary className="min-h-11 cursor-pointer py-2 font-semibold underline">How is this calculated?</summary>
@@ -131,10 +156,12 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
           </ul>
         </details>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button type="button" onClick={copy} className="btn-primary">Copy receipt</button>
-          <p role="status" aria-live="polite" className="m-0 text-sm font-semibold">{toast}</p>
-        </div>
+        {!empty && (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button type="button" onClick={copy} className="btn-primary">Copy receipt</button>
+            <p role="status" aria-live="polite" className="m-0 text-sm font-semibold">{toast}</p>
+          </div>
+        )}
       </div>
     </dialog>
   );

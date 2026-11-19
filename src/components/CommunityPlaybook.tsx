@@ -18,6 +18,8 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
   const [guards, setGuards] = useState(4);
   const [vehicle, setVehicle] = useState<VehicleClass>("petrol_bs3");
   const [toast, setToast] = useState("");
+  const [copied, setCopied] = useState(false);
+  const currentIdx = STAGES.indexOf(stage);
 
   const info = GRAP_INFO[stage];
   const plan = useMemo(() => heaterPlan(flats, guards), [flats, guards]);
@@ -31,6 +33,8 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
     try {
       await navigator.clipboard.writeText(advisory.combined);
       setToast("Advisory copied. Paste it into your WhatsApp group.");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
     } catch {
       setToast("Copy failed. Select the text above and copy it manually.");
     }
@@ -63,13 +67,25 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
 
         <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="matrix-h">
           <h3 id="matrix-h" className="label">All stages</h3>
-          <table className="mt-2 w-full text-left text-sm">
+          <ol className="grap-meter mt-3" aria-label="Where today's air sits across GRAP stages">
+            {STAGES.map((s, i) => {
+              const state = i < currentIdx ? "reached" : i === currentIdx ? "current" : "ahead";
+              return (
+                <li key={s} data-state={state} aria-current={state === "current" ? "step" : undefined}>
+                  <strong className="serif">{GRAP_INFO[s].roman}</strong>
+                  <span>{GRAP_INFO[s].category}</span>
+                  <span className="sr-only">{state === "current" ? "current stage" : state === "reached" ? "already passed" : "not reached"}</span>
+                </li>
+              );
+            })}
+          </ol>
+          <table className="tbl mt-3">
             <caption className="sr-only">GRAP stages and AQI bands</caption>
-            <thead><tr><th scope="col" className="py-1">Stage</th><th scope="col">AQI band</th><th scope="col">Category</th></tr></thead>
+            <thead><tr><th scope="col">Stage</th><th scope="col">AQI band</th><th scope="col">Category</th></tr></thead>
             <tbody>
               {STAGES.map((s) => (
-                <tr key={s} className={s === stage ? "font-bold" : ""}>
-                  <th scope="row" className="py-1 font-inherit">{GRAP_INFO[s].roman}{s === stage ? " (current)" : ""}</th>
+                <tr key={s} aria-current={s === stage ? "true" : undefined}>
+                  <th scope="row">{GRAP_INFO[s].roman}{s === stage ? " (current)" : ""}</th>
                   <td>{GRAP_INFO[s].band}</td>
                   <td>{GRAP_INFO[s].category}</td>
                 </tr>
@@ -123,16 +139,16 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <div>
               <p className="label">English</p>
-              <pre lang="en" className="m-0 whitespace-pre-wrap chip rounded-2xl p-3 font-sans text-sm">{advisory.en}</pre>
+              <pre lang="en" className="bubble m-0 whitespace-pre-wrap chip p-4 font-sans text-sm">{advisory.en}</pre>
             </div>
             <div>
               <p className="label">हिन्दी</p>
-              <pre lang="hi" className="m-0 whitespace-pre-wrap chip rounded-2xl p-3 font-sans text-sm">{advisory.hi}</pre>
+              <pre lang="hi" className="bubble m-0 whitespace-pre-wrap chip p-4 font-sans text-sm">{advisory.hi}</pre>
             </div>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={copy} className="btn-primary">
-              Copy advisory
+              <span key={String(copied)} className={copied ? "pop" : ""}>{copied ? "✓ Copied" : "Copy advisory"}</span>
             </button>
             <a
               href={`https://wa.me/?text=${encodeURIComponent(advisory.combined)}`}
