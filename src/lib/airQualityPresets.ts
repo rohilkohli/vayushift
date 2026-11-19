@@ -35,3 +35,8 @@ export const PRESET_SCENARIOS: readonly AirScenario[] = [
 
 export const DEFAULT_SCENARIO = PRESET_SCENARIOS[0];
 
+/** Preset-shaped stand-in used when live data is unavailable. */
+export function demoFallbackFor(lat: number, lng: number, morningPeak = 190): AirScenario {
+  return { id: "fallback", name: "Your location", area: "Demo data", lat, lng, hourly: buildDiurnalCurve(morningPeak), source: "preset" };
+}
+

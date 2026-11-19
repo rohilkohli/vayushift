@@ -36,6 +36,9 @@ import type {
   VentilationWindow,
 } from "./types";
 
+/** Bump when the calculation changes, so stored receipts record which engine produced them. */
+export const ENGINE_VERSION = "1.0";
+
 export const NO_INTERVENTIONS: ActiveInterventions = {
   shiftWalkToTrough: false,
   purgeAtTrough: false,

@@ -1,41 +1,23 @@
-import { NextResponse } from "next/server";
-import { allowedNumbers, narrativeUsesOnlyAllowedNumbers, templateExplanation } from "@/lib/explain";
-import { explainWithGemini, geminiConfigured } from "@/lib/gemini";
-import { calculateHouseholdImpact } from "@/lib/impactEngine";
 import { parseHourly, parseInterventions, parseProfile } from "@/lib/requestSchemas";
-import { RateLimiter, clientKey } from "@/lib/validation";
+import { badRequest } from "@/server/errors";
+import { defineRoute, json, readJson } from "@/server/http/handler";
 
 export const runtime = "nodejs";
-const limiter = new RateLimiter(20, 60_000);
 
 /**
- * The client sends inputs, never numbers. The server recomputes the receipt,
- * asks Gemini to verbalise it, then rejects any text containing a number the
- * engine did not produce and falls back to a fixed template.
+ * POST /api/explain: the client sends inputs, never numbers. The server recomputes the receipt, has Gemini
+ * verbalise it, and rejects any text containing a number the engine did not produce.
  */
-export async function POST(req: Request) {
-  if (!limiter.allow(clientKey(req))) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
-  const hourly = parseHourly(body.hourly);
-  const profile = parseProfile(body.profile);
-  const interventions = parseInterventions(body.interventions);
-  if (!hourly || !profile || !interventions) return NextResponse.json({ error: "Invalid inputs." }, { status: 400 });
+export const POST = defineRoute(
+  { name: "explain", rateLimit: { limit: 20, windowMs: 60_000 }, sameOriginOnly: true },
+  async ({ req, services }) => {
+    const body = (await readJson(req, 32 * 1024)) as Record<string, unknown> | null;
+    const hourly = parseHourly(body?.hourly);
+    const profile = parseProfile(body?.profile);
+    const interventions = parseInterventions(body?.interventions);
+    if (!hourly || !profile || !interventions) throw badRequest("Invalid inputs.", "invalid_inputs");
 
-  const receipt = calculateHouseholdImpact(hourly, profile, interventions);
-  const fallback = { text: templateExplanation(receipt), source: "template" as const };
-  if (!geminiConfigured() || receipt.avoidedCigarettesHouseholdDay <= 0) return NextResponse.json(fallback);
-  try {
-    const text = await explainWithGemini(JSON.stringify(receipt));
-    if (text && text.length < 800 && narrativeUsesOnlyAllowedNumbers(text, allowedNumbers(receipt))) {
-      return NextResponse.json({ text, source: "gemini" });
-    }
-  } catch {
-    /* fall through to template */
-  }
-  return NextResponse.json(fallback);
-}
+    const { text, source } = await services.explain.explain({ hourly, profile, interventions });
+    return json({ text, source });
+  },
+);

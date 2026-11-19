@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { templateExplanation } from "@/lib/explain";
+import { createShareLink, track } from "@/lib/clientApi";
 import { SOURCES } from "@/lib/sources";
 import { Icon } from "./Icon";
 import type { ActiveInterventions, AirScenario, DirectImpactReceipt, HouseholdProfile } from "@/lib/types";
@@ -20,6 +21,7 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
   const [source, setSource] = useState<"gemini" | "template">("template");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     const d = ref.current;
@@ -64,8 +66,30 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
     try {
       await navigator.clipboard.writeText(shareText);
       setToast("Receipt copied.");
+      track({ event: "impact_receipt_shared", props: { share_type: "personal_receipt" } });
     } catch {
       setToast("Copy failed. Select the text and copy it manually.");
+    }
+  }
+
+  /** Freezes this receipt behind a short link (the server recomputes every number) and copies it. */
+  async function copyLink() {
+    setSharing(true);
+    setToast("");
+    try {
+      const link = await createShareLink({
+        scenarioName: scenario.name,
+        hourly: scenario.hourly.map((h) => h.pm25),
+        profile,
+        interventions,
+      });
+      await navigator.clipboard.writeText(link.url);
+      setToast("Share link copied. It stays valid for 90 days.");
+      track({ event: "impact_receipt_shared", props: { share_type: "link" } });
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : "Could not create a share link.");
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -159,6 +183,9 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
         {!empty && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button type="button" onClick={copy} className="btn-primary">Copy receipt</button>
+            <button type="button" onClick={copyLink} disabled={sharing} className="pill">
+              {sharing ? "Creating link…" : "Copy share link"}
+            </button>
             <p role="status" aria-live="polite" className="m-0 text-sm font-semibold">{toast}</p>
           </div>
         )}

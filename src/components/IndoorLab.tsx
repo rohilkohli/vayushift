@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { meanBetween } from "@/lib/airQuality";
 import { EPDM_COST_INR, FILTERS } from "@/lib/constants";
 import { compareFilters, fieldCadrM3h } from "@/lib/impactEngine";
+import { apiErrorMessage, track } from "@/lib/clientApi";
 import { downscaleToJpegBase64 } from "@/lib/imageResize";
 import { SAMPLE_ROOMS, type RoomScan } from "@/lib/roomScan";
 import type { ActiveInterventions, AirScenario, DirectImpactReceipt, FiltrationMode, HouseholdProfile, WindowType } from "@/lib/types";
@@ -36,7 +37,8 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
     [scenario, profile, interventions.sealWindowsWithEpdm],
   );
 
-  function applyScan(s: RoomScan, note: string) {
+  function applyScan(s: RoomScan, note: string, source: "upload" | "preset") {
+    track({ event: "room_scan_completed", props: { source } });
     setScan(s);
     onProfile({
       roomAreaSqFt: s.estimatedAreaSqFt,
@@ -68,12 +70,17 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mimeType: "image/jpeg", data }),
       });
-      const body = (await res.json()) as { scan?: RoomScan; fallback?: boolean; reason?: string; error?: string };
-      if (body.scan) applyScan(body.scan, "Room analysed. You can fine-tune the values below.");
+      if (!res.ok) {
+        setMessage(await apiErrorMessage(res, "Something went wrong. Use the manual sliders instead."));
+        return;
+      }
+      const body = (await res.json()) as { scan?: RoomScan; fallback?: boolean; reason?: string };
+      if (body.scan) applyScan(body.scan, "Room analysed. You can fine-tune the values below.", "upload");
       else if (body.reason === "not_a_room")
         setMessage("We couldn't detect an indoor room, so the manual sliders are in use. Pick a sample room or adjust the values.");
-      else if (body.fallback) setMessage("Photo analysis is unavailable right now. Use a sample room or the manual sliders.");
-      else setMessage(body.error ?? "Something went wrong. Use the manual sliders instead.");
+      else if (body.reason === "budget_exhausted")
+        setMessage("Photo analysis has reached today's limit. Use a sample room or the manual sliders.");
+      else setMessage("Photo analysis is unavailable right now. Use a sample room or the manual sliders.");
     } catch {
       setMessage("Could not read that photo. Use a sample room or the manual sliders.");
     } finally {
@@ -158,7 +165,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
             </label>
             <div className="mt-2 flex flex-wrap gap-2">
               {SAMPLE_ROOMS.map((r) => (
-                <button key={r.id} type="button" className="pill" aria-pressed={scan === r.scan} onClick={() => applyScan(r.scan, `Loaded sample: ${r.label}.`)}>
+                <button key={r.id} type="button" className="pill" aria-pressed={scan === r.scan} onClick={() => applyScan(r.scan, `Loaded sample: ${r.label}.`, "preset")}>
                   {r.label}
                 </button>
               ))}

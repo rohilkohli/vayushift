@@ -3,14 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "description": "Urban air quality choreographer and household impact assistant",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:emulator": "vitest run src/server/adapters/storage.contract.test.ts"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^9.4.1",
     "@google/genai": "^1.0.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
@@ -24,5 +29,8 @@
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.0",
     "vitest": "^3.0.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.23"
   }
 }

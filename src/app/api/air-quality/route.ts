@@ -1,27 +1,20 @@
-import { NextResponse } from "next/server";
-import { demoFallbackFor, fetchLiveScenario } from "@/lib/liveAirQuality";
-import { RateLimiter, clientKey, parseCoords } from "@/lib/validation";
+import { parseCoords } from "@/lib/validation";
+import { badRequest } from "@/server/errors";
+import { defineRoute, json } from "@/server/http/handler";
 
 export const runtime = "nodejs";
-const limiter = new RateLimiter(30, 60_000);
 
-export async function GET(req: Request) {
-  if (!limiter.allow(clientKey(req))) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
-  const url = new URL(req.url);
-  const coords = parseCoords(url.searchParams.get("lat"), url.searchParams.get("lng"));
-  if (!coords) return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
-
-  const key = process.env.GOOGLE_MAPS_API_KEY;
-  if (!key) {
-    return NextResponse.json({ scenario: demoFallbackFor(coords.lat, coords.lng), mode: "demo", reason: "no_api_key" });
-  }
-  try {
-    const scenario = await fetchLiveScenario(coords.lat, coords.lng, key);
-    return NextResponse.json({ scenario, mode: "live" }, { headers: { "Cache-Control": "private, max-age=300" } });
-  } catch {
-    // Never leak upstream error details (they can echo the request URL, including the key).
-    return NextResponse.json({ scenario: demoFallbackFor(coords.lat, coords.lng), mode: "demo", reason: "upstream_unavailable" });
-  }
-}
+/** GET /api/air-quality?lat&lng: an hourly forecast for the user's grid cell (cached, budgeted, with fallbacks). */
+export const GET = defineRoute(
+  { name: "air-quality", rateLimit: { limit: 30, windowMs: 60_000 }, sameOriginOnly: true },
+  async ({ req, services }) => {
+    const url = new URL(req.url);
+    const coords = parseCoords(url.searchParams.get("lat"), url.searchParams.get("lng"));
+    if (!coords) throw badRequest("Invalid coordinates.", "invalid_coordinates");
+    const result = await services.air.get(coords.lat, coords.lng);
+    return json(
+      { scenario: result.scenario, mode: result.mode, reason: result.reason },
+      { headers: result.mode === "live" ? { "Cache-Control": "private, max-age=300" } : undefined },
+    );
+  },
+);

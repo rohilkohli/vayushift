@@ -10,12 +10,17 @@ const csp = [
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
+  "object-src 'none'",
 ].join("; ");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // A self-contained server (.next/standalone) that carries only the files it needs: a small container image.
+  output: "standalone",
+  // Loaded at runtime from node_modules instead of being bundled: it is server-only and uses native-style gRPC code.
+  serverExternalPackages: ["@google-cloud/firestore", "@google/genai"],
   async headers() {
     return [
       {
@@ -25,6 +30,8 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(self)" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
         ],
       },
     ];

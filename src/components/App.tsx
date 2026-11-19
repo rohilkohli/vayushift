@@ -4,7 +4,8 @@ import { findVentilationWindow, pm25ToAqi } from "@/lib/airQuality";
 import { DEFAULT_SCENARIO, PRESET_SCENARIOS } from "@/lib/airQualityPresets";
 import { GRAP_INFO, grapStageFromAqi } from "@/lib/grapRules";
 import { calculateHouseholdImpact } from "@/lib/impactEngine";
-import type { AirScenario } from "@/lib/types";
+import { track } from "@/lib/clientApi";
+import type { ActiveInterventions, AirScenario } from "@/lib/types";
 import { useHousehold } from "@/hooks/useHousehold";
 import { Choreographer } from "./Choreographer";
 import { CommunityPlaybook } from "./CommunityPlaybook";
@@ -31,6 +32,18 @@ const istHour = () =>
 export function App() {
   useLiquidGlass();
   const { profile, interventions, patchProfile, patchInterventions } = useHousehold();
+
+  /** Applies a change and records it (anonymously, and only if the visitor has not opted out). */
+  const changeInterventions = useCallback(
+    (p: Partial<ActiveInterventions>) => {
+      patchInterventions(p);
+      for (const [key, value] of Object.entries(p)) {
+        if (typeof value === "boolean") track({ event: "routine_shift_toggled", props: { intervention_key: key, enabled: value } });
+        else if (key === "filtrationMode" && value !== "none") track({ event: "filtration_option_selected", props: { option_id: String(value) } });
+      }
+    },
+    [patchInterventions],
+  );
   const [scenario, setScenario] = useState<AirScenario>(DEFAULT_SCENARIO);
   const [tab, setTab] = useState<Tab>("choreographer");
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -110,6 +123,7 @@ export function App() {
           if (!res.ok) throw new Error("bad response");
           const data = (await res.json()) as { scenario: AirScenario; mode: "live" | "demo" };
           setScenario(data.scenario);
+          track({ event: "scenario_loaded", props: { preset_id: data.scenario.id } });
           setStatus(
             data.mode === "live"
               ? "Showing the live forecast for your location."
@@ -144,6 +158,7 @@ export function App() {
         presets={PRESET_SCENARIOS}
         onSelect={(s) => {
           setScenario(s);
+          track({ event: "scenario_loaded", props: { preset_id: s.id } });
           setStatus(`Loaded ${s.name} scenario.`);
         }}
         onLocate={useMyLocation}
@@ -190,7 +205,7 @@ export function App() {
             interventions={interventions}
             receipt={receipt}
             onProfile={patchProfile}
-            onInterventions={patchInterventions}
+            onInterventions={changeInterventions}
             onOpenReceipt={() => setReceiptOpen(true)}
           />
         </section>
@@ -201,7 +216,7 @@ export function App() {
             interventions={interventions}
             receipt={receipt}
             onProfile={patchProfile}
-            onInterventions={patchInterventions}
+            onInterventions={changeInterventions}
           />
         </section>
         <section id="panel-community" role="tabpanel" aria-labelledby="tab-community" hidden={tab !== "community"}>

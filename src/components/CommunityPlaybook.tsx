@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { track } from "@/lib/clientApi";
 import { GRAP_DISCLAIMER, GRAP_INFO, VEHICLE_LABELS, vehicleRestricted, type VehicleClass } from "@/lib/grapRules";
 import { HEATER_UNIT_COST_INR, buildAdvisory, heaterPlan } from "@/lib/rwa";
 import type { AirScenario, GrapStage } from "@/lib/types";
@@ -35,6 +36,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
       setToast("Advisory copied. Paste it into your WhatsApp group.");
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+      track({ event: "impact_receipt_shared", props: { share_type: "rwa_whatsapp" } });
     } catch {
       setToast("Copy failed. Select the text above and copy it manually.");
     }
@@ -151,6 +153,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
               <span key={String(copied)} className={copied ? "pop" : ""}>{copied ? "✓ Copied" : "Copy advisory"}</span>
             </button>
             <a
+              onClick={() => track({ event: "impact_receipt_shared", props: { share_type: "rwa_whatsapp" } })}
               href={`https://wa.me/?text=${encodeURIComponent(advisory.combined)}`}
               target="_blank"
               rel="noopener noreferrer"

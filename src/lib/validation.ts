@@ -50,30 +50,3 @@ export function checkImagePayload(mimeType: unknown, base64: unknown): ImageChec
   return { ok: true, mimeType: sniffed, base64 };
 }
 
-/** Fixed-window in-memory limiter. Per-instance only: a best-effort guard, not a global quota. */
-export class RateLimiter {
-  private hits = new Map<string, { count: number; resetAt: number }>();
-  constructor(
-    private readonly limit: number,
-    private readonly windowMs: number,
-  ) {}
-
-  allow(key: string, now = Date.now()): boolean {
-    if (this.hits.size > 5000) this.sweep(now);
-    const entry = this.hits.get(key);
-    if (!entry || entry.resetAt <= now) {
-      this.hits.set(key, { count: 1, resetAt: now + this.windowMs });
-      return true;
-    }
-    entry.count += 1;
-    return entry.count <= this.limit;
-  }
-
-  private sweep(now: number) {
-    for (const [k, v] of this.hits) if (v.resetAt <= now) this.hits.delete(k);
-  }
-}
-
-export function clientKey(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
-}

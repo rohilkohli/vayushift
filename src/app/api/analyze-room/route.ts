@@ -1,37 +1,22 @@
-import { NextResponse } from "next/server";
-import { geminiConfigured, scanRoomWithGemini } from "@/lib/gemini";
-import { RateLimiter, checkImagePayload, clientKey, MAX_IMAGE_BYTES } from "@/lib/validation";
+import { MAX_IMAGE_BYTES, checkImagePayload } from "@/lib/validation";
+import { badRequest } from "@/server/errors";
+import { defineRoute, json, readJson } from "@/server/http/handler";
 
 export const runtime = "nodejs";
-const limiter = new RateLimiter(10, 60_000);
+/** Base64 is 4/3 the size of the image, plus a little JSON. */
 const MAX_BODY = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 1024;
 
-/** Stateless: the image lives only in memory for this request and is never stored or logged. */
-export async function POST(req: Request) {
-  if (!limiter.allow(clientKey(req))) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  const declared = Number(req.headers.get("content-length") ?? 0);
-  if (declared > MAX_BODY) return NextResponse.json({ error: "Image is larger than 5 MB." }, { status: 413 });
+/** POST /api/analyze-room: stateless. The image lives only in memory for this request, never stored or logged. */
+export const POST = defineRoute(
+  { name: "analyze-room", rateLimit: { limit: 10, windowMs: 60_000 }, sameOriginOnly: true },
+  async ({ req, services }) => {
+    const body = await readJson(req, MAX_BODY);
+    if (typeof body !== "object" || body === null) throw badRequest("Expected a JSON object.");
+    const { mimeType, data } = body as { mimeType?: unknown; data?: unknown };
+    const check = checkImagePayload(mimeType, data);
+    if (!check.ok) throw badRequest(check.reason, "invalid_image");
 
-  let body: { mimeType?: unknown; data?: unknown };
-  try {
-    // Content-Length can be absent or wrong, so bound the body we actually read.
-    const raw = await req.text();
-    if (raw.length > MAX_BODY) return NextResponse.json({ error: "Image is larger than 5 MB." }, { status: 413 });
-    body = JSON.parse(raw);
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
-  const check = checkImagePayload(body.mimeType, body.data);
-  if (!check.ok) return NextResponse.json({ error: check.reason }, { status: 400 });
-
-  if (!geminiConfigured()) {
-    return NextResponse.json({ fallback: true, reason: "ai_unavailable" });
-  }
-  try {
-    const scan = await scanRoomWithGemini(check.mimeType, check.base64);
-    if (!scan || !scan.isIndoorRoom) return NextResponse.json({ fallback: true, reason: "not_a_room" });
-    return NextResponse.json({ scan });
-  } catch {
-    return NextResponse.json({ fallback: true, reason: "ai_unavailable" });
-  }
-}
+    const outcome = await services.room.analyze(check.mimeType, check.base64);
+    return json(outcome.kind === "scan" ? { scan: outcome.scan } : { fallback: true, reason: outcome.reason });
+  },
+);

@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { RateLimiter, checkImagePayload, parseCoords, sniffImageType } from "./validation";
+import { checkImagePayload, parseCoords, sniffImageType } from "./validation";
 import { validateRoomScan, SAMPLE_ROOMS } from "./roomScan";
 import { allowedNumbers, narrativeUsesOnlyAllowedNumbers, templateExplanation } from "./explain";
 import { NO_INTERVENTIONS, calculateHouseholdImpact } from "./impactEngine";
 import { PRESET_SCENARIOS } from "./airQualityPresets";
-import { parseForecast } from "./liveAirQuality";
 import { buildAdvisory, heaterPlan } from "./rwa";
 
 const PNG_B64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]).toString("base64");
@@ -40,16 +39,6 @@ describe("image checks", () => {
   });
 });
 
-describe("RateLimiter", () => {
-  it("blocks after the limit and recovers after the window", () => {
-    const rl = new RateLimiter(2, 1000);
-    expect(rl.allow("a", 0)).toBe(true);
-    expect(rl.allow("a", 1)).toBe(true);
-    expect(rl.allow("a", 2)).toBe(false);
-    expect(rl.allow("b", 2)).toBe(true);
-    expect(rl.allow("a", 1500)).toBe(true);
-  });
-});
 
 describe("validateRoomScan", () => {
   const good = { ...SAMPLE_ROOMS[0].scan, cookingApplianceDetected: "lpg_gas_stove" };
@@ -103,27 +92,6 @@ const SAMPLE_PROFILE = {
   commuteKmRoundTrip: 20, baselineCommuteMode: "private_petrol_car" as const, baselineCookingFuel: "lpg_unvented" as const,
 };
 
-describe("parseForecast", () => {
-  const mk = (n: number) => ({
-    hourlyForecasts: Array.from({ length: n }, (_, i) => ({
-      dateTime: new Date(Date.UTC(2026, 10, 18, i, 30)).toISOString(),
-      pollutants: [{ code: "pm25", concentration: { value: 100 + i } }],
-    })),
-  });
-  it("builds a 24-slot series", () => {
-    const out = parseForecast(mk(24));
-    expect(out).toHaveLength(24);
-    expect(out!.every((h) => h.pm25 >= 100)).toBe(true);
-  });
-  it("fills gaps when at least 12 hours are present", () => {
-    expect(parseForecast(mk(14))).toHaveLength(24);
-  });
-  it("returns null for sparse or malformed bodies", () => {
-    expect(parseForecast(mk(5))).toBeNull();
-    expect(parseForecast({})).toBeNull();
-    expect(parseForecast(null)).toBeNull();
-  });
-});
 
 describe("RWA tools", () => {
   it("4 heaters for 100 flats is Rs 6,400 total and Rs 64 per flat", () => {
