@@ -28,7 +28,9 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 export class GeminiProvider implements RoomVisionProvider, ExplanationProvider {
   constructor(
     private readonly apiKey: string,
-    private readonly model = "gemini-2.5-flash",
+    // Checked against the live API: gemini-2.5-* now 404s for new keys, and the 3.5/3.8 flash models spend the
+    // whole token budget on hidden thinking and truncate the reply. 3.1-flash-lite answers in ~2s, no thinking.
+    private readonly model = "gemini-3.1-flash-lite",
     private readonly timeoutMs = 8000,
   ) {}
 
