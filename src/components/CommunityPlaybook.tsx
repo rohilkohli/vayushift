@@ -45,7 +45,7 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
       <div className="space-y-6">
         <div>
           <p className="label scrim inline-block rounded-full px-4 py-1.5">Community and GRAP playbook</p>
-          <h2 className="serif hero-ink mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
+          <h2 className="serif hero-ink halo mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
             {stage === "NONE" ? "No GRAP stage is active right now." : `GRAP Stage ${info.roman}: ${info.category}.`}
           </h2>
           <p className="scrim mt-3 inline-block rounded-3xl px-5 py-3 text-lg">

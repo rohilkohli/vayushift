@@ -31,7 +31,8 @@ export function WindLayer() {
               width: s.w * s.s,
               height: s.w * s.s * (36 / 310),
               "--o": s.o,
-              animationDuration: `${s.dur}s`,
+              // Gusts speed up in the afternoon mixing window; --wind-speed is set by the sky.
+              animationDuration: `calc(${s.dur}s / var(--wind-speed, 1))`,
               animationDelay: `${s.delay}s`,
             } as React.CSSProperties
           }

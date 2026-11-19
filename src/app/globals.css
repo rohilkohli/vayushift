@@ -1,11 +1,27 @@
 @import "tailwindcss";
 
 /* Living Sky design tokens (from the Stitch export), with a night variant. */
+/* Sky stops are registered colours so a change of hour crossfades instead of snapping.
+   JavaScript overwrites --s0..--s6, --orb, --sun-x/y and --wind-speed as you scrub (see useLivingSky). */
+@property --s0 { syntax: "<color>"; inherits: true; initial-value: #1b3b5a; }
+@property --s1 { syntax: "<color>"; inherits: true; initial-value: #2a4968; }
+@property --s2 { syntax: "<color>"; inherits: true; initial-value: #436182; }
+@property --s3 { syntax: "<color>"; inherits: true; initial-value: #87a5ca; }
+@property --s4 { syntax: "<color>"; inherits: true; initial-value: #ffb59a; }
+@property --s5 { syntax: "<color>"; inherits: true; initial-value: #ffdf96; }
+@property --s6 { syntax: "<color>"; inherits: true; initial-value: #fff2e1; }
+@property --orb { syntax: "<color>"; inherits: true; initial-value: rgba(255, 240, 200, 0.6); }
+
 :root {
-  --sky: linear-gradient(178deg, #1b3b5a 0%, #2a4968 34%, #436182 66%, #87a5ca 82%, #ffb59a 90%, #ffdf96 96%, #fff2e1 100%);
+  --s0: #1b3b5a; --s1: #2a4968; --s2: #436182; --s3: #87a5ca; --s4: #ffb59a; --s5: #ffdf96; --s6: #fff2e1;
+  --orb: rgba(255, 240, 200, 0.6);
+  --sun-x: 82; --sun-y: 10; --wind-speed: 1;
+  --sky: linear-gradient(178deg, var(--s0) 0%, var(--s1) 34%, var(--s2) 66%, var(--s3) 82%, var(--s4) 90%, var(--s5) 96%, var(--s6) 100%);
+  transition: --s0 900ms ease-out, --s1 900ms ease-out, --s2 900ms ease-out, --s3 900ms ease-out,
+    --s4 900ms ease-out, --s5 900ms ease-out, --s6 900ms ease-out, --orb 900ms ease-out;
   --ink: #0b2540;
   --ink-soft: #3a4d63;
-  --accent: #8c4e35;
+  --accent: #76391f;
   --glass: rgba(255, 255, 255, 0.72);
   --glass-weak: rgba(255, 255, 255, 0.55);
   --chip: rgba(255, 255, 255, 0.9);
@@ -24,7 +40,7 @@
 }
 
 :root[data-sky="night"] {
-  --sky: linear-gradient(178deg, #0a1422 0%, #12233a 28%, #1b3050 55%, #2d3552 76%, #4a3b53 90%, #5a4350 100%);
+  --s0: #0a1422; --s1: #12233a; --s2: #1b3050; --s3: #2d3552; --s4: #4a3b53; --s5: #5a4350; --s6: #5a4350;
   --ink: #f7eee3;
   --ink-soft: #cdd7e4;
   --accent: #ffb59a;
@@ -64,14 +80,20 @@ h1, h2, h3 { text-wrap: balance; }
 
 /* Fixed atmosphere behind everything */
 .sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+/* The track carries the sun (or moon) along its arc; the orb inside keeps the gentle pulse. */
+.sun-track {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  transform: translate3d(calc(var(--sun-x) * 1vw), calc(var(--sun-y) * 1vh), 0);
+  transition: transform 900ms var(--ease-out, ease-out);
+}
 .sun-orb {
-  position: absolute; top: -14%; right: -90px; width: 380px; height: 380px; border-radius: 9999px; filter: blur(32px);
-  background: radial-gradient(circle, rgba(255,255,255,0.92) 0%, rgba(255,223,150,0.65) 28%, rgba(255,173,143,0.3) 54%, rgba(255,255,255,0) 75%);
+  --sun-size: 380px;
+  position: absolute; left: 0; top: 0; width: var(--sun-size); height: var(--sun-size);
+  margin: calc(var(--sun-size) / -2) 0 0 calc(var(--sun-size) / -2); border-radius: 9999px; filter: blur(28px);
+  background: radial-gradient(circle, var(--orb) 0%, rgba(255, 240, 200, 0.22) 38%, rgba(255, 255, 255, 0) 72%);
   animation: pulse-sun 14s ease-in-out infinite;
 }
-:root[data-sky="night"] .sun-orb {
-  background: radial-gradient(circle, rgba(255,236,209,0.55) 0%, rgba(255,181,154,0.22) 32%, rgba(255,255,255,0) 70%);
-}
+@media (min-width: 1024px) { .sun-orb { --sun-size: 560px; } }
 .dust { position: absolute; inset: 0; opacity: 0.6; background: radial-gradient(ellipse at 40% 60%, rgba(255,255,255,0.18) 0%, transparent 65%); animation: drift 26s ease-in-out infinite alternate; }
 @keyframes drift { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-2%,1.5%,0) scale(1.04); } 100% { transform: translate3d(0,0,0) scale(1); } }
 @keyframes pulse-sun { 0%,100% { opacity: 0.88; transform: scale(1); } 50% { opacity: 0.98; transform: scale(1.06); } }
@@ -172,7 +194,14 @@ dialog { color: var(--ink); }
 :root { --solid: #fff8f3; }
 :root[data-sky="night"] { --solid: #12233a; }
 
-@media (min-width: 1024px) { .sun-orb { right: 5%; top: -12%; width: 620px; height: 620px; } }
+/* Soft dark halo behind big headlines: the sun and moon now travel across the sky, so copy must stay
+   legible wherever the glow lands. Diffuse on purpose, so it reads as depth rather than a box. */
+.halo { position: relative; isolation: isolate; }
+.halo::before {
+  content: ""; position: absolute; z-index: -1; inset: -1.4rem -3rem; border-radius: 3rem; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(9, 24, 43, 0.8) 0%, rgba(9, 24, 43, 0.7) 78%, rgba(9, 24, 43, 0) 100%);
+  filter: blur(8px);
+}
 /* Dark scrim keeps light hero copy legible wherever the sun glow lands. */
 .scrim { background: rgba(10, 28, 48, 0.62); color: #fff; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-shadow: none; }
 
@@ -328,7 +357,7 @@ dialog.glass {
   display: flex; flex-direction: column; gap: 0.1rem; padding: 0.55rem 0.7rem; border-radius: 1rem; background: var(--chip); color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--edge); font-size: 0.7rem; line-height: 1.25;
 }
-.grap-meter li[data-state="reached"] { background: color-mix(in srgb, var(--accent) 22%, var(--chip)); }
+.grap-meter li[data-state="reached"] { background: color-mix(in srgb, var(--accent) 12%, var(--chip)); }
 .grap-meter li[data-state="current"] { background: var(--sel-bg); color: var(--sel-fg); box-shadow: 0 6px 14px -4px rgba(11, 37, 64, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22); }
 .grap-meter strong { font-size: 0.95rem; }
 

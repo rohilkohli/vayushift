@@ -1,8 +1,9 @@
 "use client";
 import { useMemo } from "react";
-import { cigaretteEquivalent, formatHour, meanBetween, pm25ToAqi } from "@/lib/airQuality";
+import { cigaretteEquivalent, formatHour, pm25ToAqi } from "@/lib/airQuality";
 import { COOKING_INCREMENT_UG_M3 } from "@/lib/constants";
-import { NO_INTERVENTIONS, calculateHouseholdImpact, clampMembers } from "@/lib/impactEngine";
+import { NO_INTERVENTIONS, calculateHouseholdImpact, clampMembers, modelIndoor, roomVolumeM3 } from "@/lib/impactEngine";
+import { PHASE_LABEL, phaseForHour } from "@/lib/skyPhase";
 import type {
   ActiveInterventions,
   AirScenario,
@@ -13,14 +14,19 @@ import type {
   VentilationWindow,
 } from "@/lib/types";
 import { AnimatedNumber } from "./AnimatedNumber";
-import { DiurnalChart } from "./DiurnalChart";
+import { HorizonScrubber } from "./HorizonScrubber";
 import { Icon } from "./Icon";
 import { RoutineToggle } from "./RoutineToggle";
 
 interface Props {
   scenario: AirScenario;
   window: VentilationWindow;
+  /** Hour selected on the scrubber (0-23). */
   hour: number;
+  playing: boolean;
+  onHour: (h: number) => void;
+  onTogglePlay: () => void;
+  onJump: () => void;
   profile: HouseholdProfile;
   interventions: ActiveInterventions;
   receipt: DirectImpactReceipt;
@@ -41,19 +47,52 @@ const FUEL_LABELS: Record<CookingFuel, string> = {
   electric_induction: "Induction",
 };
 
-export function Choreographer({ scenario, window: w, hour, profile, interventions, receipt, onProfile, onInterventions, onOpenReceipt }: Props) {
+export function Choreographer({
+  scenario, window: w, hour, playing, onHour, onTogglePlay, onJump, profile, interventions, receipt, onProfile, onInterventions, onOpenReceipt,
+}: Props) {
   const advice = w.advice;
   const span = `${formatHour(w.startHour)} – ${formatHour(w.endHour)}`;
-  const inWindow = hour >= Math.floor(w.startHour) && hour < w.endHour;
-  const mean24 = Math.round(meanBetween(scenario.hourly, 0, 23));
+  const phase = phaseForHour(hour, w);
   const morningCigs = cigaretteEquivalent(w.morningPeakMeanPm25, 24).toFixed(1);
 
-  const headline =
+  // Modelled indoor PM2.5 for every hour, using the household's current sealing and filter choices.
+  const indoor = useMemo(() => {
+    const volumeM3 = roomVolumeM3(profile.roomAreaSqFt, profile.ceilingHeightFt);
+    return scenario.hourly.map((h) =>
+      modelIndoor({
+        outdoorPm25: h.pm25,
+        volumeM3,
+        profile,
+        sealed: interventions.sealWindowsWithEpdm,
+        filtration: interventions.filtrationMode,
+      }).pm25,
+    );
+  }, [scenario, profile, interventions.sealWindowsWithEpdm, interventions.filtrationMode]);
+
+  const outNow = scenario.hourly[hour].pm25;
+  const inNow = Math.round(indoor[hour]);
+  const hazePct = outNow > 0 ? Math.max(0, Math.round(((outNow - inNow) / outNow) * 100)) : 0;
+
+  // In the low-smog window the headline follows the safety-aware advice (normal, brief or sealed).
+  const windowHeadline =
     advice.mode === "normal"
       ? `Open your windows for ${advice.minutes} minutes of afternoon light.`
       : advice.mode === "brief"
         ? `Keep windows shut. If you must, open for ${advice.minutes} minutes.`
         : "Keep windows shut today. Let filtration do the work.";
+  const headline = {
+    window: windowHeadline,
+    morning: "Keep windows sealed through the morning inversion.",
+    night: "Let your bedroom sanctuary filter the night air.",
+    transition: "Steady indoor filtration as the sky shifts.",
+  }[phase];
+  // Every figure below comes from the forecast and the indoor model, never from free text.
+  const subline = {
+    window: `${advice.headline} Outdoor PM2.5 in that window averages ${w.meanPm25} µg/m³, about ${w.reductionVsMorningPct}% lower than the 07:00 to 10:00 peak (${w.morningPeakMeanPm25} µg/m³, AQI ${pm25ToAqi(w.morningPeakMeanPm25)}, roughly ${morningCigs} cigarettes a day).`,
+    morning: `Cold surface air traps exhaust at ${outNow} µg/m³ outdoors. Hold ventilation until ${formatHour(w.startHour)} and keep filtration running; the room is modelled at ${inNow} µg/m³.`,
+    night: `Overnight the air holds at ${outNow} µg/m³ outdoors, while your sealed room is modelled at ${inNow} µg/m³.`,
+    transition: `Outdoor PM2.5 is ${outNow} µg/m³ in ${scenario.name}. Your routines hold indoor exposure near ${inNow} µg/m³. The next low-smog window is ${span}.`,
+  }[phase];
 
   // What each action would avoid on its own, shown whether the switch is on or off.
   const solo = useMemo(() => {
@@ -84,26 +123,21 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
               <span className="absolute inline-flex h-full w-full ping-soft rounded-full bg-[#ffdbce] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ffad8f]" />
             </span>
-            {inWindow ? `${formatHour(hour)} · Low-smog window open` : `Next low-smog window ${span}`}
+            {formatHour(hour)} · {PHASE_LABEL[phase]}
           </p>
-          <h2 className="serif hero-ink mt-5 text-[2.6rem] font-normal leading-[1.08] tracking-tight sm:text-6xl">{headline}</h2>
-          <p className="scrim mt-4 max-w-xl rounded-3xl px-5 py-3 text-[15px] leading-6">
-            {advice.headline} Outdoor PM2.5 in that window averages {w.meanPm25} µg/m³, about {w.reductionVsMorningPct}% lower than the
-            07:00 to 10:00 peak ({w.morningPeakMeanPm25} µg/m³, AQI {pm25ToAqi(w.morningPeakMeanPm25)}, roughly {morningCigs} cigarettes a day).
-          </p>
+          <h2 className="serif hero-ink halo mt-5 text-[2.6rem] font-normal leading-[1.08] tracking-tight sm:text-6xl">{headline}</h2>
+          <p className="scrim mt-4 max-w-xl rounded-3xl px-5 py-3 text-[15px] leading-6">{subline}</p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <p className="glass m-0 flex items-center gap-3 rounded-full px-5 py-2.5 text-sm">
               <span className="h-2 w-2 rounded-full bg-[#8c4e35]" aria-hidden="true" />
-              <span className="label">Outside basin, 24 h avg</span>
-              <span className="serif text-lg font-medium">{mean24} <span className="text-[11px] font-normal ink-soft">µg/m³</span></span>
+              <span className="label">Outside basin, {formatHour(hour)}</span>
+              <span className="serif num text-lg font-medium"><AnimatedNumber value={outNow} /> <span className="text-[11px] font-normal ink-soft">µg/m³ · AQI {pm25ToAqi(outNow)}</span></span>
             </p>
             <p className="glass m-0 flex flex-wrap items-center gap-3 rounded-full px-5 py-2.5 text-sm">
               <span className="h-2 w-2 rounded-full bg-[#436182]" aria-hidden="true" />
               <span className="label">Sanctuary room, modelled</span>
-              <span className="serif text-lg font-semibold">{receipt.managedIndoorPm25} <span className="text-[11px] font-normal ink-soft">µg/m³</span></span>
-              {receipt.indoorReductionPct > 0 && (
-                <span className="chip rounded-full px-2 py-0.5 text-[10px] font-bold accent">−{Math.round(receipt.indoorReductionPct)}% haze</span>
-              )}
+              <span className="serif num text-lg font-semibold"><AnimatedNumber value={inNow} /> <span className="text-[11px] font-normal ink-soft">µg/m³</span></span>
+              {hazePct > 0 && <span className="chip rounded-full px-2 py-0.5 text-[10px] font-bold accent">−{hazePct}% haze</span>}
             </p>
           </div>
         </div>
@@ -115,7 +149,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
           </div>
           <div className="relative mt-6" aria-live="polite" aria-atomic="true">
             <p className="m-0 flex items-baseline gap-2">
-              <span className="serif text-[54px] italic leading-none">−<AnimatedNumber value={receipt.avoidedCigarettesHouseholdDay} decimals={2} /></span>
+              <span className="serif text-[54px] italic leading-none">{receipt.avoidedCigarettesHouseholdDay > 0 && "−"}<AnimatedNumber value={receipt.avoidedCigarettesHouseholdDay} decimals={2} /></span>
               <span className="accent text-[13px] font-semibold">cig equivalent</span>
             </p>
             <p className="ink-soft m-0 mt-1 text-[13px]">never inhaled by your household today</p>
@@ -123,7 +157,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
             <div className="flex items-end justify-between gap-3">
               <div>
                 <p className="m-0 flex items-baseline gap-2">
-                  <span className="serif text-4xl italic leading-none">−<AnimatedNumber value={receipt.savedCo2GramsDay} /> g</span>
+                  <span className="serif text-4xl italic leading-none">{receipt.savedCo2GramsDay > 0 && "−"}<AnimatedNumber value={receipt.savedCo2GramsDay} /> g</span>
                   <span className="label">CO₂</span>
                 </p>
                 <p className="ink-soft m-0 mt-1 text-[13px]">
@@ -140,14 +174,18 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
       </section>
 
       <section className="glass liquid rounded-[32px] p-6" aria-labelledby="ribbon-h">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 id="ribbon-h" className="label m-0 flex items-center gap-2"><Icon name="waves" className="accent" /> {scenario.name} diurnal dispersion forecast</h3>
-          <p className="label m-0 flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-dashed border-[#8c4e35]" aria-hidden="true" />
-            Low-smog window ({span})
-          </p>
-        </div>
-        <DiurnalChart key={scenario.id} hourly={scenario.hourly} window={w} />
+        <HorizonScrubber
+          key={scenario.id}
+          hourly={scenario.hourly}
+          indoor={indoor}
+          window={w}
+          hour={hour}
+          phaseLabel={PHASE_LABEL[phase]}
+          playing={playing}
+          onHour={onHour}
+          onTogglePlay={onTogglePlay}
+          onJump={onJump}
+        />
         <ol className="m-0 mt-2 grid list-none grid-cols-2 gap-2 p-0 text-center sm:grid-cols-5">
           {steps.map((s) => (
             <li key={s.label} className={`flex flex-col items-center rounded-2xl p-1.5 ${s.best ? "chip" : ""}`}>

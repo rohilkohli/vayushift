@@ -15,7 +15,7 @@ Air quality apps show a red number and stop. In winter smog, the useful question
 
 | Tab | What it does | Decision logic |
 | --- | --- | --- |
-| **Living Sky** | 24-hour PM2.5 curve, the best 90-minute daytime window, four routine switches | Searches daytime windows for the lowest mean PM2.5, compares with the 07:00-10:00 peak, and **downgrades its own advice** when the afternoon low is above 250 µg/m³ (brief airing) or every hour is above 300 (stay sealed) |
+| **Living Sky** | A scrubbable 24-hour horizon (outdoor and modelled indoor PM2.5, jump to the safe window, play the day), the best 90-minute daytime window, four routine switches. Scrubbing changes the hero advice, the readouts and the sky itself (palette, sun or moon arc, wind speed, day or night theme). Deep-link an hour with `?hour=15` | Searches daytime windows for the lowest mean PM2.5, compares with the 07:00-10:00 peak, and **downgrades its own advice** when the afternoon low is above 250 µg/m³ (brief airing) or every hour is above 300 (stay sealed) |
 | **Indoor Air Lab** | Photo or sample room, then CADR target and filter comparison | Gemini extracts room facts into a fixed schema; a single-room mass balance computes indoor PM2.5 for a DIY MERV-13 box, a box fan, or a HEPA unit, with cost, noise and sleep advice |
 | **Community** | GRAP stage, vehicle check, guard-heater cost, bilingual WhatsApp card | AQI to GRAP stage (201/301/401/450), deterministic English and Hindi templates |
 | **Receipt** | Avoided cigarette-equivalents, µg inhaled, g CO₂ | Every number comes from `src/lib/impactEngine.ts` |

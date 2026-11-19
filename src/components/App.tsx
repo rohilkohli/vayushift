@@ -15,6 +15,7 @@ import { ReceiptDialog } from "./ReceiptDialog";
 import { LiquidFilter } from "./LiquidFilter";
 import { WindLayer } from "./WindLayer";
 import { useLiquidGlass } from "@/hooks/useLiquidGlass";
+import { useLivingSky } from "@/hooks/useLivingSky";
 
 type Tab = "choreographer" | "lab" | "community";
 const TABS: Array<{ id: Tab; label: string; short: string; icon: string }> = [
@@ -34,21 +35,36 @@ export function App() {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [loadingLive, setLoadingLive] = useState(false);
-  const [hour, setHour] = useState(8);
+  const [hour, setHour] = useState(8); // the real hour in IST
+  const [selHour, setSelHour] = useState<number | null>(null); // the hour on the scrubber
+  const [playing, setPlaying] = useState(false);
+  const [forcedTheme, setForcedTheme] = useState<"day" | "night" | null>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-
-  const [night, setNight] = useState(false);
 
   useEffect(() => {
     const h = istHour();
     setHour(h);
-    const forced = new URLSearchParams(globalThis.location.search).get("sky");
-    setNight(forced ? forced === "night" : h >= 19 || h < 6);
+    const params = new URLSearchParams(globalThis.location.search);
+    const forced = params.get("sky");
+    setForcedTheme(forced === "night" || forced === "day" ? forced : null);
+    const asked = Number(params.get("hour"));
+    setSelHour(params.has("hour") && Number.isInteger(asked) && asked >= 0 && asked <= 23 ? asked : h);
   }, []);
 
+  // The sky, sun or moon, wind speed and day/night theme all follow the scrubbed hour.
+  useLivingSky(selHour, forcedTheme);
+
+  // "Play 24h sky": advance one hour every 650 ms and loop.
   useEffect(() => {
-    document.documentElement.dataset.sky = night ? "night" : "day";
-  }, [night]);
+    if (!playing) return;
+    const timer = setInterval(() => setSelHour((h) => ((h ?? 0) + 1) % 24), 650);
+    return () => clearInterval(timer);
+  }, [playing]);
+
+  const scrubTo = useCallback((h: number) => {
+    setPlaying(false);
+    setSelHour(h);
+  }, []);
 
   // Tabs are deep-linkable (#lab, #community) and work with the browser Back button.
   useEffect(() => {
@@ -117,7 +133,9 @@ export function App() {
       <a href="#main" className="skip-link">Skip to content</a>
       <LiquidFilter />
       <div className="sky" aria-hidden="true">
-        <div className="sun-orb" />
+        <div className="sun-track">
+          <div className="sun-orb" />
+        </div>
         <div className="dust" />
         <WindLayer />
       </div>
@@ -164,7 +182,11 @@ export function App() {
           <Choreographer
             scenario={scenario}
             window={ventWindow}
-            hour={hour}
+            hour={selHour ?? hour}
+            playing={playing}
+            onHour={scrubTo}
+            onTogglePlay={() => setPlaying((p) => !p)}
+            onJump={() => scrubTo(Math.round(ventWindow.startHour))}
             profile={profile}
             interventions={interventions}
             receipt={receipt}

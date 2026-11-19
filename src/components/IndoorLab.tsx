@@ -103,7 +103,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
         <div className="space-y-6">
           <div>
             <p className="label scrim inline-block rounded-full px-4 py-1.5">Indoor purity dynamics · Room sanctuary</p>
-            <h2 className="serif hero-ink mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
+            <h2 className="serif hero-ink halo mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
               Sculpting an island of pure alpine breath indoors.
             </h2>
           </div>
