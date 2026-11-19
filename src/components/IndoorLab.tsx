@@ -110,8 +110,14 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
 
           <div className="glass relative mx-auto flex aspect-square w-full max-w-[400px] flex-col items-center justify-center rounded-full p-10 text-center" role="group" aria-label="Clean air delivery dial">
             <svg viewBox="0 0 260 260" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#e9a23b" />
+                  <stop offset="100%" stopColor="#c25a32" />
+                </linearGradient>
+              </defs>
               <circle cx="130" cy="130" r={R} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="6" />
-              <circle cx="130" cy="130" r={R} fill="none" className="ring-progress" stroke="#c25a32" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * progress} ${C}`} />
+              <circle cx="130" cy="130" r={R} fill="none" className="ring-progress" strokeOpacity={progress > 0 ? 1 : 0} stroke="url(#ringGrad)" style={{ filter: "drop-shadow(0 0 6px rgba(226, 120, 80, 0.55))" }} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * progress} ${C}`} />
               <circle cx="130" cy="130" r={R - 14} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="3 6" />
             </svg>
             <p className="chip relative m-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
@@ -195,7 +201,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
               const f = FILTERS[o.id];
               const selected = interventions.filtrationMode === o.id;
               return (
-                <li key={o.id} className={`glass rounded-[2.2rem] p-6 ${selected ? "ring-2 ring-[#c25a32]" : ""}`}>
+                <li key={o.id} className={`glass lift rounded-[2.2rem] p-6 ${selected ? "ring-2 ring-[#c25a32]" : ""}`}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="m-0 flex flex-wrap items-center gap-2">
@@ -251,10 +257,10 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
           ["Filter air changes", ach.toFixed(1), "per hour", active ? "From the selected option" : "Select an option above"],
           ["Target CADR", `${receipt.requiredCadrM3h}`, "m³/h", "5 air changes per hour"],
         ].map(([k, v, u, n]) => (
-          <div key={k} className="glass rounded-[2rem] p-5">
+          <div key={k} className="glass lift rounded-[2rem] p-5">
             <dt className="label">{k}</dt>
             <dd className="m-0 mt-2">
-              <span className="serif text-4xl">{v}</span> <span className="ink-soft text-xs">{u}</span>
+              <span className="serif num text-4xl">{v}</span> <span className="ink-soft text-xs">{u}</span>
               <span className="ink-soft mt-1 block text-xs font-medium">{n}</span>
             </dd>
           </div>

@@ -108,7 +108,7 @@ export function Choreographer({ scenario, window: w, hour, profile, intervention
           </div>
         </div>
 
-        <aside className="glass relative w-full max-w-[390px] overflow-hidden rounded-[44px] p-8" aria-labelledby="delta-h">
+        <aside className="glass lift relative w-full max-w-[390px] overflow-hidden rounded-[44px] p-8" aria-labelledby="delta-h">
           <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#ffdbce] opacity-50 blur-2xl" aria-hidden="true" />
           <div className="relative flex items-center justify-between">
             <h3 id="delta-h" className="label m-0 flex items-center gap-2"><Icon name="wb_twilight" className="accent" /> Daily Sanctuary Delta</h3>
