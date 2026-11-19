@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { Cache, CacheEntry } from "../../ports";
 import { systemClock, type Clock } from "../../time";
 import { MemoryCache } from "../memory";
-import type { FirestoreHandle } from "./client";
+import { firestoreLib, type FirestoreHandle } from "./client";
 
 /** Entries mirrored in memory live this long, so one instance never serves another's older answer for long. */
 const L1_TTL_MS = 60_000;
@@ -45,7 +45,7 @@ export class FirestoreCache implements Cache {
     const now = this.clock();
     this.l1.put(key, value, now, Math.min(L1_TTL_MS, ttlMs));
     const db = await this.handle.db();
-    const { Timestamp } = await import("@google-cloud/firestore");
+    const { Timestamp } = await firestoreLib();
     await db.collection(COLLECTION).doc(this.docId(key)).set({
       key,
       json: JSON.stringify(value),

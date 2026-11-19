@@ -1,6 +1,6 @@
 import type { ReceiptStore, StoredReceipt } from "../../ports";
 import { systemClock, type Clock } from "../../time";
-import { isAlreadyExists, type FirestoreHandle } from "./client";
+import { firestoreLib, isAlreadyExists, type FirestoreHandle } from "./client";
 
 const COLLECTION = "receipts";
 
@@ -18,7 +18,7 @@ export class FirestoreReceiptStore implements ReceiptStore {
 
   async create(receipt: StoredReceipt): Promise<boolean> {
     const db = await this.handle.db();
-    const { Timestamp } = await import("@google-cloud/firestore");
+    const { Timestamp } = await firestoreLib();
     try {
       await db
         .collection(COLLECTION)

@@ -1,6 +1,6 @@
 import { createHash, randomInt } from "node:crypto";
 import type { AnalyticsStore } from "../../ports";
-import type { FirestoreHandle } from "./client";
+import { firestoreLib, type FirestoreHandle } from "./client";
 
 const COLLECTION = "analytics";
 /**
@@ -18,7 +18,7 @@ export class FirestoreAnalyticsStore implements AnalyticsStore {
 
   async increment(day: string, event: string, dimension: string): Promise<void> {
     const db = await this.handle.db();
-    const { FieldValue } = await import("@google-cloud/firestore");
+    const { FieldValue } = await firestoreLib();
     const key = `${event}:${dimension}`;
     await db
       .collection(COLLECTION)

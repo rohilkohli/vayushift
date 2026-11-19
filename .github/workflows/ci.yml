@@ -74,6 +74,23 @@ jobs:
           curl -sf http://127.0.0.1:8080/api/healthz
           curl -sf http://127.0.0.1:8080/api/readyz
           docker logs vayushift
+      - name: The bundled server must be able to load the Firestore client
+        # Regression guard: in Next's production bundle the Firestore classes once failed to load
+        # ("TypeError: a is not a constructor"), which unit tests under plain Node cannot see.
+        run: |
+          docker run -d --name vayushift-fs -p 8081:8080 \
+            -e STORAGE_BACKEND=firestore -e GOOGLE_CLOUD_PROJECT=ci-demo -e FIRESTORE_EMULATOR_HOST=127.0.0.1:1 \
+            vayushift:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8081/api/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          # Nothing is listening on the emulator port, so readiness fails: what matters is HOW it fails.
+          curl -s http://127.0.0.1:8081/api/readyz > /dev/null || true
+          docker logs vayushift-fs > fs.log 2>&1
+          cat fs.log
+          if grep -q "is not a constructor" fs.log; then echo "Firestore client failed to load in the bundle"; exit 1; fi
+          grep -q "readiness check failed" fs.log
       - name: A bad configuration must stop the container
         run: |
           set +e
