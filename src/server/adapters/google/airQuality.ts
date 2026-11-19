@@ -50,8 +50,9 @@ export class GoogleAirQualityProvider implements AirQualityProvider {
 
   async fetchScenario(lat: number, lng: number): Promise<AirScenario> {
     // The next whole hour onward: the API forecasts the future, and a period must not start in the past.
+    // Whole UTC hours: rounding in local time would start at :30 past the hour on an IST machine.
     const start = new Date();
-    start.setMinutes(0, 0, 0);
+    start.setUTCMinutes(0, 0, 0);
     start.setTime(start.getTime() + 3600 * 1000);
     const end = new Date(start.getTime() + 24 * 3600 * 1000);
     const res = await this.fetchImpl(ENDPOINT, {
