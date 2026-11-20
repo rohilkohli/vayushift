@@ -33,12 +33,13 @@ const STARS = (() => {
 const CLOUD =
   "M34 74 C8 74 2 46 28 40 C28 16 62 8 80 28 C92 4 132 4 142 30 C162 14 196 28 190 52 C214 54 218 74 192 74 Z";
 
+// Seconds to cross the sky: slow (4 to 7 minutes) so the clouds drift rather than race.
 const CLOUDS = [
-  { top: 9, w: 300, dur: 150, delay: -20, o: 0.46, x0: 12 },
-  { top: 19, w: 200, dur: 115, delay: -70, o: 0.36, x0: 58 },
-  { top: 31, w: 360, dur: 190, delay: -110, o: 0.4, x0: 34 },
-  { top: 43, w: 240, dur: 130, delay: -45, o: 0.32, x0: 76 },
-  { top: 55, w: 320, dur: 170, delay: -140, o: 0.3, x0: 6 },
+  { top: 9, w: 300, dur: 380, delay: -50, o: 0.46, x0: 12 },
+  { top: 19, w: 200, dur: 290, delay: -175, o: 0.36, x0: 58 },
+  { top: 31, w: 360, dur: 470, delay: -275, o: 0.4, x0: 34 },
+  { top: 43, w: 240, dur: 330, delay: -110, o: 0.32, x0: 76 },
+  { top: 55, w: 320, dur: 430, delay: -350, o: 0.3, x0: 6 },
 ] as const;
 
 /** Birds are two wings that flap about the body. */
@@ -131,7 +132,8 @@ export function SkyScene() {
           <svg
             key={i}
             className="cloud"
-            viewBox="0 0 220 90"
+            // The second puff is drawn above y=0, so the canvas starts higher: nothing is clipped at the top.
+            viewBox="-10 -24 240 114"
             width={c.w}
             style={{ top: `${c.top}%`, "--dur": `${c.dur}s`, "--delay": `${c.delay}s`, "--x0": `${c.x0}vw` } as React.CSSProperties}
           >
