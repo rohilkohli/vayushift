@@ -21,13 +21,20 @@ export interface AirScenario {
   /** 24 values, index = local hour. */
   hourly: HourlyAir[];
   source: "preset" | "live";
+  /** Live data only: when the forecast was fetched from the provider (epoch ms). Shown so users know how current it is. */
+  fetchedAt?: number;
+  /** Live data only: who supplied it, shown next to the timestamp. */
+  provider?: string;
 }
 
 export interface HouseholdProfile {
   memberCount: number;
   commuterCount: number;
   walkerCount: number;
-  hasVulnerableMembers: boolean;
+  /** Who lives here: each group gets its own outdoor-activity guidance (see personalAdvice.ts). */
+  hasChildren: boolean;
+  hasSeniors: boolean;
+  hasRespiratoryCondition: boolean;
   roomAreaSqFt: number;
   ceilingHeightFt: number;
   windowType: WindowType;

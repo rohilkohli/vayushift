@@ -1,6 +1,6 @@
 # Testing
 
-`npm test` runs 283 tests in 21 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
+`npm test` runs 310 tests in 24 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
 
 ## What each file proves
 
@@ -15,7 +15,7 @@
 | `src/server/http/http.test.ts` | 24 | Client-IP resolution (including the spoofing case), rate limiter, handler behaviour |
 | `src/server/services/services.test.ts` | 20 | Vision, explanation (number guard), receipts and analytics services against fake providers |
 | `src/server/services/airQuality.test.ts` | 12 | Cell caching, request coalescing, stale-if-error, cache outage tolerance |
-| `src/server/adapters/google/airQuality.test.ts` | 9 | Response parsing; the exact request shape Google accepts |
+| `src/server/adapters/google/airQuality.test.ts` | 10 | Response parsing; the exact request shape Google accepts; the forecast is stamped with its provider and fetch time |
 | `src/server/adapters/firestore/*.test.ts` | 22 | Budget under concurrency and exhaustion; cache, receipts, analytics against an in-memory Firestore fake; the module loader |
 | `src/server/adapters/storage.contract.test.ts` | 16 | One contract that every storage adapter must pass |
 | `src/app/api/routes.test.ts` | 29 | Every route end to end: validation, errors, cross-site refusal, privacy headers |
@@ -24,6 +24,9 @@
 | `src/components/language.test.tsx` | 6 | The switch toggles the whole interface and `<html lang>`, remembers the choice, re-renders a status message already on screen, opens from `?lang=hi`; **every tab in Hindi passes axe**; English-only data inside Hindi is marked `lang="en"` |
 | `src/lib/contrast.test.ts` | 6 | Reads the high-contrast colour tokens straight from `globals.css` and checks every text/background pairing, by day and by night, against WCAG AAA (7:1) |
 | `src/components/contrast.test.tsx` | 8 | The high-contrast toggle: off by default, on/off with `aria-pressed`, remembered, starts from the device's "more contrast" setting, `?contrast=` beats a saved choice beats the device, label follows the language, axe clean on every tab with the mode on |
+| `src/lib/personalAdvice.test.ts` | 12 | Who-is-at-home guidance: children, older adults and people with lung or heart conditions get stricter limits than healthy adults in the same air; the limits switch exactly at their documented AQI; the best outing hour ignores the night; airing is shortened only when a sensitive member lives here and the window is still polluted |
+| `src/lib/cities.test.ts` | 6 | The city list: unique, inside India, accepted by the API's coordinate check, named in English and Hindi; the Delhi-NCR box used to caveat GRAP elsewhere |
+| `src/components/personalisation.test.tsx` | 8 | Picking Mumbai fetches Mumbai's coordinates and never shows "New Delhi"; the source name and an IST "updated" time appear for live data; the GRAP note appears outside the NCR; guidance appears per household group, in Hindi too, and who lives at home is remembered |
 | `src/app/api/openapi.test.ts` | 3 | `docs/openapi.yaml` and the real routes cannot drift apart |
 
 ## Three levels of confidence

@@ -5,6 +5,8 @@ import { DEFAULT_SCENARIO, PRESET_SCENARIOS } from "@/lib/airQualityPresets";
 import { GRAP_INFO, grapStageFromAqi } from "@/lib/grapRules";
 import { calculateHouseholdImpact } from "@/lib/impactEngine";
 import { track } from "@/lib/clientApi";
+import { cityById } from "@/lib/cities";
+import type { Messages } from "@/lib/i18n";
 import type { ActiveInterventions, AirScenario } from "@/lib/types";
 import { useHousehold } from "@/hooks/useHousehold";
 import { Choreographer } from "./Choreographer";
@@ -23,13 +25,27 @@ import { useLivingSky } from "@/hooks/useLivingSky";
 
 type StatusMessage =
   | { key: "locUnavailable" | "locFinding" | "locLive" | "locDemo" | "locFailed" | "locDenied" }
-  | { key: "loaded"; name: string };
+  | { key: "loaded" | "cityLive" | "cityDemo"; name: string };
 
 type Tab = "choreographer" | "lab" | "community";
 const TAB_IDS: readonly Tab[] = ["choreographer", "lab", "community"];
 
 const istHour = () =>
   Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hourCycle: "h23", timeZone: "Asia/Kolkata" }).format(new Date()));
+
+/** "14:05" in Indian Standard Time, for the "updated at" label. */
+const istClock = (epochMs: number) =>
+  new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Kolkata" }).format(new Date(epochMs));
+
+function statusText(status: StatusMessage | null, t: Messages): string {
+  if (!status) return "";
+  switch (status.key) {
+    case "loaded": return t.scenarioLoaded(status.name);
+    case "cityLive": return t.cityLive(status.name);
+    case "cityDemo": return t.cityDemo(status.name);
+    default: return t[status.key];
+  }
+}
 
 /** The whole interface, with the language (English or Hindi) available to every component. */
 export function App() {
@@ -71,6 +87,7 @@ function AppInner() {
   // Kept as a key, not finished text, so it re-renders in the current language when the language is switched.
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [loadingLive, setLoadingLive] = useState(false);
+  const [cityId, setCityId] = useState<string | null>(null);
   const [hour, setHour] = useState(8); // the real hour in IST
   const [selHour, setSelHour] = useState<number | null>(null); // the hour on the scrubber
   const [playing, setPlaying] = useState(false);
@@ -130,6 +147,35 @@ function AppInner() {
   const peakAqi = pm25ToAqi(Math.max(...scenario.hourly.map((h) => h.pm25)));
   const stage = grapStageFromAqi(currentAqi);
 
+  /** Fetches the live forecast for a point. `city` names the scenario after the picked city instead of "Your location". */
+  const loadForecast = useCallback(async (lat: number, lng: number, city?: { id: string; name: string }) => {
+    try {
+      const q = new URLSearchParams({ lat: String(lat), lng: String(lng) });
+      const res = await fetch(`/api/air-quality?${q}`);
+      if (!res.ok) throw new Error("bad response");
+      const data = (await res.json()) as { scenario: AirScenario; mode: "live" | "demo" };
+      setScenario(city ? { ...data.scenario, name: city.name } : data.scenario);
+      setCityId(city?.id ?? null);
+      track({ event: "scenario_loaded", props: { preset_id: data.scenario.id } });
+      if (city) setStatus({ key: data.mode === "live" ? "cityLive" : "cityDemo", name: city.name });
+      else setStatus({ key: data.mode === "live" ? "locLive" : "locDemo" });
+    } catch {
+      setStatus({ key: "locFailed" });
+    } finally {
+      setLoadingLive(false);
+    }
+  }, []);
+
+  const pickCity = useCallback(
+    (id: string) => {
+      const city = cityById(id);
+      if (!city) return;
+      setLoadingLive(true);
+      void loadForecast(city.lat, city.lng, { id: city.id, name: t.cityName[city.id] ?? city.name });
+    },
+    [loadForecast, t],
+  );
+
   const useMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setStatus({ key: "locUnavailable" });
@@ -138,28 +184,14 @@ function AppInner() {
     setLoadingLive(true);
     setStatus({ key: "locFinding" });
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const q = new URLSearchParams({ lat: String(pos.coords.latitude), lng: String(pos.coords.longitude) });
-          const res = await fetch(`/api/air-quality?${q}`);
-          if (!res.ok) throw new Error("bad response");
-          const data = (await res.json()) as { scenario: AirScenario; mode: "live" | "demo" };
-          setScenario(data.scenario);
-          track({ event: "scenario_loaded", props: { preset_id: data.scenario.id } });
-          setStatus({ key: data.mode === "live" ? "locLive" : "locDemo" });
-        } catch {
-          setStatus({ key: "locFailed" });
-        } finally {
-          setLoadingLive(false);
-        }
-      },
+      (pos) => void loadForecast(pos.coords.latitude, pos.coords.longitude),
       () => {
         setLoadingLive(false);
         setStatus({ key: "locDenied" });
       },
       { timeout: 8000, maximumAge: 600000 },
     );
-  }, []);
+  }, [loadForecast]);
 
   return (
     <>
@@ -176,10 +208,13 @@ function AppInner() {
         presets={PRESET_SCENARIOS}
         onSelect={(s) => {
           setScenario(s);
+          setCityId(null);
           track({ event: "scenario_loaded", props: { preset_id: s.id } });
           setStatus({ key: "loaded", name: s.name });
         }}
         onLocate={useMyLocation}
+        cityId={cityId}
+        onCity={pickCity}
         loadingLive={loadingLive}
         tabs={TABS}
         tab={tab}
@@ -202,8 +237,13 @@ function AppInner() {
           <span className="glass rounded-full px-4 py-2">
             {stage === "NONE" ? t.grapOff : t.grapStage(GRAP_INFO[stage].roman, t.grapCategory[GRAP_INFO[stage].category] ?? GRAP_INFO[stage].category)}
           </span>
-          <span className="glass rounded-full px-4 py-2">{scenario.source === "live" ? t.sourceLive : t.sourceDemo}</span>
-          <p role="status" aria-live="polite" className="glass m-0 rounded-full px-4 py-2 empty:hidden">{status ? (status.key === "loaded" ? t.scenarioLoaded(status.name) : t[status.key]) : ""}</p>
+          <span className="glass rounded-full px-4 py-2">
+            {scenario.source === "live" ? t.sourceLive : t.sourceDemo}
+            {scenario.source === "live" && scenario.fetchedAt && scenario.provider && (
+              <span className="ink-soft font-semibold"> · {t.sourceLine(scenario.provider, istClock(scenario.fetchedAt))}</span>
+            )}
+          </span>
+          <p role="status" aria-live="polite" className="glass m-0 rounded-full px-4 py-2 empty:hidden">{statusText(status, t)}</p>
         </div>
 
         {tab !== "choreographer" && (

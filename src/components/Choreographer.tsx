@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { cigaretteEquivalent, formatHour, pm25ToAqi } from "@/lib/airQuality";
 import { COOKING_INCREMENT_UG_M3 } from "@/lib/constants";
 import { NO_INTERVENTIONS, calculateHouseholdImpact, clampMembers, modelIndoor, roomVolumeM3 } from "@/lib/impactEngine";
+import { LIMITED_ACTIVITY_MINUTES, personalAdvice } from "@/lib/personalAdvice";
 import { phaseForHour } from "@/lib/skyPhase";
 import { useT } from "@/hooks/useLang";
 import type {
@@ -95,6 +96,9 @@ export function Choreographer({
       commute: one({ switchCommuteToMetroN95: true }),
     };
   }, [scenario, profile, w]);
+
+  const personal = useMemo(() => personalAdvice(scenario.hourly, hour, profile, w), [scenario, hour, profile, w]);
+  const anySensitive = profile.hasChildren || profile.hasSeniors || profile.hasRespiratoryCondition;
 
   const steps = [
     { h: 6, label: t.stepEarly },
@@ -229,6 +233,25 @@ export function Choreographer({
         </div>
       </section>
 
+      <section className="glass liquid rounded-[32px] p-6" aria-labelledby="personal-h">
+        <h3 id="personal-h" className="label m-0 flex items-center gap-2"><Icon name="family_restroom" className="accent" /> {t.personalTitle}</h3>
+        <p className="ink-soft m-0 mt-1 text-sm">{t.personalIntro(formatHour(hour))}</p>
+        <ul className="m-0 mt-4 grid list-none gap-3 p-0 md:grid-cols-2">
+          {personal.groups.map((g) => (
+            <li key={g.group} className={`chip rounded-3xl p-4 ${g.nowLevel === "indoors" ? "ring-2 ring-current" : ""}`}>
+              <p className="m-0 text-sm font-bold">{t.groupName[g.group]}</p>
+              <p className="m-0 mt-1 text-[15px] leading-6">
+                {t.personalLine(g.nowLevel, g.bestLevel, g.nowAqi, formatHour(g.bestHour), g.bestAqi, LIMITED_ACTIVITY_MINUTES)}
+                {g.mask && g.nowLevel !== "ok" && <> {t.personalMask}</>}
+              </p>
+            </li>
+          ))}
+        </ul>
+        {personal.shortenAiringTo !== null && (
+          <p className="scrim m-0 mt-4 rounded-3xl px-5 py-3 text-sm leading-6">{t.airingShort(personal.shortenAiringTo, personal.windowAqi)}</p>
+        )}
+      </section>
+
       <details className="glass liquid rounded-[32px] p-5" open>
         <summary className="label min-h-11 cursor-pointer py-2">{t.household}</summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -262,13 +285,22 @@ export function Choreographer({
             </select>
           </label>
         </div>
-        <label className="mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold">
-          <input type="checkbox" checked={profile.hasVulnerableMembers} onChange={(e) => onProfile({ hasVulnerableMembers: e.target.checked })} className="h-5 w-5" />
-          {t.vulnerable}
-        </label>
-        {profile.hasVulnerableMembers && (
-          <p className="ink-soft m-0 text-sm">{t.vulnerableNote}</p>
-        )}
+        <fieldset className="m-0 mt-3 border-0 p-0">
+          <legend className="label mb-1 p-0">{t.whoLives}</legend>
+          <div className="flex flex-wrap gap-x-6">
+            {([
+              ["hasChildren", t.hasChildren],
+              ["hasSeniors", t.hasSeniors],
+              ["hasRespiratoryCondition", t.hasRespiratory],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex min-h-11 items-center gap-3 text-sm font-semibold">
+                <input type="checkbox" checked={profile[key]} onChange={(e) => onProfile({ [key]: e.target.checked })} className="h-5 w-5" />
+                {label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        {anySensitive && <p className="ink-soft m-0 text-sm">{t.vulnerableNote}</p>}
       </details>
     </div>
   );

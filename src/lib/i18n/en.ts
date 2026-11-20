@@ -10,8 +10,17 @@ type Mode = "normal" | "brief" | "sealed";
 export const en = {
   // ---- shell
   skipToContent: "Skip to content",
-  cityLabel: "· New Delhi",
   chooseScenario: "Choose a scenario",
+  chooseCity: "City",
+  pickCity: "Pick a city",
+  liveCities: "Live forecast",
+  demoScenarios: "Demo scenarios",
+  /** Display names for the city list (ids from lib/cities.ts). */
+  cityName: {
+    delhi: "Delhi", noida: "Noida", gurugram: "Gurugram", mumbai: "Mumbai", kolkata: "Kolkata", lucknow: "Lucknow",
+    patna: "Patna", jaipur: "Jaipur", ahmedabad: "Ahmedabad", pune: "Pune", hyderabad: "Hyderabad",
+    bengaluru: "Bengaluru", chennai: "Chennai",
+  } as Record<string, string>,
   useMyLocation: "Use my location",
   locating: "Locating…",
   myLocation: "My location",
@@ -36,7 +45,11 @@ export const en = {
   grapStage: (roman: string, category: string) => `GRAP Stage ${roman} · ${category}`,
   sourceLive: "Live forecast",
   sourceDemo: "Demo telemetry",
+  /** Where live data came from and how current it is (time in Indian Standard Time). */
+  sourceLine: (provider: string, time: string) => `Source: ${provider} · updated ${time} IST`,
   scenarioLoaded: (name: string) => `Loaded ${name} scenario.`,
+  cityLive: (name: string) => `Showing the live forecast for ${name}.`,
+  cityDemo: (name: string) => `Live data is unavailable for ${name}, so a demo smog pattern is shown.`,
   locUnavailable: "Location is not available in this browser. Showing demo data.",
   locFinding: "Finding your location…",
   locLive: "Showing the live forecast for your location.",
@@ -119,8 +132,32 @@ export const en = {
   commuteKm: "Commute, km round trip",
   usualCommute: "Usual commute",
   cooking: "Cooking",
-  vulnerable: "A child, older adult or someone with asthma lives here",
+  whoLives: "Who lives here",
+  hasChildren: "Children (under 12)",
+  hasSeniors: "Older adults (65+)",
+  hasRespiratory: "Asthma, heart or lung condition",
   vulnerableNote: "Sensitive groups should take extra care. This app does not replace advice from your doctor.",
+
+  // ---- who's at home: outdoor guidance
+  personalTitle: "Outdoor guidance for your household",
+  personalIntro: (time: string) => `For ${time}. Tighter limits apply to children, older adults and people with lung or heart conditions.`,
+  groupName: {
+    children: "Children",
+    seniors: "Older adults",
+    respiratory: "Asthma, heart or lung condition",
+    adults: "Healthy adults",
+  } as Record<string, string>,
+  personalLine: (nowLevel: "ok" | "limit" | "indoors", bestLevel: "ok" | "limit" | "indoors", nowAqi: number, best: string, bestAqi: number, minutes: number) =>
+    nowLevel === "ok"
+      ? `Outdoor play and walks are fine now (AQI ${nowAqi}).`
+      : nowLevel === "limit"
+        ? `Keep outdoor time to ${minutes} minutes of light activity now (AQI ${nowAqi}). Best time today: ${best} (AQI ${bestAqi}).`
+        : bestLevel === "indoors"
+          ? `Stay indoors all day: even the best hour, ${best}, is AQI ${bestAqi}.`
+          : `Stay indoors now (AQI ${nowAqi}). If you must go out, ${best} is best (AQI ${bestAqi}).`,
+  personalMask: "If you go out, wear a fitted N95.",
+  airingShort: (minutes: number, aqi: number) =>
+    `Because someone sensitive lives here, air the home for only ${minutes} minutes, even in the low-smog window (its average is AQI ${aqi}), and keep them in another room meanwhile.`,
   commuteMode: {
     private_petrol_car: "Petrol car",
     private_diesel_car: "Diesel car",
@@ -236,6 +273,7 @@ export const en = {
   // ---- Community
   communityBadge: "Community and GRAP playbook",
   grapNone: "No GRAP stage is active right now.",
+  grapOutsideNcr: "GRAP is the Delhi-NCR action plan. For your city, treat these stages as a reference scale for how severe the air is, not as official orders.",
   grapHeadline: (roman: string, category: string) => `GRAP Stage ${roman}: ${category}.`,
   aqiLine: (aqi: number, peak: number, worse: boolean) =>
     `Current AQI ${aqi}; today's peak AQI ${peak}. ${worse ? "Conditions can worsen later today." : ""}`,

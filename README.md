@@ -4,16 +4,18 @@
 
 VayuShift turns an hourly smog forecast and a room photo into a timed daily routine, low-cost indoor air fixes
 and a receipt that shows the direct effect of each choice. It is aimed at families and apartment societies
-(RWAs) in Delhi-NCR, and works anywhere the Google Air Quality API has coverage.
+(RWAs) in Delhi-NCR, and works anywhere the Google Air Quality API has coverage: pick a city (13 are listed, including
+Mumbai and Kolkata) or share your location, and every figure comes from that place's live forecast.
 
 **Live:** https://vayushift-933086836183.asia-south1.run.app (Google Cloud Run, Firestore, real Air Quality and Gemini APIs)
 
 | Read this | For |
 | --- | --- |
+| [`docs/SAMPLE_INPUTS.md`](docs/SAMPLE_INPUTS.md) | **Evaluators:** exact steps and example inputs to try every feature in a few minutes |
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Problem statement to code to tests, and where it is only partly met |
 | [`docs/GOOGLE_SERVICES.md`](docs/GOOGLE_SERVICES.md) | Every Google service used, and how each was confirmed |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Threat model: each threat, its control, and the test that proves it |
-| [`docs/TESTING.md`](docs/TESTING.md) | What the 283 tests prove, live verification, and bugs only the real systems exposed |
+| [`docs/TESTING.md`](docs/TESTING.md) | What the 310 tests prove, live verification, and bugs only the real systems exposed |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | What is built, how it was checked, what is not covered |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/openapi.yaml`](docs/openapi.yaml) | Design, data model, failure modes, API |
 
@@ -26,7 +28,7 @@ Air quality apps show a red number and stop. In winter smog, the useful question
 
 | Tab | What it does | Decision logic |
 | --- | --- | --- |
-| **Living Sky** | A scrubbable 24-hour horizon (outdoor and modelled indoor PM2.5, jump to the safe window, play the day), the best 90-minute daytime window, four routine switches. Scrubbing changes the hero advice, the readouts and the sky itself (palette, sun and moon, stars, clouds, birds, wind speed, day or night theme). Deep-link an hour with `?hour=15` | Searches daytime windows for the lowest mean PM2.5, compares with the 07:00-10:00 peak, and **downgrades its own advice** when the afternoon low is above 250 µg/m³ (brief airing) or every hour is above 300 (stay sealed) |
+| **Living Sky** | A scrubbable 24-hour horizon (outdoor and modelled indoor PM2.5, jump to the safe window, play the day), the best 90-minute daytime window, four routine switches, and **outdoor guidance per household** (children, older adults, asthma or heart and lung conditions, healthy adults each get their own limit, best hour to go out and mask advice). Live data shows its source and an IST "updated" time. Scrubbing changes the hero advice, the readouts and the sky itself (palette, sun and moon, stars, clouds, birds, wind speed, day or night theme). Deep-link an hour with `?hour=15` | Searches daytime windows for the lowest mean PM2.5, compares with the 07:00-10:00 peak, and **downgrades its own advice** when the afternoon low is above 250 µg/m³ (brief airing) or every hour is above 300 (stay sealed) |
 | **Indoor Air Lab** | Photo or sample room, then CADR target and filter comparison | Gemini extracts room facts into a fixed schema; a single-room mass balance computes indoor PM2.5 for a DIY MERV-13 box, a box fan, or a HEPA unit, with cost, noise and sleep advice |
 | **Community** | GRAP stage, vehicle check, guard-heater cost, bilingual WhatsApp card | AQI to GRAP stage (201/301/401/450), deterministic English and Hindi templates |
 | **Receipt** | Avoided cigarette-equivalents, µg inhaled, g CO₂, and a **shareable link** (`/r/<id>`, valid 90 days) | Every number comes from `src/lib/impactEngine.ts`, computed on the server |

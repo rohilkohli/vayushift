@@ -1,7 +1,10 @@
 import type { RefObject } from "react";
 import type { AirScenario } from "@/lib/types";
+import { CITIES } from "@/lib/cities";
 import { useLang } from "@/hooks/useLang";
 import { Icon } from "./Icon";
+
+const DEMO_PREFIX = "demo:";
 
 export interface TabDef {
   id: string;
@@ -16,6 +19,9 @@ interface Props {
   presets: readonly AirScenario[];
   onSelect: (s: AirScenario) => void;
   onLocate: () => void;
+  /** The city picked from the list (null when a preset or "my location" is showing) and the handler for picking one. */
+  cityId: string | null;
+  onCity: (id: string) => void;
   loadingLive: boolean;
   tabs: readonly TabDef[];
   tab: string;
@@ -25,9 +31,11 @@ interface Props {
   onToggleContrast: () => void;
 }
 
-export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tabs, tab, onTab, tabRefs, highContrast, onToggleContrast }: Props) {
+export function Header({ scenario, presets, onSelect, onLocate, cityId, onCity, loadingLive, tabs, tab, onTab, tabRefs, highContrast, onToggleContrast }: Props) {
   const { lang, t, setLang } = useLang();
   const otherLang = lang === "en" ? "hi" : "en";
+  // What the list shows as chosen: the picked city, else the demo scenario on screen, else nothing (a live location).
+  const selectValue = cityId ?? (presets.some((p) => p.id === scenario.id) ? `${DEMO_PREFIX}${scenario.id}` : "");
   const onKey = (e: React.KeyboardEvent, i: number) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!dir) return;
@@ -47,23 +55,40 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8c4e35]" />
             </span>
             <h1 className="serif m-0 text-[22px] font-medium leading-none tracking-tight">VayuShift</h1>
-            <span className="label hidden whitespace-nowrap sm:inline">{t.cityLabel}</span>
           </span>
           <span className="hidden h-4 w-px bg-current opacity-20 sm:block" aria-hidden="true" />
           <fieldset className="m-0 min-w-0 border-0 p-0">
             <legend className="sr-only">{t.chooseScenario}</legend>
             <div className="no-scrollbar fade-x flex snap-x items-center gap-1 overflow-x-auto pr-4">
-              {presets.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  aria-pressed={scenario.id === p.id}
-                  onClick={() => onSelect(p)}
-                  className="pill whitespace-nowrap !px-3 !text-[11px]"
+              {/* One list for everything the visitor can look at: 13 live cities, then the three Delhi demo scenarios. */}
+              <label className="pill relative whitespace-nowrap !pl-3 !pr-2 !text-[11px]">
+                <Icon name="location_city" />
+                <span className="sr-only">{t.chooseCity}</span>
+                <select
+                  value={selectValue}
+                  disabled={loadingLive}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const demo = v.startsWith(DEMO_PREFIX) ? presets.find((p) => p.id === v.slice(DEMO_PREFIX.length)) : undefined;
+                    if (demo) onSelect(demo);
+                    else if (v) onCity(v);
+                  }}
+                  className="cursor-pointer appearance-none border-0 bg-transparent font-[inherit] text-[11px] font-bold text-inherit outline-none"
                 >
-                  {p.name}
-                </button>
-              ))}
+                  <option value="" disabled>{t.pickCity}</option>
+                  <optgroup label={t.liveCities}>
+                    {CITIES.map((c) => (
+                      <option key={c.id} value={c.id}>{t.cityName[c.id] ?? c.name}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label={t.demoScenarios}>
+                    {presets.map((p) => (
+                      <option key={p.id} value={`${DEMO_PREFIX}${p.id}`}>{p.name}</option>
+                    ))}
+                  </optgroup>
+                </select>
+                <Icon name="expand_more" />
+              </label>
               <button type="button" onClick={onLocate} disabled={loadingLive} className="pill whitespace-nowrap !px-3 !text-[11px]" aria-label={t.useMyLocation}>
                 <Icon name="near_me" />
                 <span className="hidden md:inline">{loadingLive ? t.locating : t.myLocation}</span>

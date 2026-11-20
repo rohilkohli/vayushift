@@ -8,8 +8,16 @@ import type { Messages } from "./en";
 export const hi: Messages = {
   // ---- shell
   skipToContent: "मुख्य सामग्री पर जाएँ",
-  cityLabel: "· नई दिल्ली",
   chooseScenario: "स्थिति चुनें",
+  chooseCity: "शहर",
+  pickCity: "शहर चुनें",
+  liveCities: "लाइव पूर्वानुमान",
+  demoScenarios: "डेमो स्थितियाँ",
+  cityName: {
+    delhi: "दिल्ली", noida: "नोएडा", gurugram: "गुरुग्राम", mumbai: "मुंबई", kolkata: "कोलकाता", lucknow: "लखनऊ",
+    patna: "पटना", jaipur: "जयपुर", ahmedabad: "अहमदाबाद", pune: "पुणे", hyderabad: "हैदराबाद",
+    bengaluru: "बेंगलुरु", chennai: "चेन्नई",
+  },
   useMyLocation: "मेरी लोकेशन इस्तेमाल करें",
   locating: "लोकेशन खोज रहे हैं…",
   myLocation: "मेरी लोकेशन",
@@ -33,7 +41,10 @@ export const hi: Messages = {
   grapStage: (roman, category) => `GRAP चरण ${roman} · ${category}`,
   sourceLive: "लाइव पूर्वानुमान",
   sourceDemo: "डेमो डेटा",
+  sourceLine: (provider, time) => `स्रोत: ${provider} · अपडेट ${time} IST`,
   scenarioLoaded: (name) => `${name} स्थिति लोड हुई।`,
+  cityLive: (name) => `${name} के लिए लाइव पूर्वानुमान दिख रहा है।`,
+  cityDemo: (name) => `${name} के लिए लाइव डेटा उपलब्ध नहीं है, इसलिए डेमो स्मॉग पैटर्न दिख रहा है।`,
   locUnavailable: "इस ब्राउज़र में लोकेशन उपलब्ध नहीं है। डेमो डेटा दिखाया जा रहा है।",
   locFinding: "आपकी लोकेशन खोजी जा रही है…",
   locLive: "आपकी लोकेशन का लाइव पूर्वानुमान दिखाया जा रहा है।",
@@ -116,8 +127,31 @@ export const hi: Messages = {
   commuteKm: "आना-जाना, कुल किमी",
   usualCommute: "सामान्य सफ़र का साधन",
   cooking: "खाना पकाना",
-  vulnerable: "घर में कोई बच्चा, बुज़ुर्ग या दमा का मरीज़ है",
+  whoLives: "घर में कौन रहता है",
+  hasChildren: "बच्चे (12 वर्ष से कम)",
+  hasSeniors: "बुज़ुर्ग (65+)",
+  hasRespiratory: "दमा, हृदय या फेफड़ों की बीमारी",
   vulnerableNote: "संवेदनशील लोग अतिरिक्त सावधानी रखें। यह ऐप आपके डॉक्टर की सलाह का विकल्प नहीं है।",
+
+  personalTitle: "आपके परिवार के लिए बाहर जाने की सलाह",
+  personalIntro: (time) => `${time} के लिए। बच्चों, बुज़ुर्गों और फेफड़ों या हृदय के मरीज़ों के लिए सीमाएँ ज़्यादा सख़्त हैं।`,
+  groupName: {
+    children: "बच्चे",
+    seniors: "बुज़ुर्ग",
+    respiratory: "दमा, हृदय या फेफड़ों की बीमारी",
+    adults: "स्वस्थ वयस्क",
+  },
+  personalLine: (nowLevel, bestLevel, nowAqi, best, bestAqi, minutes) =>
+    nowLevel === "ok"
+      ? `अभी बाहर खेलना और टहलना ठीक है (AQI ${nowAqi})।`
+      : nowLevel === "limit"
+        ? `अभी बाहर सिर्फ़ ${minutes} मिनट हल्की गतिविधि करें (AQI ${nowAqi})। आज का सबसे अच्छा समय: ${best} (AQI ${bestAqi})।`
+        : bestLevel === "indoors"
+          ? `पूरे दिन घर के अंदर रहें: सबसे अच्छा घंटा ${best} भी AQI ${bestAqi} है।`
+          : `अभी घर के अंदर रहें (AQI ${nowAqi})। बाहर जाना ही पड़े तो ${best} सबसे अच्छा है (AQI ${bestAqi})।`,
+  personalMask: "बाहर जाएँ तो फिट बैठने वाला N95 मास्क पहनें।",
+  airingShort: (minutes, aqi) =>
+    `घर में कोई संवेदनशील सदस्य है, इसलिए कम-स्मॉग वाली खिड़की में भी (उसका औसत AQI ${aqi} है) घर को सिर्फ़ ${minutes} मिनट हवादार करें और तब तक उन्हें दूसरे कमरे में रखें।`,
   commuteMode: {
     private_petrol_car: "पेट्रोल कार",
     private_diesel_car: "डीज़ल कार",
@@ -232,6 +266,7 @@ export const hi: Messages = {
 
   // ---- Community
   communityBadge: "समुदाय और GRAP गाइड",
+  grapOutsideNcr: "GRAP दिल्ली-एनसीआर की कार्ययोजना है। आपके शहर के लिए इन चरणों को हवा कितनी गंभीर है इसका एक संदर्भ पैमाना समझें, सरकारी आदेश नहीं।",
   grapNone: "अभी कोई GRAP चरण लागू नहीं है।",
   grapHeadline: (roman, category) => `GRAP चरण ${roman}: ${category}।`,
   aqiLine: (aqi, peak, worse) => `अभी AQI ${aqi}; आज का अधिकतम AQI ${peak}। ${worse ? "आज आगे स्थिति बिगड़ सकती है।" : ""}`,

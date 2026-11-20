@@ -73,6 +73,14 @@ describe("GoogleAirQualityProvider", () => {
     expect(s.hourly).toHaveLength(24);
   });
 
+  it("stamps the scenario with who supplied it and when, so the page can show how current it is", async () => {
+    const before = Date.now();
+    const s = await new GoogleAirQualityProvider("k", ok(body(24)) as unknown as typeof fetch).fetchScenario(28.615, 77.21);
+    expect(s.provider).toBe("Google Air Quality API");
+    expect(s.fetchedAt).toBeGreaterThanOrEqual(before);
+    expect(s.fetchedAt).toBeLessThanOrEqual(Date.now());
+  });
+
   it("throws on HTTP errors without exposing the response body", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(new Response("API key not valid: secret-key", { status: 403 }));
     await expect(new GoogleAirQualityProvider("secret-key", fetchImpl as unknown as typeof fetch).fetchScenario(1, 1)).rejects.toThrow(

@@ -91,6 +91,14 @@ export const VEHICLE_LABELS: Record<VehicleClass, string> = {
   cng_ev: "CNG or electric",
 };
 
+/**
+ * GRAP is the Delhi-NCR action plan. This is a coarse bounding box around the NCR (Delhi, Noida, Gurugram,
+ * Faridabad, Ghaziabad), used only to tell visitors elsewhere that the stages are a reference scale for them.
+ */
+export function isDelhiNcr(lat: number, lng: number): boolean {
+  return lat >= 28.0 && lat <= 29.0 && lng >= 76.6 && lng <= 77.8;
+}
+
 /** Light-vehicle restriction check for Stage III and above (Delhi-NCR). Awareness only. */
 export function vehicleRestricted(stage: GrapStage, v: VehicleClass): boolean {
   const high = stage === "STAGE_3" || stage === "STAGE_4";

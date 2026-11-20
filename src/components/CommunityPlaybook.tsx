@@ -15,6 +15,8 @@ interface Props {
 
 const STAGES: GrapStage[] = ["STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"];
 
+import { isDelhiNcr } from "@/lib/grapRules";
+
 export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
   const { t, englishAttrs } = useLang();
   const cat = (c: string) => t.grapCategory[c] ?? c;
@@ -54,6 +56,9 @@ export function CommunityPlaybook({ scenario, aqi, peakAqi, stage }: Props) {
             {stage === "NONE" ? t.grapNone : t.grapHeadline(info.roman, cat(info.category))}
           </h2>
           <p className="scrim mt-3 inline-block rounded-3xl px-5 py-3 text-lg">{t.aqiLine(aqi, peakAqi, peakAqi > aqi)}</p>
+          {!isDelhiNcr(scenario.lat, scenario.lng) && (
+            <p className="scrim mt-3 block max-w-xl rounded-3xl px-5 py-3 text-sm">{t.grapOutsideNcr}</p>
+          )}
         </div>
 
         <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="measures-h">

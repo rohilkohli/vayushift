@@ -71,6 +71,16 @@ export class GoogleAirQualityProvider implements AirQualityProvider {
     if (!res.ok) throw new Error(`Air Quality API responded ${res.status}`);
     const hourly = parseForecast(await res.json());
     if (!hourly) throw new Error("Air Quality API returned too little PM2.5 data");
-    return { id: "live", name: "Your location", area: "Live forecast", lat, lng, hourly, source: "live" };
+    return {
+      id: "live",
+      name: "Your location",
+      area: "Live forecast",
+      lat,
+      lng,
+      hourly,
+      source: "live",
+      fetchedAt: Date.now(),
+      provider: "Google Air Quality API",
+    };
   }
 }

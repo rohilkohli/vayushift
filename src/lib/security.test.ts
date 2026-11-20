@@ -67,7 +67,7 @@ describe("validateRoomScan", () => {
 
 describe("narrative guard", () => {
   const receipt = calculateHouseholdImpact(PRESET_SCENARIOS[0].hourly, {
-    memberCount: 3, commuterCount: 1, walkerCount: 1, hasVulnerableMembers: true, roomAreaSqFt: 180,
+    memberCount: 3, commuterCount: 1, walkerCount: 1, hasChildren: true, hasSeniors: false, hasRespiratoryCondition: false, roomAreaSqFt: 180,
     ceilingHeightFt: 10, windowType: "sliding_aluminum_unsealed", sleepNoiseSensitivity: "medium",
     commuteKmRoundTrip: 20, baselineCommuteMode: "private_petrol_car", baselineCookingFuel: "lpg_unvented",
   }, { ...NO_INTERVENTIONS, switchCommuteToMetroN95: true });
@@ -87,7 +87,7 @@ describe("narrative guard", () => {
   });
 });
 const SAMPLE_PROFILE = {
-  memberCount: 3, commuterCount: 1, walkerCount: 1, hasVulnerableMembers: false, roomAreaSqFt: 180,
+  memberCount: 3, commuterCount: 1, walkerCount: 1, hasChildren: false, hasSeniors: false, hasRespiratoryCondition: false, roomAreaSqFt: 180,
   ceilingHeightFt: 10, windowType: "sliding_aluminum_unsealed" as const, sleepNoiseSensitivity: "low" as const,
   commuteKmRoundTrip: 20, baselineCommuteMode: "private_petrol_car" as const, baselineCookingFuel: "lpg_unvented" as const,
 };
