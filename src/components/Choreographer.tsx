@@ -81,7 +81,7 @@ export function Choreographer({
     ),
     morning: t.subMorning(outNow, formatHour(w.startHour), inNow),
     night: t.subNight(outNow, inNow),
-    transition: t.subTransition(outNow, scenario.name, inNow, span),
+    transition: t.subTransition(outNow, scenario.name === "Your location" ? t.yourLocation : scenario.name, inNow, span),
   }[phase];
 
   // What each action would avoid on its own, shown whether the switch is on or off.

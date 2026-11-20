@@ -28,6 +28,7 @@ export const hi: Messages = {
   statusRegion: "वायु गुणवत्ता की स्थिति",
   loadingAir: "आपकी लोकेशन की वायु गुणवत्ता लोड हो रही है",
   nowLine: (aqi, pm) => `अभी · AQI ${aqi} · PM2.5 ${pm} µg/m³`,
+  yourLocation: "आपकी लोकेशन",
   grapOff: "GRAP: लागू नहीं",
   grapStage: (roman, category) => `GRAP चरण ${roman} · ${category}`,
   sourceLive: "लाइव पूर्वानुमान",

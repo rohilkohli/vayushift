@@ -21,6 +21,10 @@ import { LangProvider, useLang } from "@/hooks/useLang";
 import { useLiquidGlass } from "@/hooks/useLiquidGlass";
 import { useLivingSky } from "@/hooks/useLivingSky";
 
+type StatusMessage =
+  | { key: "locUnavailable" | "locFinding" | "locLive" | "locDemo" | "locFailed" | "locDenied" }
+  | { key: "loaded"; name: string };
+
 type Tab = "choreographer" | "lab" | "community";
 const TAB_IDS: readonly Tab[] = ["choreographer", "lab", "community"];
 
@@ -64,7 +68,8 @@ function AppInner() {
   const [scenario, setScenario] = useState<AirScenario>(DEFAULT_SCENARIO);
   const [tab, setTab] = useState<Tab>("choreographer");
   const [receiptOpen, setReceiptOpen] = useState(false);
-  const [status, setStatus] = useState("");
+  // Kept as a key, not finished text, so it re-renders in the current language when the language is switched.
+  const [status, setStatus] = useState<StatusMessage | null>(null);
   const [loadingLive, setLoadingLive] = useState(false);
   const [hour, setHour] = useState(8); // the real hour in IST
   const [selHour, setSelHour] = useState<number | null>(null); // the hour on the scrubber
@@ -127,11 +132,11 @@ function AppInner() {
 
   const useMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setStatus(t.locUnavailable);
+      setStatus({ key: "locUnavailable" });
       return;
     }
     setLoadingLive(true);
-    setStatus(t.locFinding);
+    setStatus({ key: "locFinding" });
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -141,20 +146,20 @@ function AppInner() {
           const data = (await res.json()) as { scenario: AirScenario; mode: "live" | "demo" };
           setScenario(data.scenario);
           track({ event: "scenario_loaded", props: { preset_id: data.scenario.id } });
-          setStatus(data.mode === "live" ? t.locLive : t.locDemo);
+          setStatus({ key: data.mode === "live" ? "locLive" : "locDemo" });
         } catch {
-          setStatus(t.locFailed);
+          setStatus({ key: "locFailed" });
         } finally {
           setLoadingLive(false);
         }
       },
       () => {
         setLoadingLive(false);
-        setStatus(t.locDenied);
+        setStatus({ key: "locDenied" });
       },
       { timeout: 8000, maximumAge: 600000 },
     );
-  }, [t]);
+  }, []);
 
   return (
     <>
@@ -172,7 +177,7 @@ function AppInner() {
         onSelect={(s) => {
           setScenario(s);
           track({ event: "scenario_loaded", props: { preset_id: s.id } });
-          setStatus(t.scenarioLoaded(s.name));
+          setStatus({ key: "loaded", name: s.name });
         }}
         onLocate={useMyLocation}
         loadingLive={loadingLive}
@@ -198,7 +203,7 @@ function AppInner() {
             {stage === "NONE" ? t.grapOff : t.grapStage(GRAP_INFO[stage].roman, t.grapCategory[GRAP_INFO[stage].category] ?? GRAP_INFO[stage].category)}
           </span>
           <span className="glass rounded-full px-4 py-2">{scenario.source === "live" ? t.sourceLive : t.sourceDemo}</span>
-          <p role="status" aria-live="polite" className="glass m-0 rounded-full px-4 py-2 empty:hidden">{status}</p>
+          <p role="status" aria-live="polite" className="glass m-0 rounded-full px-4 py-2 empty:hidden">{status ? (status.key === "loaded" ? t.scenarioLoaded(status.name) : t[status.key]) : ""}</p>
         </div>
 
         {tab !== "choreographer" && (

@@ -13,7 +13,7 @@ and a receipt that shows the direct effect of each choice. It is aimed at famili
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Problem statement to code to tests, and where it is only partly met |
 | [`docs/GOOGLE_SERVICES.md`](docs/GOOGLE_SERVICES.md) | Every Google service used, and how each was confirmed |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Threat model: each threat, its control, and the test that proves it |
-| [`docs/TESTING.md`](docs/TESTING.md) | What the 282 tests prove, live verification, and bugs only the real systems exposed |
+| [`docs/TESTING.md`](docs/TESTING.md) | What the 283 tests prove, live verification, and bugs only the real systems exposed |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | What is built, how it was checked, what is not covered |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/openapi.yaml`](docs/openapi.yaml) | Design, data model, failure modes, API |
 

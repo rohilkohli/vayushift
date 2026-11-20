@@ -61,6 +61,17 @@ describe("language switch", () => {
     expect(container.querySelector("[aria-valuetext]")?.getAttribute("aria-valuetext")).toMatch(/micrograms/);
   });
 
+  it("a status message already on screen is re-rendered when the language changes", async () => {
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "geolocation", { value: undefined, configurable: true });
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Use my location" }));
+    expect(screen.getByText("Location is not available in this browser. Showing demo data.")).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Switch language to Hindi" }));
+    await waitFor(() => expect(screen.getByText("इस ब्राउज़र में लोकेशन उपलब्ध नहीं है। डेमो डेटा दिखाया जा रहा है।")).toBeDefined());
+    expect(screen.queryByText("Location is not available in this browser. Showing demo data.")).toBeNull();
+  });
+
   it("opens in Hindi from ?lang=hi", async () => {
     window.history.replaceState(null, "", "/?lang=hi");
     render(<App />);

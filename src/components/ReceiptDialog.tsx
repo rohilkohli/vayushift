@@ -65,7 +65,7 @@ export function ReceiptDialog({ open, onClose, receipt, scenario, profile, inter
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, scenario, profile, interventions, lang, t]);
 
-  const shareText = t.shareText(scenario.name, receipt.avoidedCigarettesHouseholdDay, receipt.savedCo2GramsDay);
+  const shareText = t.shareText(scenario.name === "Your location" ? t.yourLocation : scenario.name, receipt.avoidedCigarettesHouseholdDay, receipt.savedCo2GramsDay);
 
   const empty = receipt.avoidedCigarettesHouseholdDay <= 0 && receipt.savedCo2GramsDay <= 0;
 

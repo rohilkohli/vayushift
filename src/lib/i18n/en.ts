@@ -30,6 +30,8 @@ export const en = {
   statusRegion: "Air quality status",
   loadingAir: "Loading air quality for your location",
   nowLine: (aqi: number, pm: number) => `Now · AQI ${aqi} · PM2.5 ${pm} µg/m³`,
+  /** The server names a located scenario "Your location" (in English); the interface shows it in the current language. */
+  yourLocation: "Your location",
   grapOff: "GRAP: not active",
   grapStage: (roman: string, category: string) => `GRAP Stage ${roman} · ${category}`,
   sourceLive: "Live forecast",
