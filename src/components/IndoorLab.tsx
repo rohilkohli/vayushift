@@ -7,6 +7,7 @@ import { apiErrorMessage, track } from "@/lib/clientApi";
 import { downscaleToJpegBase64 } from "@/lib/imageResize";
 import { SAMPLE_ROOMS, type RoomScan } from "@/lib/roomScan";
 import type { ActiveInterventions, AirScenario, DirectImpactReceipt, FiltrationMode, HouseholdProfile, WindowType } from "@/lib/types";
+import { useLang } from "@/hooks/useLang";
 import { AnimatedNumber } from "./AnimatedNumber";
 import { Icon } from "./Icon";
 import { RoutineToggle } from "./RoutineToggle";
@@ -20,13 +21,10 @@ interface Props {
   onInterventions: (p: Partial<ActiveInterventions>) => void;
 }
 
-const WINDOW_LABELS: Record<WindowType, string> = {
-  sliding_aluminum_unsealed: "Aluminium sliding, unsealed",
-  casement_wood_unsealed: "Wooden casement, unsealed",
-  upvc_sealed: "uPVC, sealed",
-};
+const WINDOW_TYPES: WindowType[] = ["sliding_aluminum_unsealed", "casement_wood_unsealed", "upvc_sealed"];
 
 export function IndoorLab({ scenario, profile, interventions, receipt, onProfile, onInterventions }: Props) {
+  const { t, englishAttrs } = useLang();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [scan, setScan] = useState<RoomScan | null>(null);
@@ -54,15 +52,15 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
   async function onFile(file: File | undefined) {
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setMessage("Please choose a JPEG, PNG or WebP photo.");
+      setMessage(t.msgBadType);
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      setMessage("That photo is too large. Try a smaller one.");
+      setMessage(t.msgTooLarge);
       return;
     }
     setBusy(true);
-    setMessage("Inspecting window seals, stove type and room size…");
+    setMessage(t.msgInspecting);
     try {
       const data = await downscaleToJpegBase64(file);
       const res = await fetch("/api/analyze-room", {
@@ -71,18 +69,16 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
         body: JSON.stringify({ mimeType: "image/jpeg", data }),
       });
       if (!res.ok) {
-        setMessage(await apiErrorMessage(res, "Something went wrong. Use the manual sliders instead."));
+        setMessage(await apiErrorMessage(res, t.msgGeneric));
         return;
       }
       const body = (await res.json()) as { scan?: RoomScan; fallback?: boolean; reason?: string };
-      if (body.scan) applyScan(body.scan, "Room analysed. You can fine-tune the values below.", "upload");
-      else if (body.reason === "not_a_room")
-        setMessage("We couldn't detect an indoor room, so the manual sliders are in use. Pick a sample room or adjust the values.");
-      else if (body.reason === "budget_exhausted")
-        setMessage("Photo analysis has reached today's limit. Use a sample room or the manual sliders.");
-      else setMessage("Photo analysis is unavailable right now. Use a sample room or the manual sliders.");
+      if (body.scan) applyScan(body.scan, t.msgAnalysed, "upload");
+      else if (body.reason === "not_a_room") setMessage(t.msgNotRoom);
+      else if (body.reason === "budget_exhausted") setMessage(t.msgBudget);
+      else setMessage(t.msgUnavailable);
     } catch {
-      setMessage("Could not read that photo. Use a sample room or the manual sliders.");
+      setMessage(t.msgUnreadable);
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -90,11 +86,7 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
   }
 
   const noiseTip =
-    profile.sleepNoiseSensitivity === "high"
-      ? "You are a light sleeper: run a DIY box on high from 18:00 to 22:00, then switch it off at bedtime, or choose the HEPA unit."
-      : profile.sleepNoiseSensitivity === "medium"
-        ? "Run DIY boxes on high in the evening and on low overnight."
-        : "DIY boxes can run on a low setting overnight.";
+    profile.sleepNoiseSensitivity === "high" ? t.tipHigh : profile.sleepNoiseSensitivity === "medium" ? t.tipMedium : t.tipLow;
 
   const outdoorAvg = Math.round(meanBetween(scenario.hourly, 0, 23));
   const fieldCadr = Math.round(fieldCadrM3h(interventions.filtrationMode));
@@ -109,13 +101,13 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
       <div className="grid gap-8 lg:grid-cols-[1fr_1.25fr]">
         <div className="space-y-6">
           <div>
-            <p className="label scrim inline-block rounded-full px-4 py-1.5">Indoor purity dynamics · Room sanctuary</p>
+            <p className="label scrim inline-block rounded-full px-4 py-1.5">{t.labBadge}</p>
             <h2 className="serif hero-ink halo mt-2 text-[2.4rem] font-medium leading-[1.1] tracking-tight sm:text-5xl">
-              Sculpting an island of pure alpine breath indoors.
+              {t.labHeadline}
             </h2>
           </div>
 
-          <div className="glass relative mx-auto flex aspect-square w-full max-w-[400px] flex-col items-center justify-center rounded-full p-10 text-center" role="group" aria-label="Clean air delivery dial">
+          <div className="glass relative mx-auto flex aspect-square w-full max-w-[400px] flex-col items-center justify-center rounded-full p-10 text-center" role="group" aria-label={t.dialAria}>
             <svg viewBox="0 0 260 260" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
               <defs>
                 <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
@@ -129,82 +121,82 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
             </svg>
             <p className="chip relative m-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
               <span className="h-2 w-2 rounded-full bg-[#c25a32]" aria-hidden="true" />
-              {active ? "Active sanctuary" : "No filter selected"}
+              {active ? t.dialActive : t.dialNone}
             </p>
             <p className="serif relative m-0 mt-3 text-7xl leading-none" aria-live="polite">
               <AnimatedNumber value={active ? fieldCadr : receipt.requiredCadrM3h} />
               <span className="ink-soft ml-1 text-2xl">m³/h</span>
             </p>
-            <p className="label relative m-0 mt-2">{active ? "Clean air delivery (CADR)" : "Target CADR for 5 ACH"}</p>
+            <p className="label relative m-0 mt-2">{active ? t.dialCadr : t.dialTarget}</p>
             <p className="chip relative m-0 mt-4 rounded-full px-4 py-1.5 text-xs font-semibold">
               PM2.5 {receipt.baselineIndoorPm25} → {receipt.managedIndoorPm25} µg/m³
               {receipt.indoorReductionPct > 0 && <span className="accent ml-2 font-bold">−{Math.round(receipt.indoorReductionPct)}%</span>}
             </p>
             <p className="ink-soft relative m-0 mt-3 flex items-center gap-1 text-xs font-medium">
               <Icon name="autorenew" />
-              {active && ach > 0 ? `Air turnover: ${Math.round(60 / ach)} min · ${ach.toFixed(1)} ACH` : `Room volume ${receipt.roomVolumeM3} m³`}
+              {active && ach > 0 ? t.turnover(Math.round(60 / ach), ach.toFixed(1)) : t.roomVolume(receipt.roomVolumeM3)}
             </p>
           </div>
 
           <section className="glass liquid rounded-[2rem] p-6" aria-labelledby="env-h">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 id="env-h" className="serif m-0 flex items-center gap-2 text-xl font-medium"><Icon name="crop_square" /> Room envelope</h3>
-              <p className="chip m-0 rounded-full px-3 py-1 text-xs font-bold">{profile.roomAreaSqFt} sq ft · {profile.ceilingHeightFt} ft ceiling</p>
+              <h3 id="env-h" className="serif m-0 flex items-center gap-2 text-xl font-medium"><Icon name="crop_square" /> {t.envelope}</h3>
+              <p className="chip m-0 rounded-full px-3 py-1 text-xs font-bold">{t.envelopeChip(profile.roomAreaSqFt, profile.ceilingHeightFt)}</p>
             </div>
             <label className="mt-4 block text-sm font-semibold">
-              Floor area: {profile.roomAreaSqFt} sq ft
+              {t.floorArea(profile.roomAreaSqFt)}
               <input type="range" min={60} max={500} step={10} value={profile.roomAreaSqFt}
                 style={{ "--p": `${((profile.roomAreaSqFt - 60) / (500 - 60)) * 100}%` } as React.CSSProperties}
                 onChange={(e) => onProfile({ roomAreaSqFt: Number(e.target.value) })} className="mt-1 block h-11 w-full" />
             </label>
             <label className="block text-sm font-semibold">
-              Ceiling height: {profile.ceilingHeightFt} ft
+              {t.ceilingHeight(profile.ceilingHeightFt)}
               <input type="range" min={8} max={12} step={0.5} value={profile.ceilingHeightFt}
                 style={{ "--p": `${((profile.ceilingHeightFt - 8) / (12 - 8)) * 100}%` } as React.CSSProperties}
                 onChange={(e) => onProfile({ ceilingHeightFt: Number(e.target.value) })} className="block h-11 w-full" />
             </label>
             <div className="mt-2 flex flex-wrap gap-2">
               {SAMPLE_ROOMS.map((r) => (
-                <button key={r.id} type="button" className="pill" aria-pressed={scan === r.scan} onClick={() => applyScan(r.scan, `Loaded sample: ${r.label}.`, "preset")}>
-                  {r.label}
+                <button key={r.id} type="button" className="pill" aria-pressed={scan === r.scan} onClick={() => applyScan(r.scan, t.sampleLoaded(r.label), "preset")}>
+                  <span {...englishAttrs}>{r.label}</span>
                 </button>
               ))}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="block text-sm font-semibold">
-                Windows
+                {t.windows}
                 <select value={profile.windowType} onChange={(e) => onProfile({ windowType: e.target.value as WindowType })} className="field">
-                  {Object.entries(WINDOW_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  {WINDOW_TYPES.map((k) => <option key={k} value={k}>{t.windowType[k]}</option>)}
                 </select>
               </label>
               <label className="block text-sm font-semibold">
-                Night-time noise sensitivity
+                {t.noiseLabel}
                 <select value={profile.sleepNoiseSensitivity}
                   onChange={(e) => onProfile({ sleepNoiseSensitivity: e.target.value as HouseholdProfile["sleepNoiseSensitivity"] })} className="field">
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High (light sleeper)</option>
+                  <option value="low">{t.noiseLow}</option>
+                  <option value="medium">{t.noiseMedium}</option>
+                  <option value="high">{t.noiseHigh}</option>
                 </select>
               </label>
             </div>
             <div className="mt-4">
-              <label htmlFor="room-photo" className="block text-sm font-semibold">Or scan your own room (JPEG, PNG or WebP)</label>
+              <label htmlFor="room-photo" className="block text-sm font-semibold">{t.scanLabel}</label>
               <input id="room-photo" ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
                 onChange={(e) => onFile(e.target.files?.[0])} className="mt-1 block min-h-11 w-full text-sm" />
-              <p className="ink-soft m-0 text-xs">Resized on your device, stripped of location data, analysed once, never stored.</p>
+              <p className="ink-soft m-0 text-xs">{t.scanPrivacy}</p>
             </div>
             <p role="status" aria-live="polite" className="m-0 mt-2 min-h-6 text-sm font-semibold">{message}</p>
             {scan && (
               <ul className="ink-soft m-0 list-disc pl-5 text-sm">
-                {scan.infiltrationRiskNotes.map((n) => <li key={n}>{n}</li>)}
-                {scan.recommendedPlacementSpot && <li>Placement: {scan.recommendedPlacementSpot}</li>}
+                {scan.infiltrationRiskNotes.map((n) => <li key={n} {...englishAttrs}>{n}</li>)}
+                {scan.recommendedPlacementSpot && <li {...englishAttrs}>{t.placement(scan.recommendedPlacementSpot)}</li>}
               </ul>
             )}
           </section>
         </div>
 
         <div className="space-y-4">
-          <p className="label scrim inline-flex items-center gap-2 rounded-full px-4 py-1.5"><span className="h-2 w-2 rounded-full bg-[#ffad8f]" aria-hidden="true" /> Deployable filter arrays · Needs {receipt.requiredCadrM3h} m³/h for your room</p>
+          <p className="label scrim inline-flex items-center gap-2 rounded-full px-4 py-1.5"><span className="h-2 w-2 rounded-full bg-[#ffad8f]" aria-hidden="true" /> {t.filtersBadge(receipt.requiredCadrM3h)}</p>
           <ul className="stagger m-0 list-none space-y-4 p-0">
             {options.map((o, idx) => {
               const f = FILTERS[o.id];
@@ -214,23 +206,23 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="m-0 flex flex-wrap items-center gap-2">
-                        {idx === 0 && <span className="rounded-full bg-[#ffdbce] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#6f3720]">Best value</span>}
-                        <span className="label">{o.meetsTargetAch ? "Meets 5-ACH target" : "Below 5-ACH target alone"}</span>
+                        {idx === 0 && <span className="rounded-full bg-[#ffdbce] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#6f3720]">{t.bestValue}</span>}
+                        <span className="label">{o.meetsTargetAch ? t.meetsTarget : t.belowTarget}</span>
                       </p>
-                      <h4 className="serif m-0 mt-1 text-2xl font-medium">{f.name}</h4>
+                      <h4 className="serif m-0 mt-1 text-2xl font-medium" {...englishAttrs}>{f.name}</h4>
                     </div>
                     <p className="serif m-0 text-2xl">₹{f.costInr.toLocaleString("en-IN")}</p>
                   </div>
                   <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0 text-xs font-semibold">
-                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="blur_on" /> Modelled: {o.modelledReductionPct}% lower PM2.5</li>
-                    <li className="chip rounded-full px-3 py-1">Published: ~{f.literatureReductionPct}%</li>
-                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="air" /> CADR ≈ {o.cadrFieldM3h} m³/h</li>
-                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="volume_up" /> {f.noiseDeltaDbDay ? `+${f.noiseDeltaDbDay} dB day, +${f.noiseDeltaDbNight} dB night` : "Quiet"}</li>
+                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="blur_on" /> {t.modelled(o.modelledReductionPct)}</li>
+                    <li className="chip rounded-full px-3 py-1">{t.published(f.literatureReductionPct)}</li>
+                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="air" /> {t.cadrApprox(o.cadrFieldM3h)}</li>
+                    <li className="chip flex items-center gap-1.5 rounded-full px-3 py-1"><Icon name="volume_up" /> {f.noiseDeltaDbDay ? t.noiseDb(f.noiseDeltaDbDay, f.noiseDeltaDbNight) : t.quiet}</li>
                   </ul>
-                  <p className="ink-soft m-0 mt-3 text-sm">{f.note}</p>
+                  <p className="ink-soft m-0 mt-3 text-sm" {...englishAttrs}>{f.note}</p>
                   <div className="mt-4 flex justify-end">
                     <button type="button" aria-pressed={selected} onClick={() => onInterventions({ filtrationMode: (selected ? "none" : o.id) as FiltrationMode })} className="pill">
-                      {selected ? "✓ Configured & active" : "Select configuration"}
+                      {selected ? t.configured : t.selectConfig}
                     </button>
                   </div>
                 </li>
@@ -240,20 +232,20 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
 
           <RoutineToggle
             icon="door_front"
-            title={`+ ₹${EPDM_COST_INR} EPDM window track seal`}
-            subtitle="Blocks about 30% of exterior seepage"
+            title={t.epdmTitle(EPDM_COST_INR)}
+            subtitle={t.epdmSub}
             checked={interventions.sealWindowsWithEpdm}
             onChange={(v) => onInterventions({ sealWindowsWithEpdm: v })}
             describedBy="t-epdm"
           />
 
           <aside className="glass liquid rounded-[2rem] p-5 text-sm" aria-labelledby="tips-h">
-            <h4 id="tips-h" className="label m-0">Sleep and safety</h4>
+            <h4 id="tips-h" className="label m-0">{t.tipsTitle}</h4>
             <p className="mt-2">{noiseTip}</p>
             <ul className="m-0 list-disc pl-5">
-              <li>Use only a certified box fan with thermal protection. Never leave a damaged fan running.</li>
-              <li>Use pleated filters rated MERV-13 or better; swap them when visibly dirty.</li>
-              <li>Avoid purifiers that make ozone.</li>
+              <li>{t.safety1}</li>
+              <li>{t.safety2}</li>
+              <li>{t.safety3}</li>
             </ul>
           </aside>
         </div>
@@ -261,10 +253,10 @@ export function IndoorLab({ scenario, profile, interventions, receipt, onProfile
 
       <dl className="stagger m-0 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          ["Exterior PM2.5, 24 h avg", `${outdoorAvg}`, "µg/m³", "Outdoor average for this scenario"],
-          ["Modelled sanctuary PM2.5", `${receipt.managedIndoorPm25}`, "µg/m³", "A model, not a sensor reading"],
-          ["Filter air changes", ach.toFixed(1), "per hour", active ? "From the selected option" : "Select an option above"],
-          ["Target CADR", `${receipt.requiredCadrM3h}`, "m³/h", "5 air changes per hour"],
+          [t.statOutdoor, `${outdoorAvg}`, "µg/m³", t.statOutdoorNote],
+          [t.statIndoor, `${receipt.managedIndoorPm25}`, "µg/m³", t.statIndoorNote],
+          [t.statAch, ach.toFixed(1), t.statAchUnit, active ? t.statAchOn : t.statAchOff],
+          [t.statTarget, `${receipt.requiredCadrM3h}`, "m³/h", t.statTargetNote],
         ].map(([k, v, u, n]) => (
           <div key={k} className="glass liquid lift rounded-[2rem] p-5">
             <dt className="label">{k}</dt>

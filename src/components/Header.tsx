@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { AirScenario } from "@/lib/types";
+import { useLang } from "@/hooks/useLang";
 import { Icon } from "./Icon";
 
 export interface TabDef {
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tabs, tab, onTab, tabRefs }: Props) {
+  const { lang, t, setLang } = useLang();
+  const otherLang = lang === "en" ? "hi" : "en";
   const onKey = (e: React.KeyboardEvent, i: number) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!dir) return;
@@ -42,11 +45,11 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8c4e35]" />
             </span>
             <h1 className="serif m-0 text-[22px] font-medium leading-none tracking-tight">VayuShift</h1>
-            <span className="label hidden sm:inline">· New Delhi</span>
+            <span className="label hidden sm:inline">{t.cityLabel}</span>
           </span>
           <span className="hidden h-4 w-px bg-current opacity-20 sm:block" aria-hidden="true" />
           <fieldset className="m-0 min-w-0 border-0 p-0">
-            <legend className="sr-only">Choose a scenario</legend>
+            <legend className="sr-only">{t.chooseScenario}</legend>
             <div className="no-scrollbar fade-x flex snap-x items-center gap-1 overflow-x-auto pr-4">
               {presets.map((p) => (
                 <button
@@ -59,9 +62,20 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
                   {p.name}
                 </button>
               ))}
-              <button type="button" onClick={onLocate} disabled={loadingLive} className="pill whitespace-nowrap !px-3 !text-[11px]" aria-label="Use my location">
+              <button type="button" onClick={onLocate} disabled={loadingLive} className="pill whitespace-nowrap !px-3 !text-[11px]" aria-label={t.useMyLocation}>
                 <Icon name="near_me" />
-                <span className="hidden md:inline">{loadingLive ? "Locating…" : "My location"}</span>
+                <span className="hidden md:inline">{loadingLive ? t.locating : t.myLocation}</span>
+              </button>
+              {/* The label is written in the language you would switch TO, and marked as such for screen readers. */}
+              <button
+                type="button"
+                onClick={() => setLang(otherLang)}
+                className="pill whitespace-nowrap !px-3 !text-[11px]"
+                aria-label={t.switchLanguage}
+                title={t.switchLanguage}
+              >
+                <Icon name="translate" />
+                <span lang={otherLang}>{t.languageButton}</span>
               </button>
             </div>
           </fieldset>
@@ -69,7 +83,7 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
 
         <div
           role="tablist"
-          aria-label="Sections"
+          aria-label={t.sections}
           style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
           className="pointer-events-auto glass fixed inset-x-5 z-50 flex items-center justify-between gap-1 rounded-full p-1.5 lg:static lg:inset-auto lg:justify-start"
         >

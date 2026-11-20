@@ -31,7 +31,7 @@ the real deployed service and Google APIs (see [TESTING.md](TESTING.md)).
 | R10 | Keep working with no keys, no network or an upstream outage | demo scenarios (`lib/airQualityPresets.ts`), template text, stale-if-error cache | `services/airQuality.test.ts`, `services.test.ts` | Yes (fallback observed) |
 | R11 | Never let abuse become a bill | `adapters/firestore/budget.ts`, `http/rateLimit.ts` | `budget.test.ts`, `http.test.ts` | - |
 | R12 | Respect privacy: no accounts, no identifiers, honour opt-outs | `services/analytics.ts`, `lib/clientApi.ts` | `routes.test.ts`, `services.test.ts` | Yes |
-| R13 | Usable by people with disabilities and in different conditions | see [ACCESSIBILITY.md](ACCESSIBILITY.md) | axe scan (manual) | - |
+| R13 | Usable by people with disabilities and in different conditions, including in Hindi | see [ACCESSIBILITY.md](ACCESSIBILITY.md); `src/lib/i18n/*`, `hooks/useLang.tsx` | `accessibility.test.tsx`, `language.test.tsx`, `i18n.test.ts` (axe in English and Hindi) | - |
 | R14 | Observable and safe to operate | `server/logger.ts`, `app/api/healthz`, `readyz`, `instrumentation.ts` | `logger.test.ts`, `config.test.ts`, CI container smoke test | Yes |
 
 ## Where the problem statement is only partly met
@@ -41,5 +41,5 @@ the real deployed service and Google APIs (see [TESTING.md](TESTING.md)).
 | Indoor PM2.5 is modelled, not measured | No sensors; the model's constants are assumptions calibrated to published reductions |
 | Cigarette-equivalents are a communication aid | Not a clinical measure; stated in the UI and README |
 | Receipts describe one household | One household does not change the city's AQI; stated in the UI |
-| Hindi is limited to the Community advisory | A full interface language switch is not built |
+| Hindi covers the interface, not every data sentence | The GRAP measures, filter notes, source citations and the Gemini explanation stay English (marked `lang="en"`); the Hindi text has not had a native-speaker review |
 | Photo analysis checked with a synthetic image only | No real room photo has been sent through the deployed route yet |

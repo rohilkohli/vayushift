@@ -1,6 +1,7 @@
 "use client";
 import type { CSSProperties } from "react";
 import { formatHour, pm25ToAqi } from "@/lib/airQuality";
+import { useT } from "@/hooks/useLang";
 import type { HourlyAir, VentilationWindow } from "@/lib/types";
 import { Icon } from "./Icon";
 
@@ -48,6 +49,7 @@ const pct = (v: number, total: number) => `${(v / total) * 100}%`;
  * the selected hour. The low-smog window is hatched and dashed, so it never depends on colour alone.
  */
 export function HorizonScrubber({ hourly, indoor, window: w, hour, phaseLabel, playing, onHour, onTogglePlay, onJump }: Props) {
+  const t = useT();
   const maxPm = Math.max(360, Math.max(...hourly.map((h) => h.pm25)) * 1.05);
   const x = (i: number) => LEFT + (i / 23) * (RIGHT - LEFT);
   const y = (pm: number) => BOTTOM - (Math.min(maxPm, pm) / maxPm) * (BOTTOM - TOP);
@@ -79,7 +81,7 @@ export function HorizonScrubber({ hourly, indoor, window: w, hour, phaseLabel, p
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h3 id="ribbon-h" className="label m-0 flex items-center gap-2">
-            <Icon name="waves" className="accent" /> Scrub 24-hour atmospheric horizon
+            <Icon name="waves" className="accent" /> {t.horizonTitle}
           </h3>
           <span className="chip num rounded-full px-3 py-1 text-xs font-semibold">
             {timeLabel} · {phaseLabel}
@@ -87,10 +89,10 @@ export function HorizonScrubber({ hourly, indoor, window: w, hour, phaseLabel, p
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={onJump} className="pill !text-xs">
-            Jump to {formatHour(w.startHour)} safe window
+            {t.jumpTo(formatHour(w.startHour))}
           </button>
           <button type="button" onClick={onTogglePlay} className="btn-primary !px-4 !text-xs">
-            <span aria-hidden="true">{playing ? "⏸" : "▶"}</span> {playing ? "Pause sky" : "Play 24h sky"}
+            <span aria-hidden="true">{playing ? "⏸" : "▶"}</span> {playing ? t.pause : t.play}
           </button>
         </div>
       </div>
@@ -103,11 +105,8 @@ export function HorizonScrubber({ hourly, indoor, window: w, hour, phaseLabel, p
           aria-labelledby="scrub-title scrub-desc"
           className="chart-reveal absolute inset-0 h-full w-full overflow-visible"
         >
-          <title id="scrub-title">24-hour outdoor and indoor PM2.5</title>
-          <desc id="scrub-desc">
-            Solid line: outdoor PM2.5. Dashed line: modelled indoor PM2.5. Lowest 90-minute window {formatHour(w.startHour)} to{" "}
-            {formatHour(w.endHour)} at {w.meanPm25} micrograms per cubic metre. Selected hour {timeLabel}: outdoor {outNow}, indoor {inNow}.
-          </desc>
+          <title id="scrub-title">{t.chartTitle}</title>
+          <desc id="scrub-desc">{t.chartDesc(formatHour(w.startHour), formatHour(w.endHour), w.meanPm25, timeLabel, outNow, inNow)}</desc>
           <defs>
             <linearGradient id="outGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" style={{ stopColor: "var(--ink)", stopOpacity: 0.22 }} />
@@ -159,35 +158,35 @@ export function HorizonScrubber({ hourly, indoor, window: w, hour, phaseLabel, p
         step={1}
         value={hour}
         onChange={(e) => onHour(Number(e.target.value))}
-        aria-label="Hour of day"
-        aria-valuetext={`${timeLabel}, outdoor PM2.5 ${outNow} micrograms per cubic metre, indoor ${inNow}`}
+        aria-label={t.hourOfDay}
+        aria-valuetext={t.valueText(timeLabel, outNow, inNow)}
         style={{ "--p": `${(hour / 23) * 100}%` } as CSSProperties}
         className="mt-2 block h-11 w-full"
       />
 
       <p className="m-0 mt-1 flex flex-wrap gap-x-5 gap-y-1 text-[11px] font-semibold ink-soft">
         <span className="inline-flex items-center gap-2">
-          <span className="inline-block h-0 w-6 border-t-[3px] border-current" aria-hidden="true" /> Outdoor PM2.5
+          <span className="inline-block h-0 w-6 border-t-[3px] border-current" aria-hidden="true" /> {t.legendOutdoor}
         </span>
         <span className="inline-flex items-center gap-2">
-          <span className="inline-block h-0 w-6 border-t-[3px] border-dashed accent" aria-hidden="true" /> Sanctuary room, modelled
+          <span className="inline-block h-0 w-6 border-t-[3px] border-dashed accent" aria-hidden="true" /> {t.legendIndoor}
         </span>
         <span className="inline-flex items-center gap-2">
-          <span className="inline-block h-3 w-3 rounded border-2 border-dashed border-[#8c4e35]" aria-hidden="true" /> Low-smog window
+          <span className="inline-block h-3 w-3 rounded border-2 border-dashed border-[#8c4e35]" aria-hidden="true" /> {t.legendWindow}
         </span>
       </p>
 
       <details className="mt-2 text-sm">
-        <summary className="min-h-11 cursor-pointer py-2 font-semibold underline">View hourly values as a table</summary>
+        <summary className="min-h-11 cursor-pointer py-2 font-semibold underline">{t.viewTable}</summary>
         <div className="max-h-64 overflow-auto">
           <table className="tbl">
-            <caption className="sr-only">Hourly outdoor PM2.5, AQI and modelled indoor PM2.5</caption>
+            <caption className="sr-only">{t.tableCaption}</caption>
             <thead>
               <tr>
-                <th scope="col">Hour</th>
-                <th scope="col">Outdoor µg/m³</th>
-                <th scope="col">AQI</th>
-                <th scope="col">Indoor µg/m³</th>
+                <th scope="col">{t.thHour}</th>
+                <th scope="col">{t.thOutdoor}</th>
+                <th scope="col">{t.thAqi}</th>
+                <th scope="col">{t.thIndoor}</th>
               </tr>
             </thead>
             <tbody>

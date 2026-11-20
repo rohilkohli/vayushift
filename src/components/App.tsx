@@ -16,20 +16,35 @@ import { ReceiptDialog } from "./ReceiptDialog";
 import { LiquidFilter } from "./LiquidFilter";
 import { SkyScene } from "./SkyScene";
 import { WindLayer } from "./WindLayer";
+import { LangProvider, useLang } from "@/hooks/useLang";
 import { useLiquidGlass } from "@/hooks/useLiquidGlass";
 import { useLivingSky } from "@/hooks/useLivingSky";
 
 type Tab = "choreographer" | "lab" | "community";
-const TABS: Array<{ id: Tab; label: string; short: string; icon: string }> = [
-  { id: "choreographer", label: "Living Sky", short: "Sky", icon: "cloud" },
-  { id: "lab", label: "Room Sanctuary", short: "Sanctuary", icon: "meeting_room" },
-  { id: "community", label: "Community", short: "Community", icon: "groups" },
-];
+const TAB_IDS: readonly Tab[] = ["choreographer", "lab", "community"];
 
 const istHour = () =>
   Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hourCycle: "h23", timeZone: "Asia/Kolkata" }).format(new Date()));
 
+/** The whole interface, with the language (English or Hindi) available to every component. */
 export function App() {
+  return (
+    <LangProvider>
+      <AppInner />
+    </LangProvider>
+  );
+}
+
+function AppInner() {
+  const { t } = useLang();
+  const TABS = useMemo(
+    () => [
+      { id: "choreographer" as const, label: t.tabSky, short: t.tabSkyShort, icon: "cloud" },
+      { id: "lab" as const, label: t.tabLab, short: t.tabLabShort, icon: "meeting_room" },
+      { id: "community" as const, label: t.tabCommunity, short: t.tabCommunityShort, icon: "groups" },
+    ],
+    [t],
+  );
   useLiquidGlass();
   const { profile, interventions, patchProfile, patchInterventions } = useHousehold();
 
@@ -84,7 +99,7 @@ export function App() {
   useEffect(() => {
     const fromHash = () => {
       const id = globalThis.location.hash.slice(1);
-      setTab(TABS.some((t) => t.id === id) ? (id as Tab) : "choreographer");
+      setTab(TAB_IDS.includes(id as Tab) ? (id as Tab) : "choreographer");
     };
     fromHash();
     globalThis.addEventListener("popstate", fromHash);
@@ -110,11 +125,11 @@ export function App() {
 
   const useMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setStatus("Location is not available in this browser. Showing demo data.");
+      setStatus(t.locUnavailable);
       return;
     }
     setLoadingLive(true);
-    setStatus("Finding your location…");
+    setStatus(t.locFinding);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -124,28 +139,24 @@ export function App() {
           const data = (await res.json()) as { scenario: AirScenario; mode: "live" | "demo" };
           setScenario(data.scenario);
           track({ event: "scenario_loaded", props: { preset_id: data.scenario.id } });
-          setStatus(
-            data.mode === "live"
-              ? "Showing the live forecast for your location."
-              : "Live data is unavailable, so a demo smog pattern is shown for your location.",
-          );
+          setStatus(data.mode === "live" ? t.locLive : t.locDemo);
         } catch {
-          setStatus("Could not load air data. Showing the previous scenario.");
+          setStatus(t.locFailed);
         } finally {
           setLoadingLive(false);
         }
       },
       () => {
         setLoadingLive(false);
-        setStatus("Location permission was denied. Pick a preset instead.");
+        setStatus(t.locDenied);
       },
       { timeout: 8000, maximumAge: 600000 },
     );
-  }, []);
+  }, [t]);
 
   return (
     <>
-      <a href="#main" className="skip-link">Skip to content</a>
+      <a href="#main" className="skip-link">{t.skipToContent}</a>
       <LiquidFilter />
       <div className="sky" aria-hidden="true">
         <SkyScene />
@@ -159,7 +170,7 @@ export function App() {
         onSelect={(s) => {
           setScenario(s);
           track({ event: "scenario_loaded", props: { preset_id: s.id } });
-          setStatus(`Loaded ${s.name} scenario.`);
+          setStatus(t.scenarioLoaded(s.name));
         }}
         onLocate={useMyLocation}
         loadingLive={loadingLive}
@@ -170,19 +181,19 @@ export function App() {
       />
 
       <main id="main" className="relative z-10 mx-auto max-w-[1440px] px-5 pb-32 pt-32 lg:px-8 lg:pb-16 lg:pt-28">
-        <div role="region" aria-label="Air quality status" tabIndex={0} className="no-scrollbar fade-x -mx-5 mb-6 flex items-center gap-2 overflow-x-auto px-5 pb-1 text-xs font-bold lg:mx-0 lg:flex-wrap lg:px-0 [&>*]:shrink-0 [&>*]:whitespace-nowrap">
+        <div role="region" aria-label={t.statusRegion} tabIndex={0} className="no-scrollbar fade-x -mx-5 mb-6 flex items-center gap-2 overflow-x-auto px-5 pb-1 text-xs font-bold lg:mx-0 lg:flex-wrap lg:px-0 [&>*]:shrink-0 [&>*]:whitespace-nowrap">
           {loadingLive ? (
             <span className="glass rounded-full px-4 py-2" aria-busy="true">
               <span className="skeleton inline-block w-40 align-middle" aria-hidden="true" />
-              <span className="sr-only">Loading air quality for your location</span>
+              <span className="sr-only">{t.loadingAir}</span>
             </span>
           ) : (
-            <span className="glass rounded-full px-4 py-2">Now · AQI {currentAqi} · PM2.5 {currentPm} µg/m³</span>
+            <span className="glass rounded-full px-4 py-2">{t.nowLine(currentAqi, currentPm)}</span>
           )}
           <span className="glass rounded-full px-4 py-2">
-            {stage === "NONE" ? "GRAP: not active" : `GRAP Stage ${GRAP_INFO[stage].roman} · ${GRAP_INFO[stage].category}`}
+            {stage === "NONE" ? t.grapOff : t.grapStage(GRAP_INFO[stage].roman, t.grapCategory[GRAP_INFO[stage].category] ?? GRAP_INFO[stage].category)}
           </span>
-          <span className="glass rounded-full px-4 py-2">{scenario.source === "live" ? "Live forecast" : "Demo telemetry"}</span>
+          <span className="glass rounded-full px-4 py-2">{scenario.source === "live" ? t.sourceLive : t.sourceDemo}</span>
           <p role="status" aria-live="polite" className="glass m-0 rounded-full px-4 py-2 empty:hidden">{status}</p>
         </div>
 

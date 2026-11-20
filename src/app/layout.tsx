@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist } from "next/font/google";
+import { Fraunces, Geist, Noto_Sans_Devanagari, Noto_Serif_Devanagari } from "next/font/google";
 import "./globals.css";
 
 /**
@@ -17,6 +17,10 @@ const display = Fraunces({
   variable: "--font-display",
 });
 const ui = Geist({ subsets: ["latin"], display: "swap", variable: "--font-ui" });
+// Fraunces and Geist have no Devanagari glyphs; these take over for Hindi text. preload is off so English-only
+// visitors never download them (the browser fetches them only when a Devanagari character is drawn).
+const hiDisplay = Noto_Serif_Devanagari({ subsets: ["devanagari"], display: "swap", variable: "--font-hi-display", preload: false });
+const hiUi = Noto_Sans_Devanagari({ subsets: ["devanagari"], display: "swap", variable: "--font-hi-ui", preload: false });
 
 export const metadata: Metadata = {
   title: "VayuShift: your daily clean-air plan",
@@ -28,7 +32,7 @@ export const viewport: Viewport = { themeColor: "#0f2a44", width: "device-width"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${ui.variable}`}>
+    <html lang="en" className={`${display.variable} ${ui.variable} ${hiDisplay.variable} ${hiUi.variable}`}>
       <head>
         {/* Icon font only: the text fonts above are self-hosted. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

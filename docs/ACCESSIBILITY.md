@@ -15,7 +15,8 @@ Target: WCAG 2.1 AA. This page lists what is built, how it was checked, and what
 | Dialog | Native `<dialog>` with focus handling, closable by keyboard |
 | Forms | Every control is labelled; errors are described in text |
 | Touch | 44 px minimum targets on interactive controls |
-| Language | Hindi text is marked `lang="hi"` so screen readers switch voice |
+| Language | **English / Hindi switch** in the header. The label is written in the language you would switch to and marked with that `lang`; `<html lang>` follows the choice; it is remembered in this browser and can be set with `?lang=hi`. Hindi uses Noto Sans / Serif Devanagari (loaded only when Hindi text is drawn), extra line height and no letter-spacing so vowel marks and joined letters are not clipped or split |
+| Language coverage | Translated: navigation, status, the Living Sky tab (including the number-driven headlines and sentences), Room Sanctuary, Community, the receipt dialog and its explanation. **Stays English** (marked `lang="en"`): the GRAP measures and disclaimer, filter names and notes, source citations, room-scan notes and the "biggest contribution" labels, and the Gemini-written explanation (Hindi shows a Hindi template instead). The shared receipt page `/r/<id>` is English only |
 | Motion | `prefers-reduced-motion` stops drifting clouds, birds and sun rays, and makes sky changes instant. Autoplay is user-started |
 | Transparency | `prefers-reduced-transparency` replaces frosted glass with solid panels |
 | Forced colours | `forced-colors` mode keeps borders and focus rings visible |
@@ -41,7 +42,8 @@ predates the font change (Fraunces and Geist) and the removal of the dark headli
 
 ## Not covered yet
 
-- No language switch for the whole interface (only the Community advisory is bilingual).
+- Some content is English-only even in Hindi mode (see "Language" above). It is marked `lang="en"`, but a Hindi reader still meets English there.
+- The Hindi translation has not had a native-speaker review, and Hindi has not been looked at on a real screen: the typography rules for it (extra line height, no letter-spacing) are based on how Devanagari is set, not on a visual check.
 - Not tested with a real screen reader (NVDA, VoiceOver, TalkBack); only axe and the checks above.
 - The sky animation cannot be paused independently of "reduce motion" (the autoplay can be).
 

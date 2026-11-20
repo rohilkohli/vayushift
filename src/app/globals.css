@@ -94,8 +94,8 @@ html[data-boot] { --dur-sky: 0ms; --dur-theme: 0ms; }
 }
 
 @theme inline {
-  --font-serif: var(--font-display), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-ui), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-display), var(--font-hi-display), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-ui), var(--font-hi-ui), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 html, body { margin: 0; }
@@ -267,6 +267,15 @@ dialog { color: var(--ink); }
 
 :root { --solid: #fff8f3; }
 :root[data-sky="night"] { --solid: #12233a; }
+
+/* Hindi (Devanagari) typography. Its vowel marks reach above and below the line, so the tight Latin leading would
+   clip them, and letter-spacing (tight or wide) pulls apart the joined letters. These win over the utility classes
+   by specificity, and apply only while the interface is in Hindi. */
+html[lang="hi"] body, html[lang="hi"] body * { letter-spacing: normal; }
+html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3, html[lang="hi"] h4 { line-height: 1.32; }
+html[lang="hi"] .serif { line-height: 1.3; }
+html[lang="hi"] body { line-height: 1.65; }
+html[lang="hi"] .label { line-height: 1.5; }
 
 /* Big headlines stay legible wherever the sun or moon glow lands, with a faint tight shadow on the letters
    themselves: no panel or box behind the text. */
