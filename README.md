@@ -6,6 +6,17 @@ VayuShift turns an hourly smog forecast and a room photo into a timed daily rout
 and a receipt that shows the direct effect of each choice. It is aimed at families and apartment societies
 (RWAs) in Delhi-NCR, and works anywhere the Google Air Quality API has coverage.
 
+**Live:** https://vayushift-933086836183.asia-south1.run.app (Google Cloud Run, Firestore, real Air Quality and Gemini APIs)
+
+| Read this | For |
+| --- | --- |
+| [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Problem statement to code to tests, and where it is only partly met |
+| [`docs/GOOGLE_SERVICES.md`](docs/GOOGLE_SERVICES.md) | Every Google service used, and how each was confirmed |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Threat model: each threat, its control, and the test that proves it |
+| [`docs/TESTING.md`](docs/TESTING.md) | What the 248 tests prove, live verification, and bugs only the real systems exposed |
+| [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | What is built, how it was checked, what is not covered |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/openapi.yaml`](docs/openapi.yaml) | Design, data model, failure modes, API |
+
 ## The problem
 
 Air quality apps show a red number and stop. In winter smog, the useful questions are *when* to open a window,
@@ -101,7 +112,7 @@ src/server/
 src/app/api/*               thin routes: parse, call a service, respond
 src/app/r/[id]/             server-rendered shared receipt page
 src/components/             UI; no chart library, plain SVG
-docs/                       ARCHITECTURE.md, openapi.yaml
+docs/                       ARCHITECTURE, SECURITY, TESTING, ACCESSIBILITY, REQUIREMENTS, GOOGLE_SERVICES, openapi.yaml
 infra/setup.sh              one-time Google Cloud setup
 .github/workflows/          CI and Cloud Run deploy
 ```
@@ -130,8 +141,8 @@ Skip link; tabs with arrow-key support; real `role="switch"` buttons whose state
 the chart has a title, description and a table alternative, and its window is hatched as well as coloured;
 labelled form controls; live regions for results; native `<dialog>` with focus handling; 44 px touch targets;
 deep-linkable tabs; reduced-motion, reduced-transparency and forced-colours support; Hindi text is marked `lang="hi"`.
-The UI follows the supplied Stitch "Living Sky" design (sky gradient, frosted glass, Playfair + Plus Jakarta Sans) with a
-night variant. Text stays legible over the moving sun and moon: an axe-core scan (WCAG 2.1 A/AA) is clean on every tab,
+The UI follows the supplied Stitch "Living Sky" design (sky gradient, frosted glass, Fraunces + Geist, self-hosted) with a
+night variant. Details and gaps: [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md). Text stays legible over the moving sun and moon: an axe-core scan (WCAG 2.1 A/AA) is clean on every tab,
 and a pixel check of the rendered backdrop at all 24 hours confirmed text contrast (99% of pixels behind each line meet
 4.5:1, or 3:1 for large text; the excluded 1% are isolated star specks and thin sun rays).
 
@@ -152,9 +163,12 @@ always, and against **real Firestore** whenever the emulator is available (CI do
 - **Cigarette-equivalents** (PM2.5 ÷ 22 × hours ÷ 24) are a communication aid, not a clinical measure.
 - **Personal vs city impact:** receipts describe your own exposure and emissions. One household does not change the city's AQI.
 - The bundled Delhi scenarios are **synthetic**, shaped after the published winter diurnal pattern. They are not station data.
-- **What has not been run against the real thing:** the Google Air Quality and Gemini adapters are tested against faked
-  boundaries, not the live APIs; the Firestore adapters are validated on the emulator in CI, not on a live project; and
-  the deploy workflow and `infra/setup.sh` have not been run against a real Google Cloud project.
+- **What has been run for real, and what has not.** The deployed service was checked by hand against live Firestore, the
+  live Air Quality API and the live Gemini API (see `docs/TESTING.md`); that found three bugs the fakes could not. Not yet
+  done: photo analysis with a real room photo through the deployed route (only a synthetic image was tried), and the
+  GitHub deploy workflow and `infra/setup.sh` (the service was deployed with `gcloud` directly). Live-API checks are
+  manual, not part of CI.
+- **Accessibility checks are manual** (axe-core and a pixel contrast check), not in CI, and were run before the font change.
 - **Rate limits are per instance.** The shared daily budget is what protects spend; add Cloud Armor for volumetric attacks.
 - **The number guard** confirms a number exists in the computed set, not that it is attached to the right quantity.
 - Metro CO₂ saving uses the single published 32.4 g/km figure for every baseline mode.
