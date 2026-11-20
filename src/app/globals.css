@@ -94,8 +94,8 @@ html[data-boot] { --dur-sky: 0ms; --dur-theme: 0ms; }
 }
 
 @theme inline {
-  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-ui), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 html, body { margin: 0; }
@@ -195,7 +195,7 @@ h1, h2, h3 { text-wrap: balance; }
 .glass-weak { background: var(--glass-weak); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 .chip { background: var(--chip); color: var(--ink); }
 
-.serif { font-family: var(--font-serif); font-variant-numeric: lining-nums proportional-nums; letter-spacing: -0.012em; }
+.serif { font-family: var(--font-serif); font-variant-numeric: lining-nums proportional-nums; letter-spacing: -0.012em; font-optical-sizing: auto; }
 .num { font-variant-numeric: tabular-nums lining-nums; }
 .label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
 .hero-ink { color: var(--hero-ink); text-shadow: 0 1px 14px rgba(8, 22, 40, 0.45); }
