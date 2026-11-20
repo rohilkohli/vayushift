@@ -16,6 +16,7 @@ export const en = {
   locating: "Locating…",
   myLocation: "My location",
   sections: "Sections",
+  highContrast: "High contrast",
   switchLanguage: "Switch language to Hindi",
   languageButton: "हिन्दी",
   tabSky: "Living Sky",

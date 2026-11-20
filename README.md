@@ -13,7 +13,7 @@ and a receipt that shows the direct effect of each choice. It is aimed at famili
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Problem statement to code to tests, and where it is only partly met |
 | [`docs/GOOGLE_SERVICES.md`](docs/GOOGLE_SERVICES.md) | Every Google service used, and how each was confirmed |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Threat model: each threat, its control, and the test that proves it |
-| [`docs/TESTING.md`](docs/TESTING.md) | What the 268 tests prove, live verification, and bugs only the real systems exposed |
+| [`docs/TESTING.md`](docs/TESTING.md) | What the 282 tests prove, live verification, and bugs only the real systems exposed |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | What is built, how it was checked, what is not covered |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/openapi.yaml`](docs/openapi.yaml) | Design, data model, failure modes, API |
 
@@ -139,6 +139,8 @@ infra/setup.sh              one-time Google Cloud setup
 
 **English / हिन्दी switch** in the header (remembered, or `?lang=hi`); Hindi covers the whole interface and the number-driven
 sentences, while data text such as GRAP measures and filter notes stays English and is marked `lang="en"`.
+**High-contrast mode** (header button, or the device's "more contrast" setting; `?contrast=high`): opaque bordered panels, no
+animated sky, black on white by day and white on black at night, every pairing tested at 7:1 or better.
 Skip link; tabs with arrow-key support; real `role="switch"` buttons whose state is also written as text;
 the chart has a title, description and a table alternative, and its window is hatched as well as coloured;
 labelled form controls; live regions for results; native `<dialog>` with focus handling; 44 px touch targets;
@@ -170,8 +172,8 @@ always, and against **real Firestore** whenever the emulator is available (CI do
   done: photo analysis with a real room photo through the deployed route (only a synthetic image was tried), and the
   GitHub deploy workflow and `infra/setup.sh` (the service was deployed with `gcloud` directly). Live-API checks are
   manual, not part of CI.
-- **The Hindi translation has not had a native-speaker review**, and Hindi has not been checked visually (a browser was not
-  available): its typography rules follow how Devanagari is set. Please have a Hindi reader look before wide release.
+- **The Hindi translation has not had a native-speaker review.** Hindi and the high-contrast mode were checked in
+  headless-browser screenshots on desktop only (not at phone width). Please have a Hindi reader look before wide release.
 - **Contrast is checked by hand** (a pixel check at all 24 hours, run before the font change). Structure, names and ARIA are checked by axe-core in CI.
 - **Rate limits are per instance.** The shared daily budget is what protects spend; add Cloud Armor for volumetric attacks.
 - **The number guard** confirms a number exists in the computed set, not that it is attached to the right quantity.

@@ -21,9 +21,11 @@ interface Props {
   tab: string;
   onTab: (id: string) => void;
   tabRefs: RefObject<Array<HTMLButtonElement | null>>;
+  highContrast: boolean;
+  onToggleContrast: () => void;
 }
 
-export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tabs, tab, onTab, tabRefs }: Props) {
+export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tabs, tab, onTab, tabRefs, highContrast, onToggleContrast }: Props) {
   const { lang, t, setLang } = useLang();
   const otherLang = lang === "en" ? "hi" : "en";
   const onKey = (e: React.KeyboardEvent, i: number) => {
@@ -45,7 +47,7 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8c4e35]" />
             </span>
             <h1 className="serif m-0 text-[22px] font-medium leading-none tracking-tight">VayuShift</h1>
-            <span className="label hidden sm:inline">{t.cityLabel}</span>
+            <span className="label hidden whitespace-nowrap sm:inline">{t.cityLabel}</span>
           </span>
           <span className="hidden h-4 w-px bg-current opacity-20 sm:block" aria-hidden="true" />
           <fieldset className="m-0 min-w-0 border-0 p-0">
@@ -65,6 +67,17 @@ export function Header({ scenario, presets, onSelect, onLocate, loadingLive, tab
               <button type="button" onClick={onLocate} disabled={loadingLive} className="pill whitespace-nowrap !px-3 !text-[11px]" aria-label={t.useMyLocation}>
                 <Icon name="near_me" />
                 <span className="hidden md:inline">{loadingLive ? t.locating : t.myLocation}</span>
+              </button>
+              <button
+                type="button"
+                onClick={onToggleContrast}
+                aria-pressed={highContrast}
+                aria-label={t.highContrast}
+                title={t.highContrast}
+                className="pill whitespace-nowrap !px-3 !text-[11px]"
+              >
+                <Icon name="contrast" />
+                <span className="hidden 2xl:inline">{t.highContrast}</span>
               </button>
               {/* The label is written in the language you would switch TO, and marked as such for screen readers. */}
               <button

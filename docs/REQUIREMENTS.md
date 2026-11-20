@@ -31,7 +31,7 @@ the real deployed service and Google APIs (see [TESTING.md](TESTING.md)).
 | R10 | Keep working with no keys, no network or an upstream outage | demo scenarios (`lib/airQualityPresets.ts`), template text, stale-if-error cache | `services/airQuality.test.ts`, `services.test.ts` | Yes (fallback observed) |
 | R11 | Never let abuse become a bill | `adapters/firestore/budget.ts`, `http/rateLimit.ts` | `budget.test.ts`, `http.test.ts` | - |
 | R12 | Respect privacy: no accounts, no identifiers, honour opt-outs | `services/analytics.ts`, `lib/clientApi.ts` | `routes.test.ts`, `services.test.ts` | Yes |
-| R13 | Usable by people with disabilities and in different conditions, including in Hindi | see [ACCESSIBILITY.md](ACCESSIBILITY.md); `src/lib/i18n/*`, `hooks/useLang.tsx` | `accessibility.test.tsx`, `language.test.tsx`, `i18n.test.ts` (axe in English and Hindi) | - |
+| R13 | Usable by people with disabilities and in different conditions, including in Hindi and in high contrast | see [ACCESSIBILITY.md](ACCESSIBILITY.md); `src/lib/i18n/*`, `hooks/useLang.tsx`, `hooks/useContrast.ts` | `accessibility.test.tsx`, `language.test.tsx`, `i18n.test.ts`, `contrast.test.ts`, `contrast.test.tsx` | - |
 | R14 | Observable and safe to operate | `server/logger.ts`, `app/api/healthz`, `readyz`, `instrumentation.ts` | `logger.test.ts`, `config.test.ts`, CI container smoke test | Yes |
 
 ## Where the problem statement is only partly met

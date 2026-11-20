@@ -453,6 +453,42 @@ dialog.glass {
 .fade-x { -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
 @media (min-width: 1024px) { .fade-x { -webkit-mask-image: none; mask-image: none; } }
 
+/* High-contrast mode (header button, or the device's "more contrast" setting). Solid opaque panels with real borders,
+   no animated sky, pure black on white by day and white on black at night. Every pairing below is checked by
+   src/lib/contrast.test.ts, which reads these very tokens from this file. */
+html[data-contrast="high"] {
+  --hc-bg: #ffffff; --hc-fg: #000000;
+  --ink: #000000; --ink-soft: #000000; --page-ink: #000000; --hero-ink: #000000; --hero-soft: #000000;
+  --accent: #6b1000; --good: #004d2c; --wind: #000000;
+  --glass: #ffffff; --glass-weak: #ffffff; --chip: #ffffff; --solid: #ffffff;
+  --sheen: transparent; --hairline: transparent; --edge: #000000;
+  --sel-bg: #000000; --sel-fg: #ffffff;
+}
+html[data-contrast="high"][data-sky="night"] {
+  --hc-bg: #000000; --hc-fg: #ffffff;
+  --ink: #ffffff; --ink-soft: #ffffff; --page-ink: #ffffff; --hero-ink: #ffffff; --hero-soft: #ffffff;
+  --accent: #ffd27a; --good: #7dffd0; --wind: #ffffff;
+  --glass: #000000; --glass-weak: #000000; --chip: #000000; --solid: #000000;
+  --edge: #ffffff;
+  --sel-bg: #ffffff; --sel-fg: #000000;
+}
+html[data-contrast="high"] body { background: var(--hc-bg); color: var(--ink); }
+html[data-contrast="high"] .sky { display: none; }
+html[data-contrast="high"] .glass, html[data-contrast="high"] .glass-weak, html[data-contrast="high"] .chip,
+html[data-contrast="high"] .pill, html[data-contrast="high"] .field, html[data-contrast="high"] dialog.glass {
+  background: var(--hc-bg); color: var(--ink); border: 2px solid var(--hc-fg);
+  box-shadow: none; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+html[data-contrast="high"] .pill[aria-pressed="true"], html[data-contrast="high"] .pill[aria-selected="true"],
+html[data-contrast="high"] .pill[aria-checked="true"] { background: var(--sel-bg); color: var(--sel-fg); }
+html[data-contrast="high"] .btn-primary, html[data-contrast="high"][data-sky="night"] .btn-primary {
+  background: var(--hc-fg); color: var(--hc-bg); border: 2px solid var(--hc-fg); box-shadow: none;
+}
+html[data-contrast="high"] .scrim { background: #000000; color: #ffffff; border: 2px solid var(--hc-fg); backdrop-filter: none; -webkit-backdrop-filter: none; }
+html[data-contrast="high"] .hero-ink, html[data-contrast="high"] .hero-soft, html[data-contrast="high"] .halo { text-shadow: none; }
+html[data-contrast="high"] a { text-decoration: underline; }
+html[data-contrast="high"] :focus-visible { outline: 3px solid var(--hc-fg); outline-offset: 2px; box-shadow: 0 0 0 6px var(--hc-bg); }
+
 /* Respect users who ask for less transparency: solid cards, no refraction, no grain. */
 @media (prefers-reduced-transparency: reduce) {
   dialog.glass { background: var(--solid); backdrop-filter: none; -webkit-backdrop-filter: none; }

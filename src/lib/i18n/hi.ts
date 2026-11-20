@@ -14,6 +14,7 @@ export const hi: Messages = {
   locating: "लोकेशन खोज रहे हैं…",
   myLocation: "मेरी लोकेशन",
   sections: "अनुभाग",
+  highContrast: "उच्च कंट्रास्ट",
   switchLanguage: "भाषा अंग्रेज़ी में बदलें",
   languageButton: "English",
   tabSky: "जीवंत आसमान",

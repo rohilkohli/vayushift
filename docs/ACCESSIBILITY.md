@@ -19,6 +19,7 @@ Target: WCAG 2.1 AA. This page lists what is built, how it was checked, and what
 | Language coverage | Translated: navigation, status, the Living Sky tab (including the number-driven headlines and sentences), Room Sanctuary, Community, the receipt dialog and its explanation. **Stays English** (marked `lang="en"`): the GRAP measures and disclaimer, filter names and notes, source citations, room-scan notes and the "biggest contribution" labels, and the Gemini-written explanation (Hindi shows a Hindi template instead). The shared receipt page `/r/<id>` is English only |
 | Motion | `prefers-reduced-motion` stops drifting clouds, birds and sun rays, and makes sky changes instant. Autoplay is user-started |
 | Transparency | `prefers-reduced-transparency` replaces frosted glass with solid panels |
+| High contrast | A header button (`aria-pressed`) switches to opaque, bordered panels, hides the animated sky, and uses pure black on white by day and white on black at night, with a heavier focus ring and underlined links. It starts from the device's "more contrast" setting, is remembered, and can be set with `?contrast=high`. A test reads its colour tokens from the stylesheet and checks every pairing is at least 7:1 (WCAG AAA) |
 | Forced colours | `forced-colors` mode keeps borders and focus rings visible |
 | Focus | Visible focus ring that works on both light and dark backdrops |
 | Decorative art | The sky scene (sun, moon, stars, clouds, birds, wind) is `aria-hidden` |
@@ -43,7 +44,7 @@ predates the font change (Fraunces and Geist) and the removal of the dark headli
 ## Not covered yet
 
 - Some content is English-only even in Hindi mode (see "Language" above). It is marked `lang="en"`, but a Hindi reader still meets English there.
-- The Hindi translation has not had a native-speaker review, and Hindi has not been looked at on a real screen: the typography rules for it (extra line height, no letter-spacing) are based on how Devanagari is set, not on a visual check.
+- The Hindi translation has not had a native-speaker review. Hindi and the high-contrast mode were inspected in headless-browser screenshots on desktop (no clipped vowel marks, legible at day and night); a phone-width check was not possible.
 - Not tested with a real screen reader (NVDA, VoiceOver, TalkBack); only axe and the checks above.
 - The sky animation cannot be paused independently of "reduce motion" (the autoplay can be).
 

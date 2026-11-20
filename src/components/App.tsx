@@ -16,6 +16,7 @@ import { ReceiptDialog } from "./ReceiptDialog";
 import { LiquidFilter } from "./LiquidFilter";
 import { SkyScene } from "./SkyScene";
 import { WindLayer } from "./WindLayer";
+import { useContrast } from "@/hooks/useContrast";
 import { LangProvider, useLang } from "@/hooks/useLang";
 import { useLiquidGlass } from "@/hooks/useLiquidGlass";
 import { useLivingSky } from "@/hooks/useLivingSky";
@@ -46,6 +47,7 @@ function AppInner() {
     [t],
   );
   useLiquidGlass();
+  const contrast = useContrast();
   const { profile, interventions, patchProfile, patchInterventions } = useHousehold();
 
   /** Applies a change and records it (anonymously, and only if the visitor has not opted out). */
@@ -178,6 +180,8 @@ function AppInner() {
         tab={tab}
         onTab={(id) => selectTab(id as Tab)}
         tabRefs={tabRefs}
+        highContrast={contrast.high}
+        onToggleContrast={contrast.toggle}
       />
 
       <main id="main" className="relative z-10 mx-auto max-w-[1440px] px-5 pb-32 pt-32 lg:px-8 lg:pb-16 lg:pt-28">

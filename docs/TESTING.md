@@ -1,6 +1,6 @@
 # Testing
 
-`npm test` runs 268 tests in 19 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
+`npm test` runs 282 tests in 21 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
 
 ## What each file proves
 
@@ -22,6 +22,8 @@
 | `src/components/accessibility.test.tsx` | 7 | axe-core (WCAG 2.1 A/AA and best practice) on the first screen and **every tab**; landmarks, skip link, slider text, table alternative, switches; plus a self-check that the harness catches deliberately bad markup |
 | `src/lib/i18n/i18n.test.ts` | 8 | The English and Hindi catalogues have the same keys; every number-bearing Hindi sentence keeps all its figures; the Hindi advice states the same thresholds and minutes as the English engine text; the Hindi explanation carries only the engine's figures; language selection order (`?lang=`, saved choice, browser) |
 | `src/components/language.test.tsx` | 5 | The switch toggles the whole interface and `<html lang>`, remembers the choice, opens from `?lang=hi`; **every tab in Hindi passes axe**; English-only data inside Hindi is marked `lang="en"` |
+| `src/lib/contrast.test.ts` | 6 | Reads the high-contrast colour tokens straight from `globals.css` and checks every text/background pairing, by day and by night, against WCAG AAA (7:1) |
+| `src/components/contrast.test.tsx` | 8 | The high-contrast toggle: off by default, on/off with `aria-pressed`, remembered, starts from the device's "more contrast" setting, `?contrast=` beats a saved choice beats the device, label follows the language, axe clean on every tab with the mode on |
 | `src/app/api/openapi.test.ts` | 3 | `docs/openapi.yaml` and the real routes cannot drift apart |
 
 ## Three levels of confidence
