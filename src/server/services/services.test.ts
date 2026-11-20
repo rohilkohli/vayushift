@@ -6,9 +6,9 @@ import { AppError } from "../errors";
 import { createLogger } from "../logger";
 import { FakeClock, hourlyFixture, interventionsFixture, profileFixture } from "../testing";
 import { AnalyticsService } from "./analytics";
-import { ExplainService } from "./explain";
+import { ExplainService, type ExplanationProvider } from "./explain";
 import { ReceiptService, isReceiptId, newReceiptId } from "./receipts";
-import { RoomVisionService } from "./roomVision";
+import { RoomVisionService, type RoomVisionProvider } from "./roomVision";
 
 const silent = createLogger({ level: "silent", service: { name: "t", revision: "t" } });
 const caps = { airQuality: 100, geminiVision: 100, geminiExplain: 100 };
@@ -18,7 +18,7 @@ const receiptFor = (patch = {}) => calculateHouseholdImpact(hourly, profileFixtu
 describe("RoomVisionService", () => {
   const scan = SAMPLE_ROOMS[0].scan;
   const make = (provider: { scan: ReturnType<typeof vi.fn> } | undefined, budgetCap = 10) =>
-    new RoomVisionService({ provider, budget: createMemoryStorage({ ...caps, geminiVision: budgetCap }).budget, log: silent });
+    new RoomVisionService({ provider: provider as RoomVisionProvider | undefined, budget: createMemoryStorage({ ...caps, geminiVision: budgetCap }).budget, log: silent });
 
   it("returns the scan on success", async () => {
     const provider = { scan: vi.fn().mockResolvedValue(scan) };
@@ -47,7 +47,7 @@ describe("ExplainService", () => {
   const make = (explain: ReturnType<typeof vi.fn> | undefined, budgetCap = 10) => {
     const storage = createMemoryStorage({ ...caps, geminiExplain: budgetCap });
     const svc = new ExplainService({
-      provider: explain ? { explain } : undefined,
+      provider: explain ? ({ explain } as ExplanationProvider) : undefined,
       cache: storage.cache,
       budget: storage.budget,
       log: silent,

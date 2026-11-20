@@ -32,13 +32,16 @@ The background changes with the hour, so text contrast is not fixed. Two checks 
 
 Headlines carry a faint text shadow rather than a panel behind them.
 
-**Limits of this evidence:** both checks were run by hand during development; they are not part of CI. The pixel check
+**Automated (runs in CI):** `src/components/accessibility.test.tsx` renders the whole app and runs axe-core (WCAG 2.1 A/AA
+and best-practice rules) on the first screen and every tab, and checks the skip link, landmarks, slider text, table
+alternative and switches. It includes a self-check that deliberately bad markup is flagged, so a clean run means something.
+
+**Still manual:** colour contrast. jsdom paints nothing, so contrast is excluded from the automated run. The pixel check
 predates the font change (Fraunces and Geist) and the removal of the dark headline panel, and has not been re-run.
 
 ## Not covered yet
 
 - No language switch for the whole interface (only the Community advisory is bilingual).
-- No automated accessibility test in CI.
 - Not tested with a real screen reader (NVDA, VoiceOver, TalkBack); only axe and the checks above.
 - The sky animation cannot be paused independently of "reduce motion" (the autoplay can be).
 

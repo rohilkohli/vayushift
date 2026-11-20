@@ -1,6 +1,6 @@
 # Testing
 
-`npm test` runs 248 tests in 16 files (Vitest). `npm run lint` type-checks. Both run in CI on every push.
+`npm test` runs 255 tests in 17 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
 
 ## What each file proves
 
@@ -19,6 +19,7 @@
 | `src/server/adapters/firestore/*.test.ts` | 22 | Budget under concurrency and exhaustion; cache, receipts, analytics against an in-memory Firestore fake; the module loader |
 | `src/server/adapters/storage.contract.test.ts` | 16 | One contract that every storage adapter must pass |
 | `src/app/api/routes.test.ts` | 29 | Every route end to end: validation, errors, cross-site refusal, privacy headers |
+| `src/components/accessibility.test.tsx` | 7 | axe-core (WCAG 2.1 A/AA and best practice) on the first screen and **every tab**; landmarks, skip link, slider text, table alternative, switches; plus a self-check that the harness catches deliberately bad markup |
 | `src/app/api/openapi.test.ts` | 3 | `docs/openapi.yaml` and the real routes cannot drift apart |
 
 ## Three levels of confidence
@@ -54,7 +55,7 @@ The faked tests could not have caught these; running against the real services d
 ## Not covered
 
 - **No live-API tests in CI** (they would need keys and cost money). The live checks above are manual.
-- **No browser or end-to-end UI tests**, and no automated accessibility test.
+- **No browser or end-to-end UI tests.** Accessibility is checked in jsdom (structure, names, roles), which cannot judge colour contrast or real screen-reader behaviour.
 - **Photo analysis** has been tested against the real Gemini API with a synthetic image only, not a real room photo through
   the deployed route.
 - The deploy workflow and `infra/setup.sh` have not been run (deployment was done with `gcloud` directly).

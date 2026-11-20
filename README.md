@@ -13,7 +13,7 @@ and a receipt that shows the direct effect of each choice. It is aimed at famili
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Problem statement to code to tests, and where it is only partly met |
 | [`docs/GOOGLE_SERVICES.md`](docs/GOOGLE_SERVICES.md) | Every Google service used, and how each was confirmed |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Threat model: each threat, its control, and the test that proves it |
-| [`docs/TESTING.md`](docs/TESTING.md) | What the 248 tests prove, live verification, and bugs only the real systems exposed |
+| [`docs/TESTING.md`](docs/TESTING.md) | What the 255 tests prove, live verification, and bugs only the real systems exposed |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | What is built, how it was checked, what is not covered |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/openapi.yaml`](docs/openapi.yaml) | Design, data model, failure modes, API |
 
@@ -168,7 +168,7 @@ always, and against **real Firestore** whenever the emulator is available (CI do
   done: photo analysis with a real room photo through the deployed route (only a synthetic image was tried), and the
   GitHub deploy workflow and `infra/setup.sh` (the service was deployed with `gcloud` directly). Live-API checks are
   manual, not part of CI.
-- **Accessibility checks are manual** (axe-core and a pixel contrast check), not in CI, and were run before the font change.
+- **Contrast is checked by hand** (a pixel check at all 24 hours, run before the font change). Structure, names and ARIA are checked by axe-core in CI.
 - **Rate limits are per instance.** The shared daily budget is what protects spend; add Cloud Armor for volumetric attacks.
 - **The number guard** confirms a number exists in the computed set, not that it is attached to the right quantity.
 - Metro CO₂ saving uses the single published 32.4 g/km figure for every baseline mode.
