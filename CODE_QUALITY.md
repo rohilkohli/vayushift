@@ -31,8 +31,8 @@ no inline `eslint-disable` comments in the source.
 
 ## How the code is organised
 
-Each module has one job, named in its opening comment. The median source file is about 50 lines and the longest is
-under 200.
+Each module has one job, named in its opening comment. The median source file is about 55 lines and the longest is
+170 (across about 130 files).
 
 ```
 src/lib/                    domain: pure functions and constants, no I/O
