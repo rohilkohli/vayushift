@@ -27,6 +27,14 @@ export interface AirQualityDeps {
   now?: () => number;
 }
 
+/** One cache refill: the cache key, the cell centre to ask upstream about, the visitor's own point, and any stale answer. */
+interface RefreshRequest {
+  key: string;
+  cell: { lat: number; lng: number };
+  point: { lat: number; lng: number };
+  stale: AirScenario | undefined;
+}
+
 /** Google's grid is about 500 m, so locations are snapped to 0.005 degrees (about 550 m) before caching. */
 const CELL_DEGREES = 0.005;
 const cellOf = (v: number) => Math.round(v / CELL_DEGREES) * CELL_DEGREES;
@@ -71,20 +79,17 @@ export class AirQualityService {
       return { ...shared, source: shared.source === "upstream" ? "coalesced" : shared.source };
     }
 
-    const run = this.refresh(key, cellLat, cellLng, lat, lng, cached?.value).finally(() => this.inflight.delete(key));
+    const run = this.refresh(provider, { key, cell: { lat: cellLat, lng: cellLng }, point: { lat, lng }, stale: cached?.value }).finally(
+      () => this.inflight.delete(key),
+    );
     this.inflight.set(key, run);
     return run;
   }
 
-  private async refresh(
-    key: string,
-    cellLat: number,
-    cellLng: number,
-    lat: number,
-    lng: number,
-    stale: AirScenario | undefined,
-  ): Promise<AirQualityResult> {
-    const { provider, cache, budget, log, staleMs } = this.deps;
+  private async refresh(provider: AirQualityProvider, req: RefreshRequest): Promise<AirQualityResult> {
+    const { key, cell, point, stale } = req;
+    const { lat, lng } = point;
+    const { cache, budget, log, staleMs } = this.deps;
     const serveStaleOr = (reason: AirFallbackReason): AirQualityResult =>
       stale ? { scenario: stale, mode: "live", reason, source: "stale" } : this.demo(lat, lng, reason);
 
@@ -94,7 +99,7 @@ export class AirQualityService {
     }
     try {
       // Query the cell centre: the cached answer is shared, so it must not carry any one user's exact point.
-      const scenario = await provider!.fetchScenario(cellLat, cellLng);
+      const scenario = await provider.fetchScenario(cell.lat, cell.lng);
       await cache.set(key, scenario, staleMs).catch((err) => log.warn("air quality cache write failed", { err }));
       return { scenario, mode: "live", source: "upstream" };
     } catch (err) {

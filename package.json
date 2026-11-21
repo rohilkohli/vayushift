@@ -10,7 +10,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit && eslint . --max-warnings 0",
+    "format": "prettier --write src \"*.{js,mjs,ts,json,jsonc}\" .github",
+    "format:check": "prettier --check src \"*.{js,mjs,ts,json,jsonc}\" .github",
+    "check": "npm run lint && npm run format:check && npm test",
     "test": "vitest run",
     "test:emulator": "vitest run src/server/adapters/storage.contract.test.ts"
   },
@@ -22,6 +26,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@tailwindcss/postcss": "^4.0.0",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.13",
@@ -29,9 +34,15 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "axe-core": "^4.14.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
     "jsdom": "^31.0.1",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.0",
+    "typescript-eslint": "^8.73.0",
     "vitest": "^5.1.1"
   },
   "overrides": {

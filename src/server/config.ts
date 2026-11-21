@@ -1,4 +1,4 @@
-import { BUDGET_RESOURCES, type BudgetResource } from "./ports";
+import type { BudgetResource } from "./ports";
 
 export type StorageBackend = "memory" | "firestore";
 export type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
@@ -37,12 +37,8 @@ const BUDGET_ENV: Record<BudgetResource, { name: string; fallback: number }> = {
   geminiExplain: { name: "BUDGET_GEMINI_EXPLAIN_DAILY", fallback: 2_000 },
 };
 
-/**
- * Reads and validates configuration once. Every problem is collected and reported together, and the
- * server refuses to start on a bad value rather than failing later under load. Empty strings count as unset.
- */
-export function loadConfig(env: Env = process.env): AppConfig {
-  const problems: string[] = [];
+/** Typed readers over one environment. Bad values are recorded in `problems` and replaced by the fallback. */
+function reader(env: Env, problems: string[]) {
   const get = (name: string) => {
     const v = env[name]?.trim();
     return v ? v : undefined;
@@ -60,12 +56,52 @@ export function loadConfig(env: Env = process.env): AppConfig {
   const oneOf = <T extends string>(name: string, allowed: readonly T[], fallback: T): T => {
     const raw = get(name);
     if (raw === undefined) return fallback;
-    if (!(allowed as readonly string[]).includes(raw)) {
+    const match = allowed.find((a) => a === raw);
+    if (match === undefined) {
       problems.push(`${name} must be one of ${allowed.join(", ")} (got "${raw}")`);
       return fallback;
     }
-    return raw as T;
+    return match;
   };
+  return { get, int, oneOf };
+}
+
+type Reader = ReturnType<typeof reader>;
+
+/** PUBLIC_ORIGIN reduced to a bare origin: https only (plain http is allowed just for localhost). */
+function readPublicOrigin(get: Reader["get"], problems: string[]): string | undefined {
+  const raw = get("PUBLIC_ORIGIN");
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    const local = u.hostname === "localhost" || u.hostname === "127.0.0.1";
+    if (u.protocol !== "https:" && !local) problems.push("PUBLIC_ORIGIN must use https (http is only allowed for localhost)");
+    return u.origin;
+  } catch {
+    problems.push(`PUBLIC_ORIGIN must be a valid URL (got "${raw}")`);
+    return undefined;
+  }
+}
+
+function readAirCache(int: Reader["int"], problems: string[]): AppConfig["airCache"] {
+  const freshMinutes = int("AIR_CACHE_FRESH_MINUTES", 30, 1, 360);
+  const staleMinutes = int("AIR_CACHE_STALE_MINUTES", 180, 1, 1440);
+  if (staleMinutes < freshMinutes) problems.push("AIR_CACHE_STALE_MINUTES must be at least AIR_CACHE_FRESH_MINUTES");
+  return { freshMs: freshMinutes * 60_000, staleMs: staleMinutes * 60_000 };
+}
+
+function readBudgets(int: Reader["int"]): Record<BudgetResource, number> {
+  const read = (r: BudgetResource) => int(BUDGET_ENV[r].name, BUDGET_ENV[r].fallback, 0, 10_000_000);
+  return { airQuality: read("airQuality"), geminiVision: read("geminiVision"), geminiExplain: read("geminiExplain") };
+}
+
+/**
+ * Reads and validates configuration once. Every problem is collected and reported together, and the
+ * server refuses to start on a bad value rather than failing later under load. Empty strings count as unset.
+ */
+export function loadConfig(env: Env = process.env): AppConfig {
+  const problems: string[] = [];
+  const { get, int, oneOf } = reader(env, problems);
 
   const nodeEnv = oneOf("NODE_ENV", ["development", "production", "test"] as const, "development");
   const storage = oneOf("STORAGE_BACKEND", ["memory", "firestore"] as const, "memory");
@@ -77,27 +113,6 @@ export function loadConfig(env: Env = process.env): AppConfig {
     problems.push("STORAGE_BACKEND=firestore requires GOOGLE_CLOUD_PROJECT (or FIRESTORE_EMULATOR_HOST for local development)");
   }
 
-  let publicOrigin = get("PUBLIC_ORIGIN");
-  if (publicOrigin) {
-    try {
-      const u = new URL(publicOrigin);
-      const local = u.hostname === "localhost" || u.hostname === "127.0.0.1";
-      if (u.protocol !== "https:" && !local) problems.push("PUBLIC_ORIGIN must use https (http is only allowed for localhost)");
-      publicOrigin = u.origin;
-    } catch {
-      problems.push(`PUBLIC_ORIGIN must be a valid URL (got "${publicOrigin}")`);
-      publicOrigin = undefined;
-    }
-  }
-
-  const budgets = Object.fromEntries(
-    BUDGET_RESOURCES.map((r) => [r, int(BUDGET_ENV[r].name, BUDGET_ENV[r].fallback, 0, 10_000_000)]),
-  ) as Record<BudgetResource, number>;
-
-  const freshMinutes = int("AIR_CACHE_FRESH_MINUTES", 30, 1, 360);
-  const staleMinutes = int("AIR_CACHE_STALE_MINUTES", 180, 1, 1440);
-  if (staleMinutes < freshMinutes) problems.push("AIR_CACHE_STALE_MINUTES must be at least AIR_CACHE_FRESH_MINUTES");
-
   const config: AppConfig = {
     nodeEnv,
     service: { name: get("K_SERVICE") ?? "vayushift", revision: get("K_REVISION") ?? "local" },
@@ -106,9 +121,9 @@ export function loadConfig(env: Env = process.env): AppConfig {
     geminiApiKey: get("GEMINI_API_KEY"),
     mapsApiKey: get("GOOGLE_MAPS_API_KEY"),
     trustedProxyHops: int("TRUSTED_PROXY_HOPS", 1, 0, 5),
-    publicOrigin,
-    budgets,
-    airCache: { freshMs: freshMinutes * 60_000, staleMs: staleMinutes * 60_000 },
+    publicOrigin: readPublicOrigin(get, problems),
+    budgets: readBudgets(int),
+    airCache: readAirCache(int, problems),
     explainCacheMs: int("EXPLAIN_CACHE_HOURS", 24, 1, 720) * 3_600_000,
     receiptTtlDays: int("RECEIPT_TTL_DAYS", 90, 1, 365),
     logLevel,

@@ -43,7 +43,9 @@ describe("catalogues", () => {
       ["subNight", [args.n, args.m]],
       ["subTransition", [args.n, "Delhi", args.m, "13:00 – 14:30"]],
       ["valueText", ["08:00", args.n, args.m]],
-      ["chartDesc", ["13:00", "14:30", args.n, "08:00", args.m, args.p]],
+      ["chartDesc", [{ start: "13:00", end: "14:30", mean: args.n, time: "08:00", out: args.m, inn: args.p }]],
+      ["subWindow", [{ advice: "Keep windows shut.", mean: args.n, pct: args.m, peak: args.p, aqi: args.q, cigs: "9.9" }]],
+      ["personalLine", [{ nowLevel: "limit", bestLevel: "ok", nowAqi: args.n, best: "15:00", bestAqi: args.m, minutes: args.p }]],
       ["turnover", [args.n, "5.1"]],
       ["envelopeChip", [180, 10]],
       ["filtersBadge", [255]],
@@ -52,7 +54,13 @@ describe("catalogues", () => {
       ["shareText", ["Delhi", 8.57, 648]],
     ];
     for (const [key, a] of cases) {
-      const wanted = numbers(a.filter((x) => typeof x === "number" || /\d/.test(String(x))).map(String).join(" "));
+      const values = a.flatMap((x) => (typeof x === "object" && x !== null ? Object.values(x) : [x]));
+      const wanted = numbers(
+        values
+          .filter((x) => typeof x === "number" || /\d/.test(String(x)))
+          .map(String)
+          .join(" "),
+      );
       for (const lang of [en, hi] as const) {
         const out = call(lang[key] as never, ...a);
         for (const n of wanted) expect(out, `${key}: ${n}`).toContain(n);
@@ -61,7 +69,11 @@ describe("catalogues", () => {
   });
 
   it("the Hindi advice states the same thresholds and minutes as the English engine text", () => {
-    for (const [trough, dayMin] of [[100, 400], [300, 100], [100, 100]] as const) {
+    for (const [trough, dayMin] of [
+      [100, 400],
+      [300, 100],
+      [100, 100],
+    ] as const) {
       const advice = ventilationAdvice(trough, dayMin);
       const hindi = hi.adviceSentence(advice.mode, advice.minutes, advice.headline);
       expect(DEVANAGARI.test(hindi)).toBe(true);

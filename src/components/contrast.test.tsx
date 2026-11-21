@@ -10,18 +10,31 @@ let prefersMore = false;
 beforeAll(() => {
   window.matchMedia = ((q: string) => ({
     matches: q.includes("prefers-contrast") ? prefersMore : false,
-    media: q, onchange: null,
-    addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false,
+    media: q,
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false,
   })) as typeof window.matchMedia;
   window.HTMLElement.prototype.scrollIntoView ??= () => {};
-  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute("open", ""); };
-  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute("open"); };
+  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+  };
+  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+    this.removeAttribute("open");
+  };
 });
 
 beforeEach(() => {
   prefersMore = false;
   window.history.replaceState(null, "", "/");
-  try { localStorage.clear(); } catch { /* ignore */ }
+  try {
+    localStorage.clear();
+  } catch {
+    /* ignore */
+  }
   delete document.documentElement.dataset.contrast;
 });
 afterEach(cleanup);
@@ -93,7 +106,10 @@ describe("high-contrast toggle", () => {
         runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"] },
         rules: { "color-contrast": { enabled: false }, "link-in-text-block": { enabled: false }, region: { enabled: false } },
       });
-      expect(r.violations.map((v) => v.id), `tab "${tab.textContent}"`).toEqual([]);
+      expect(
+        r.violations.map((v) => v.id),
+        `tab "${tab.textContent}"`,
+      ).toEqual([]);
     }
   });
 });

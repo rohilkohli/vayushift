@@ -46,11 +46,14 @@ export class FirestoreCache implements Cache {
     this.l1.put(key, value, now, Math.min(L1_TTL_MS, ttlMs));
     const db = await this.handle.db();
     const { Timestamp } = await firestoreLib();
-    await db.collection(COLLECTION).doc(this.docId(key)).set({
-      key,
-      json: JSON.stringify(value),
-      storedAt: now,
-      expiresAt: Timestamp.fromMillis(now + ttlMs),
-    });
+    await db
+      .collection(COLLECTION)
+      .doc(this.docId(key))
+      .set({
+        key,
+        json: JSON.stringify(value),
+        storedAt: now,
+        expiresAt: Timestamp.fromMillis(now + ttlMs),
+      });
   }
 }

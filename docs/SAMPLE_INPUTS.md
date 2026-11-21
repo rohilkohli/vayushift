@@ -95,7 +95,8 @@ send the `Origin` header themselves; cross-site requests are refused (see `docs/
 ```bash
 npm install
 npm run dev        # http://localhost:3000, works with no API keys (demo data, sample rooms, template text)
-npm test           # 310 tests
+npm test           # 317 tests
+npm run check      # type-check, lint (size and complexity limits), format check, tests
 ```
 
 Set `GOOGLE_MAPS_API_KEY` for live air quality and `GEMINI_API_KEY` for photo reading and explanations

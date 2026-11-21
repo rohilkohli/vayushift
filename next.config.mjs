@@ -16,6 +16,8 @@ const csp = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  // Linting is its own step (`npm run lint`, in CI): the build does not run a second, differently configured pass.
+  eslint: { ignoreDuringBuilds: true },
   reactStrictMode: true,
   // A self-contained server (.next/standalone) that carries only the files it needs: a small container image.
   output: "standalone",

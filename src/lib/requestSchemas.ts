@@ -1,5 +1,14 @@
 import { clampMembers } from "./impactEngine";
-import type { ActiveInterventions, CommuteMode, CookingFuel, FiltrationMode, HourlyAir, HouseholdProfile, NoiseSensitivity, WindowType } from "./types";
+import type {
+  ActiveInterventions,
+  CommuteMode,
+  CookingFuel,
+  FiltrationMode,
+  HourlyAir,
+  HouseholdProfile,
+  NoiseSensitivity,
+  WindowType,
+} from "./types";
 
 const WINDOWS: WindowType[] = ["sliding_aluminum_unsealed", "casement_wood_unsealed", "upvc_sealed"];
 const FUELS: CookingFuel[] = ["lpg_unvented", "lpg_chimney", "electric_induction"];
@@ -23,34 +32,35 @@ export function parseHourly(v: unknown): HourlyAir[] | null {
   return out;
 }
 
+type Present<T> = { [K in keyof T]: NonNullable<T[K]> };
+
+/** The object itself when no field is null (every field validated), otherwise null. */
+function allPresent<T extends Record<string, unknown>>(fields: T): Present<T> | null {
+  return Object.values(fields).every((x) => x !== null) ? (fields as Present<T>) : null;
+}
+
 export function parseProfile(v: unknown): HouseholdProfile | null {
   if (typeof v !== "object" || v === null) return null;
   const p = v as Record<string, unknown>;
-  const members = num(p.memberCount, 1, 15);
-  const commuters = num(p.commuterCount, 0, 15);
-  const walkers = num(p.walkerCount, 0, 15);
-  const area = num(p.roomAreaSqFt, 40, 800);
-  const ceiling = num(p.ceilingHeightFt, 7, 14);
-  const km = num(p.commuteKmRoundTrip, 0, 200);
-  const windowType = oneOf(p.windowType, WINDOWS);
-  const fuel = oneOf(p.baselineCookingFuel, FUELS);
-  const mode = oneOf(p.baselineCommuteMode, MODES);
-  const noise = oneOf(p.sleepNoiseSensitivity, NOISE);
-  if ([members, commuters, walkers, area, ceiling, km].includes(null) || !windowType || !fuel || !mode || !noise) return null;
+  const f = allPresent({
+    memberCount: num(p.memberCount, 1, 15),
+    commuterCount: num(p.commuterCount, 0, 15),
+    walkerCount: num(p.walkerCount, 0, 15),
+    roomAreaSqFt: num(p.roomAreaSqFt, 40, 800),
+    ceilingHeightFt: num(p.ceilingHeightFt, 7, 14),
+    commuteKmRoundTrip: num(p.commuteKmRoundTrip, 0, 200),
+    windowType: oneOf(p.windowType, WINDOWS),
+    baselineCookingFuel: oneOf(p.baselineCookingFuel, FUELS),
+    baselineCommuteMode: oneOf(p.baselineCommuteMode, MODES),
+    sleepNoiseSensitivity: oneOf(p.sleepNoiseSensitivity, NOISE),
+  });
+  if (!f) return null;
   return {
-    memberCount: clampMembers(members!),
-    commuterCount: commuters!,
-    walkerCount: walkers!,
+    ...f,
+    memberCount: clampMembers(f.memberCount),
     hasChildren: p.hasChildren === true,
     hasSeniors: p.hasSeniors === true,
     hasRespiratoryCondition: p.hasRespiratoryCondition === true,
-    roomAreaSqFt: area!,
-    ceilingHeightFt: ceiling!,
-    windowType,
-    sleepNoiseSensitivity: noise,
-    commuteKmRoundTrip: km!,
-    baselineCommuteMode: mode,
-    baselineCookingFuel: fuel,
   };
 }
 

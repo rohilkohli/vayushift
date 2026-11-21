@@ -91,7 +91,10 @@ const normaliseHour = (h: number) => ((h % 24) + 24) % 24;
 
 function blend(hour: number): Band {
   const h = normaliseHour(hour);
-  const i = Math.max(1, KNOTS.findIndex((k) => k.h >= h));
+  const i = Math.max(
+    1,
+    KNOTS.findIndex((k) => k.h >= h),
+  );
   const a = KNOTS[i - 1];
   const b = KNOTS[i];
   const t = b.h === a.h ? 0 : (h - a.h) / (b.h - a.h);

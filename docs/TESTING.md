@@ -1,6 +1,6 @@
 # Testing
 
-`npm test` runs 310 tests in 24 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
+`npm test` runs 317 tests in 25 files (Vitest 5). `npm run lint` type-checks. Both run in CI on every push.
 
 ## What each file proves
 
@@ -25,6 +25,7 @@
 | `src/lib/contrast.test.ts` | 6 | Reads the high-contrast colour tokens straight from `globals.css` and checks every text/background pairing, by day and by night, against WCAG AAA (7:1) |
 | `src/components/contrast.test.tsx` | 8 | The high-contrast toggle: off by default, on/off with `aria-pressed`, remembered, starts from the device's "more contrast" setting, `?contrast=` beats a saved choice beats the device, label follows the language, axe clean on every tab with the mode on |
 | `src/lib/personalAdvice.test.ts` | 12 | Who-is-at-home guidance: children, older adults and people with lung or heart conditions get stricter limits than healthy adults in the same air; the limits switch exactly at their documented AQI; the best outing hour ignores the night; airing is shortened only when a sensitive member lives here and the window is still polluted |
+| `src/lib/horizonGeometry.test.ts` | 7 | The chart's coordinates: the curve starts and ends on the data, hours map onto the plot edges, higher pollution sits higher, the low-smog band is sized from the window |
 | `src/lib/cities.test.ts` | 6 | The city list: unique, inside India, accepted by the API's coordinate check, named in English and Hindi; the Delhi-NCR box used to caveat GRAP elsewhere |
 | `src/components/personalisation.test.tsx` | 8 | Picking Mumbai fetches Mumbai's coordinates and never shows "New Delhi"; the source name and an IST "updated" time appear for live data; the GRAP note appears outside the NCR; guidance appears per household group, in Hindi too, and who lives at home is remembered |
 | `src/app/api/openapi.test.ts` | 3 | `docs/openapi.yaml` and the real routes cannot drift apart |

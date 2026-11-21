@@ -16,7 +16,15 @@ import { POST as createReceipt } from "./receipts/route";
 import { GET as getReceipt } from "./receipts/[id]/route";
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]).toString("base64");
-const liveScenario = (lat: number, lng: number) => ({ id: "live", name: "Your location", area: "Live forecast", lat, lng, hourly: buildDiurnalCurve(250), source: "live" as const });
+const liveScenario = (lat: number, lng: number) => ({
+  id: "live",
+  name: "Your location",
+  area: "Live forecast",
+  lat,
+  lng,
+  hourly: buildDiurnalCurve(250),
+  source: "live" as const,
+});
 
 let ctx: ReturnType<typeof testServices>;
 const install = (overrides: Parameters<typeof testServices>[0] = {}, env: Record<string, string> = {}) => {
@@ -63,7 +71,8 @@ describe("GET /api/air-quality", () => {
   it("refuses cross-site browser requests and rate-limits repeat callers", async () => {
     expect((await airQuality(get("/api/air-quality?lat=1&lng=1", { "sec-fetch-site": "cross-site" }))).status).toBe(403);
     const codes: number[] = [];
-    for (let i = 0; i < 32; i++) codes.push((await airQuality(get("/api/air-quality?lat=1&lng=1", { "x-forwarded-for": "9.9.9.9" }))).status);
+    for (let i = 0; i < 32; i++)
+      codes.push((await airQuality(get("/api/air-quality?lat=1&lng=1", { "x-forwarded-for": "9.9.9.9" }))).status);
     expect(codes[0]).toBe(200);
     expect(codes.at(-1)).toBe(429);
   });
@@ -93,7 +102,10 @@ describe("POST /api/analyze-room", () => {
     install({ visionProvider: { scan: vi.fn().mockResolvedValue(scan) } });
     expect(await (await analyzeRoom(post("/api/analyze-room", { mimeType: "image/png", data: PNG }))).json()).toEqual({ scan });
     install({ visionProvider: { scan: vi.fn().mockResolvedValue(null) } });
-    expect(await (await analyzeRoom(post("/api/analyze-room", { mimeType: "image/png", data: PNG }))).json()).toEqual({ fallback: true, reason: "not_a_room" });
+    expect(await (await analyzeRoom(post("/api/analyze-room", { mimeType: "image/png", data: PNG }))).json()).toEqual({
+      fallback: true,
+      reason: "not_a_room",
+    });
   });
 
   it("stops calling the model after the daily budget and says so", async () => {
@@ -123,7 +135,9 @@ describe("POST /api/explain", () => {
   it("returns the model's text only when it passes the number guard", async () => {
     const hourly = hourlyFixture.map((pm25, hour) => ({ hour, pm25 }));
     const r = calculateHouseholdImpact(hourly, profileFixture, interventionsFixture);
-    install({ explainProvider: { explain: vi.fn().mockResolvedValue(`You avoid ${r.avoidedCigarettesHouseholdDay} cigarette-equivalents.`) } });
+    install({
+      explainProvider: { explain: vi.fn().mockResolvedValue(`You avoid ${r.avoidedCigarettesHouseholdDay} cigarette-equivalents.`) },
+    });
     expect((await (await explain(post("/api/explain", valid))).json()).source).toBe("gemini");
     install({ explainProvider: { explain: vi.fn().mockResolvedValue("Your risk drops by 8123%.") } });
     expect((await (await explain(post("/api/explain", valid))).json()).source).toBe("template");
@@ -200,7 +214,9 @@ describe("POST /api/events", () => {
   });
 
   it("refuses cross-site posts", async () => {
-    expect((await send({ event: "scenario_loaded", props: { preset_id: "gurugram" } }, { "sec-fetch-site": "cross-site" })).status).toBe(403);
+    expect((await send({ event: "scenario_loaded", props: { preset_id: "gurugram" } }, { "sec-fetch-site": "cross-site" })).status).toBe(
+      403,
+    );
   });
 });
 
@@ -240,7 +256,13 @@ describe("cross-cutting", () => {
   const validReceipt = { scenarioName: "Anand Vihar", hourly: hourlyFixture, profile: profileFixture, interventions: interventionsFixture };
 
   it("a storage outage on share links is a clear 503, with the real cause only in the logs", async () => {
-    const broken: Storage = { ...ctx.services.storage, receipts: { create: vi.fn().mockRejectedValue(new Error("db password is hunter2")), get: vi.fn().mockRejectedValue(new Error("db password is hunter2")) } };
+    const broken: Storage = {
+      ...ctx.services.storage,
+      receipts: {
+        create: vi.fn().mockRejectedValue(new Error("db password is hunter2")),
+        get: vi.fn().mockRejectedValue(new Error("db password is hunter2")),
+      },
+    };
     install({ storage: broken });
     const created = await createReceipt(post("/api/receipts", validReceipt));
     const text = await created.text();
@@ -254,7 +276,10 @@ describe("cross-cutting", () => {
   });
 
   it("analytics is best-effort: a storage failure still answers 204 and is logged as a warning", async () => {
-    const broken: Storage = { ...ctx.services.storage, analytics: { increment: vi.fn().mockRejectedValue(new Error("firestore down")), totals: vi.fn() } };
+    const broken: Storage = {
+      ...ctx.services.storage,
+      analytics: { increment: vi.fn().mockRejectedValue(new Error("firestore down")), totals: vi.fn() },
+    };
     install({ storage: broken });
     const res = await events(post("/api/events", { event: "scenario_loaded", props: { preset_id: "gurugram" } }));
     expect(res.status).toBe(204);

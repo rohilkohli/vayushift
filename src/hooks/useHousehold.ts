@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { track } from "@/lib/clientApi";
 import { NO_INTERVENTIONS } from "@/lib/impactEngine";
 import { parseInterventions, parseProfile } from "@/lib/requestSchemas";
 import type { ActiveInterventions, HouseholdProfile } from "@/lib/types";
@@ -60,7 +61,16 @@ export function useHousehold() {
   }, [profile, interventions, ready]);
 
   const patchProfile = useCallback((p: Partial<HouseholdProfile>) => setProfile((s) => ({ ...s, ...p })), []);
-  const patchInterventions = useCallback((p: Partial<ActiveInterventions>) => setInterventions((s) => ({ ...s, ...p })), []);
 
-  return { profile, interventions, patchProfile, patchInterventions };
+  /** Applies a change and records it (anonymously, and only if the visitor has not opted out). */
+  const changeInterventions = useCallback((p: Partial<ActiveInterventions>) => {
+    setInterventions((s) => ({ ...s, ...p }));
+    for (const [key, value] of Object.entries(p)) {
+      if (typeof value === "boolean") track({ event: "routine_shift_toggled", props: { intervention_key: key, enabled: value } });
+      else if (key === "filtrationMode" && value !== "none")
+        track({ event: "filtration_option_selected", props: { option_id: String(value) } });
+    }
+  }, []);
+
+  return { profile, interventions, patchProfile, changeInterventions };
 }

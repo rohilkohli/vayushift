@@ -16,13 +16,24 @@ import { App } from "./App";
 beforeAll(() => {
   // jsdom has no layout, media queries or dialog support; stub only what the app touches.
   window.matchMedia ??= ((query: string) => ({
-    matches: false, media: query, onchange: null,
-    addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false,
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false,
   })) as typeof window.matchMedia;
   window.HTMLElement.prototype.scrollIntoView ??= () => {};
-  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute("open", ""); };
-  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute("open"); };
-  window.requestAnimationFrame ??= ((cb: FrameRequestCallback) => setTimeout(() => cb(0), 0) as unknown as number) as typeof requestAnimationFrame;
+  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+  };
+  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+    this.removeAttribute("open");
+  };
+  window.requestAnimationFrame ??= ((cb: FrameRequestCallback) =>
+    setTimeout(() => cb(0), 0) as unknown as number) as typeof requestAnimationFrame;
 });
 
 afterEach(cleanup);
@@ -38,13 +49,9 @@ async function violations(container: Element) {
 
 describe("accessibility (axe-core)", () => {
   it("the checker itself catches real violations (so a clean result means something)", async () => {
-    const { container } = render(
-      <main>
-        <button type="button" />
-        <img src="x.png" />
-        <input type="text" />
-      </main>,
-    );
+    // Deliberately bad markup, written as a string so the linter's own accessibility rules do not reject the test file.
+    const { container } = render(<main />);
+    container.querySelector("main")!.innerHTML = '<button type="button"></button><img src="x.png"><input type="text">';
     const found = (await violations(container)).join("\n");
     expect(found).toMatch(/button-name/);
     expect(found).toMatch(/image-alt/);
@@ -87,7 +94,9 @@ describe("accessibility (axe-core)", () => {
   it("the 24-hour chart has a table alternative: a caption, a header row and 24 hourly rows", () => {
     const { container } = render(<App />);
     // Queried by structure: the table sits in a closed <details>, which jsdom's role queries treat inconsistently.
-    const table = Array.from(container.querySelectorAll("table")).find((t) => /Hourly outdoor PM2\.5/.test(t.querySelector("caption")?.textContent ?? ""));
+    const table = Array.from(container.querySelectorAll("table")).find((t) =>
+      /Hourly outdoor PM2\.5/.test(t.querySelector("caption")?.textContent ?? ""),
+    );
     expect(table, "the hourly table").toBeDefined();
     expect(table!.querySelectorAll("tbody tr")).toHaveLength(24);
     expect(table!.querySelectorAll("th[scope='col']").length).toBeGreaterThanOrEqual(4);

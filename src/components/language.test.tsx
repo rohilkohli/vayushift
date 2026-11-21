@@ -9,17 +9,31 @@ const DEVANAGARI = /[ऀ-ॿ]/;
 
 beforeAll(() => {
   window.matchMedia ??= ((q: string) => ({
-    matches: false, media: q, onchange: null,
-    addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false,
+    matches: false,
+    media: q,
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false,
   })) as typeof window.matchMedia;
   window.HTMLElement.prototype.scrollIntoView ??= () => {};
-  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute("open", ""); };
-  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute("open"); };
+  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+  };
+  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+    this.removeAttribute("open");
+  };
 });
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
-  try { localStorage.clear(); } catch { /* ignore */ }
+  try {
+    localStorage.clear();
+  } catch {
+    /* ignore */
+  }
   document.documentElement.lang = "en";
 });
 afterEach(cleanup);

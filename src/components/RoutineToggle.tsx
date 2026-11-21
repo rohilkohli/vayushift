@@ -39,9 +39,13 @@ export function RoutineToggle({ checked, onChange, title, subtitle, icon, cig, d
       </span>
       <span className="flex shrink-0 flex-col items-end gap-1">
         {cig !== undefined && (
-          <span className="chip rounded-full px-2.5 py-0.5 text-[11px] font-bold">−{cig} {t.cigShort}</span>
+          <span className="chip rounded-full px-2.5 py-0.5 text-[11px] font-bold">
+            −{cig} {t.cigShort}
+          </span>
         )}
-        <span key={String(checked)} className="pop text-[10px] font-bold uppercase tracking-widest">{checked ? t.switchOn : t.switchOff}</span>
+        <span key={String(checked)} className="pop text-[10px] font-bold uppercase tracking-widest">
+          {checked ? t.switchOn : t.switchOff}
+        </span>
       </span>
     </button>
   );

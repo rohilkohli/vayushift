@@ -11,11 +11,13 @@ Mumbai and Kolkata) or share your location, and every figure comes from that pla
 
 | Read this | For |
 | --- | --- |
+| [`CODE_QUALITY.md`](CODE_QUALITY.md), [`EFFICIENCY.md`](EFFICIENCY.md), [`PROBLEM_ALIGNMENT.md`](PROBLEM_ALIGNMENT.md) | The enforced limits and structure; where the app avoids work; how it answers the problem statement |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture decision records: what was chosen, why, and the cost |
 | [`docs/SAMPLE_INPUTS.md`](docs/SAMPLE_INPUTS.md) | **Evaluators:** exact steps and example inputs to try every feature in a few minutes |
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Problem statement to code to tests, and where it is only partly met |
 | [`docs/GOOGLE_SERVICES.md`](docs/GOOGLE_SERVICES.md) | Every Google service used, and how each was confirmed |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Threat model: each threat, its control, and the test that proves it |
-| [`docs/TESTING.md`](docs/TESTING.md) | What the 310 tests prove, live verification, and bugs only the real systems exposed |
+| [`docs/TESTING.md`](docs/TESTING.md) | What the 317 tests prove, live verification, and bugs only the real systems exposed |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | What is built, how it was checked, what is not covered |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/openapi.yaml`](docs/openapi.yaml) | Design, data model, failure modes, API |
 
@@ -31,7 +33,7 @@ Air quality apps show a red number and stop. In winter smog, the useful question
 | **Living Sky** | A scrubbable 24-hour horizon (outdoor and modelled indoor PM2.5, jump to the safe window, play the day), the best 90-minute daytime window, four routine switches, and **outdoor guidance per household** (children, older adults, asthma or heart and lung conditions, healthy adults each get their own limit, best hour to go out and mask advice). Live data shows its source and an IST "updated" time. Scrubbing changes the hero advice, the readouts and the sky itself (palette, sun and moon, stars, clouds, birds, wind speed, day or night theme). Deep-link an hour with `?hour=15` | Searches daytime windows for the lowest mean PM2.5, compares with the 07:00-10:00 peak, and **downgrades its own advice** when the afternoon low is above 250 µg/m³ (brief airing) or every hour is above 300 (stay sealed) |
 | **Indoor Air Lab** | Photo or sample room, then CADR target and filter comparison | Gemini extracts room facts into a fixed schema; a single-room mass balance computes indoor PM2.5 for a DIY MERV-13 box, a box fan, or a HEPA unit, with cost, noise and sleep advice |
 | **Community** | GRAP stage, vehicle check, guard-heater cost, bilingual WhatsApp card | AQI to GRAP stage (201/301/401/450), deterministic English and Hindi templates |
-| **Receipt** | Avoided cigarette-equivalents, µg inhaled, g CO₂, and a **shareable link** (`/r/<id>`, valid 90 days) | Every number comes from `src/lib/impactEngine.ts`, computed on the server |
+| **Receipt** | Avoided cigarette-equivalents, µg inhaled, g CO₂, and a **shareable link** (`/r/<id>`, valid 90 days) | Every number comes from `src/lib/impactEngine/`, computed on the server |
 
 ### The one rule: the model never does maths
 
@@ -66,8 +68,10 @@ security model: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). API reference: [
 npm install
 cp .env.example .env.local   # optional: everything works with no keys and no database
 npm run dev                  # http://localhost:3000
-npm test                     # unit, service, adapter-logic and route tests
-npm run lint                 # type-check
+npm test                     # unit, service, adapter-logic, route and accessibility tests
+npm run lint                 # type-check, then ESLint with size and complexity limits (zero warnings)
+npm run format:check         # Prettier
+npm run check                # all three
 ```
 
 With real storage locally (needs the Google Cloud CLI and Java for the emulator):
@@ -100,8 +104,11 @@ All optional; see `.env.example`.
 ```
 src/lib/                    domain: pure functions and constants, no I/O
   constants.ts              every model number, tagged cited or assumption
-  impactEngine.ts           indoor mass balance, filter comparison, household receipt
-  airQuality.ts, grapRules.ts, rwa.ts, roomScan.ts, explain.ts, skyPalette.ts ...
+  impactEngine/             indoor mass balance, exposure episodes, the five actions, household receipt, filters
+  personalAdvice.ts         outdoor guidance per group that lives at home
+  horizonGeometry.ts        the chart's coordinates, as pure functions
+  i18n/en, i18n/hi          one module per screen section; Hindi must match English
+  airQuality.ts, grapRules.ts, rwa.ts, roomScan.ts, cities.ts, explain.ts, skyPalette.ts ...
   clientApi.ts              browser helpers: share link, privacy-respecting event beacon
 src/server/
   config.ts                 validated configuration
@@ -113,10 +120,13 @@ src/server/
   container.ts              the one place that wires adapters to services
 src/app/api/*               thin routes: parse, call a service, respond
 src/app/r/[id]/             server-rendered shared receipt page
-src/components/             UI; no chart library, plain SVG
-docs/                       ARCHITECTURE, SECURITY, TESTING, ACCESSIBILITY, REQUIREMENTS, GOOGLE_SERVICES, openapi.yaml
+src/hooks/                  state with one purpose each (forecast, sky clock, tabs, household, room scan, receipt)
+src/components/             presentational pieces; no chart library, plain SVG
+docs/                       ARCHITECTURE, SECURITY, TESTING, ACCESSIBILITY, REQUIREMENTS, DECISIONS, GOOGLE_SERVICES, SAMPLE_INPUTS, openapi.yaml
+CODE_QUALITY.md, EFFICIENCY.md, PROBLEM_ALIGNMENT.md   the three that map to the scoring criteria
 infra/setup.sh              one-time Google Cloud setup
-.github/workflows/          CI and Cloud Run deploy
+.github/                   CI (lint, format, tests, build, Firestore emulator), CodeQL, Dependabot, Cloud Run deploy
+eslint.config.mjs           the size, complexity and accessibility limits
 ```
 
 ## Security

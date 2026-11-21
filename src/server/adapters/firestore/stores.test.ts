@@ -82,7 +82,11 @@ describe("FirestoreReceiptStore", () => {
     hourly: hourlyFixture,
     profile: profileFixture,
     interventions: interventionsFixture,
-    receipt: calculateHouseholdImpact(hourlyFixture.map((pm25, hour) => ({ hour, pm25 })), profileFixture, interventionsFixture),
+    receipt: calculateHouseholdImpact(
+      hourlyFixture.map((pm25, hour) => ({ hour, pm25 })),
+      profileFixture,
+      interventionsFixture,
+    ),
     ...over,
   });
 
@@ -122,7 +126,9 @@ describe("FirestoreReceiptStore", () => {
     const f = fakeFirestore();
     const handle = {
       db: async () => ({
-        collection: () => ({ doc: () => ({ create: async () => Promise.reject(Object.assign(new Error("PERMISSION_DENIED"), { code: 7 })) }) }),
+        collection: () => ({
+          doc: () => ({ create: async () => Promise.reject(Object.assign(new Error("PERMISSION_DENIED"), { code: 7 })) }),
+        }),
       }),
     };
     await expect(new FirestoreReceiptStore(handle as never).create(make())).rejects.toThrow("PERMISSION_DENIED");

@@ -1,14 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildDiurnalCurve } from "./airQualityPresets";
 import { pm25ToAqi } from "./airQuality";
-import {
-  ACTIVITY_LIMITS,
-  LIMITED_ACTIVITY_MINUTES,
-  bestOutingHour,
-  groupsFor,
-  levelFor,
-  personalAdvice,
-} from "./personalAdvice";
+import { ACTIVITY_LIMITS, LIMITED_ACTIVITY_MINUTES, bestOutingHour, groupsFor, levelFor, personalAdvice } from "./personalAdvice";
 
 const none = { hasChildren: false, hasSeniors: false, hasRespiratoryCondition: false };
 const flat = (pm: number) => Array.from({ length: 24 }, (_, hour) => ({ hour, pm25: pm }));
@@ -36,7 +29,11 @@ describe("levelFor", () => {
 describe("groupsFor", () => {
   it("always includes healthy adults, and only the sensitive groups that are selected", () => {
     expect(groupsFor(none)).toEqual(["adults"]);
-    expect(groupsFor({ hasChildren: true, hasSeniors: false, hasRespiratoryCondition: true })).toEqual(["children", "respiratory", "adults"]);
+    expect(groupsFor({ hasChildren: true, hasSeniors: false, hasRespiratoryCondition: true })).toEqual([
+      "children",
+      "respiratory",
+      "adults",
+    ]);
   });
 });
 

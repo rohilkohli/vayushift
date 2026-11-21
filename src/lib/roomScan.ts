@@ -48,8 +48,32 @@ export const ROOM_SCAN_SCHEMA = {
 } as const;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+const isControlOrAngle = (ch: string) => ch.charCodeAt(0) <= 0x1f || ch === "<" || ch === ">";
+/** Free text from the model: control characters and angle brackets become spaces, then trimmed and length-limited. */
 const cleanText = (s: unknown, max: number) =>
-  typeof s === "string" ? s.replace(/[\u0000-\u001f<>]/g, " ").trim().slice(0, max) : "";
+  typeof s === "string"
+    ? [...s]
+        .map((ch) => (isControlOrAngle(ch) ? " " : ch))
+        .join("")
+        .trim()
+        .slice(0, max)
+    : "";
+
+const isOneOf = <T extends string>(list: readonly T[], v: unknown): v is T =>
+  typeof v === "string" && (list as readonly string[]).includes(v);
+
+/** The gas stove the model names is the engine's "unvented LPG" fuel; everything else passes through. */
+const toCooking = (c: (typeof COOKING)[number]): RoomScan["cookingApplianceDetected"] => (c === "lpg_gas_stove" ? "lpg_unvented" : c);
+
+type Enums = Pick<RoomScan, "roomCategory" | "windowType" | "exhaustTypeDetected"> & { cooking: (typeof COOKING)[number] };
+
+/** The four enumerated fields, or null if any is outside its allowed list. */
+function readEnums(r: Record<string, unknown>): Enums | null {
+  const { roomCategory, windowType, cookingApplianceDetected: cooking, exhaustTypeDetected } = r;
+  if (!isOneOf(CATEGORIES, roomCategory) || !isOneOf(WINDOWS, windowType)) return null;
+  if (!isOneOf(COOKING, cooking) || !isOneOf(EXHAUST, exhaustTypeDetected)) return null;
+  return { roomCategory, windowType, cooking, exhaustTypeDetected };
+}
 
 /**
  * Validates untrusted model output against the schema. Enums are checked,
@@ -60,28 +84,23 @@ const cleanText = (s: unknown, max: number) =>
 export function validateRoomScan(raw: unknown): RoomScan | null {
   if (typeof raw !== "object" || raw === null) return null;
   const r = raw as Record<string, unknown>;
-  if (typeof r.isIndoorRoom !== "boolean") return null;
   const area = Number(r.estimatedAreaSqFt);
   const ceiling = Number(r.estimatedCeilingHeightFt);
-  if (!Number.isFinite(area) || !Number.isFinite(ceiling)) return null;
-  if (!CATEGORIES.includes(r.roomCategory as RoomCategory)) return null;
-  if (!WINDOWS.includes(r.windowType as (typeof WINDOWS)[number])) return null;
-  if (!COOKING.includes(r.cookingApplianceDetected as (typeof COOKING)[number])) return null;
-  if (!EXHAUST.includes(r.exhaustTypeDetected as ExhaustType)) return null;
+  const enums = readEnums(r);
+  if (typeof r.isIndoorRoom !== "boolean" || !Number.isFinite(area) || !Number.isFinite(ceiling) || !enums) return null;
   const notes = Array.isArray(r.infiltrationRiskNotes) ? r.infiltrationRiskNotes : [];
   return {
     isIndoorRoom: r.isIndoorRoom,
-    roomCategory: r.roomCategory as RoomCategory,
+    roomCategory: enums.roomCategory,
     estimatedAreaSqFt: Math.round(clamp(area, 40, 800)),
     estimatedCeilingHeightFt: clamp(Math.round(ceiling * 2) / 2, 7, 14),
-    windowType: r.windowType as RoomScan["windowType"],
-    cookingApplianceDetected: (r.cookingApplianceDetected === "lpg_gas_stove"
-      ? "lpg_unvented"
-      : r.cookingApplianceDetected === "electric_induction"
-        ? "electric_induction"
-        : r.cookingApplianceDetected) as RoomScan["cookingApplianceDetected"],
-    exhaustTypeDetected: r.exhaustTypeDetected as ExhaustType,
-    infiltrationRiskNotes: notes.slice(0, 5).map((n) => cleanText(n, 120)).filter(Boolean),
+    windowType: enums.windowType,
+    cookingApplianceDetected: toCooking(enums.cooking),
+    exhaustTypeDetected: enums.exhaustTypeDetected,
+    infiltrationRiskNotes: notes
+      .slice(0, 5)
+      .map((n) => cleanText(n, 120))
+      .filter(Boolean),
     recommendedPlacementSpot: cleanText(r.recommendedPlacementSpot, 160),
   };
 }

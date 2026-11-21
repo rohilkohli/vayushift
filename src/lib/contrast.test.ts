@@ -29,7 +29,19 @@ describe.each([
   const t = tokens(selector);
 
   it("defines every colour the interface reads", () => {
-    for (const key of ["--hc-bg", "--hc-fg", "--ink", "--ink-soft", "--accent", "--good", "--glass", "--chip", "--sel-bg", "--sel-fg", "--hero-ink"]) {
+    for (const key of [
+      "--hc-bg",
+      "--hc-fg",
+      "--ink",
+      "--ink-soft",
+      "--accent",
+      "--good",
+      "--glass",
+      "--chip",
+      "--sel-bg",
+      "--sel-fg",
+      "--hero-ink",
+    ]) {
       expect(t[key], key).toBeDefined();
     }
   });

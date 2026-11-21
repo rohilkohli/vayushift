@@ -11,13 +11,24 @@ export async function register() {
     const config = loadConfig();
     if (config.nodeEnv === "production") {
       if (!config.publicOrigin) {
-        line({ severity: "WARNING", message: "PUBLIC_ORIGIN is not set: share links will use the request's own host. Set it to the public https URL." });
+        line({
+          severity: "WARNING",
+          message: "PUBLIC_ORIGIN is not set: share links will use the request's own host. Set it to the public https URL.",
+        });
       }
       if (!config.gcpProject) {
-        line({ severity: "WARNING", message: "GOOGLE_CLOUD_PROJECT is not set: log lines cannot be linked to Cloud Trace. Cloud Run does not set it for you." });
+        line({
+          severity: "WARNING",
+          message: "GOOGLE_CLOUD_PROJECT is not set: log lines cannot be linked to Cloud Trace. Cloud Run does not set it for you.",
+        });
       }
     }
-    line({ severity: "INFO", message: "server starting", storage: config.storage, upstreams: { airQuality: Boolean(config.mapsApiKey), gemini: Boolean(config.geminiApiKey) } });
+    line({
+      severity: "INFO",
+      message: "server starting",
+      storage: config.storage,
+      upstreams: { airQuality: Boolean(config.mapsApiKey), gemini: Boolean(config.geminiApiKey) },
+    });
   } catch (err) {
     const problems = err instanceof ConfigError ? err.problems : [String(err)];
     line({ severity: "CRITICAL", message: "invalid configuration", problems });

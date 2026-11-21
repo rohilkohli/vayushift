@@ -12,7 +12,13 @@ describe("parseCoords", () => {
   it("rounds to 3 decimals", () => {
     expect(parseCoords(28.613912, 77.209041)).toEqual({ lat: 28.614, lng: 77.209 });
   });
-  it.each([[91, 0], [0, 181], ["x", 1], [Number.NaN, 1], [null, undefined]])("rejects %s,%s", (a, b) => {
+  it.each([
+    [91, 0],
+    [0, 181],
+    ["x", 1],
+    [Number.NaN, 1],
+    [null, undefined],
+  ])("rejects %s,%s", (a, b) => {
     expect(parseCoords(a, b)).toBeNull();
   });
 });
@@ -39,7 +45,6 @@ describe("image checks", () => {
   });
 });
 
-
 describe("validateRoomScan", () => {
   const good = { ...SAMPLE_ROOMS[0].scan, cookingApplianceDetected: "lpg_gas_stove" };
   it("accepts a valid scan and maps the LPG label", () => {
@@ -58,7 +63,11 @@ describe("validateRoomScan", () => {
     expect(validateRoomScan("hi")).toBeNull();
   });
   it("strips markup and limits free text (prompt-injection hardening)", () => {
-    const s = validateRoomScan({ ...good, infiltrationRiskNotes: ["<img src=x onerror=1>" + "a".repeat(500)], recommendedPlacementSpot: "<b>x</b>" });
+    const s = validateRoomScan({
+      ...good,
+      infiltrationRiskNotes: ["<img src=x onerror=1>" + "a".repeat(500)],
+      recommendedPlacementSpot: "<b>x</b>",
+    });
     expect(s?.infiltrationRiskNotes[0]).not.toContain("<");
     expect(s?.infiltrationRiskNotes[0].length).toBeLessThanOrEqual(120);
     expect(s?.recommendedPlacementSpot).not.toContain("<");
@@ -66,11 +75,25 @@ describe("validateRoomScan", () => {
 });
 
 describe("narrative guard", () => {
-  const receipt = calculateHouseholdImpact(PRESET_SCENARIOS[0].hourly, {
-    memberCount: 3, commuterCount: 1, walkerCount: 1, hasChildren: true, hasSeniors: false, hasRespiratoryCondition: false, roomAreaSqFt: 180,
-    ceilingHeightFt: 10, windowType: "sliding_aluminum_unsealed", sleepNoiseSensitivity: "medium",
-    commuteKmRoundTrip: 20, baselineCommuteMode: "private_petrol_car", baselineCookingFuel: "lpg_unvented",
-  }, { ...NO_INTERVENTIONS, switchCommuteToMetroN95: true });
+  const receipt = calculateHouseholdImpact(
+    PRESET_SCENARIOS[0].hourly,
+    {
+      memberCount: 3,
+      commuterCount: 1,
+      walkerCount: 1,
+      hasChildren: true,
+      hasSeniors: false,
+      hasRespiratoryCondition: false,
+      roomAreaSqFt: 180,
+      ceilingHeightFt: 10,
+      windowType: "sliding_aluminum_unsealed",
+      sleepNoiseSensitivity: "medium",
+      commuteKmRoundTrip: 20,
+      baselineCommuteMode: "private_petrol_car",
+      baselineCookingFuel: "lpg_unvented",
+    },
+    { ...NO_INTERVENTIONS, switchCommuteToMetroN95: true },
+  );
   const allowed = allowedNumbers(receipt);
   it("accepts text using only engine numbers", () => {
     expect(narrativeUsesOnlyAllowedNumbers(`The metro saves ${receipt.savedCo2GramsDay} g of CO2 today.`, allowed)).toBe(true);
@@ -87,11 +110,20 @@ describe("narrative guard", () => {
   });
 });
 const SAMPLE_PROFILE = {
-  memberCount: 3, commuterCount: 1, walkerCount: 1, hasChildren: false, hasSeniors: false, hasRespiratoryCondition: false, roomAreaSqFt: 180,
-  ceilingHeightFt: 10, windowType: "sliding_aluminum_unsealed" as const, sleepNoiseSensitivity: "low" as const,
-  commuteKmRoundTrip: 20, baselineCommuteMode: "private_petrol_car" as const, baselineCookingFuel: "lpg_unvented" as const,
+  memberCount: 3,
+  commuterCount: 1,
+  walkerCount: 1,
+  hasChildren: false,
+  hasSeniors: false,
+  hasRespiratoryCondition: false,
+  roomAreaSqFt: 180,
+  ceilingHeightFt: 10,
+  windowType: "sliding_aluminum_unsealed" as const,
+  sleepNoiseSensitivity: "low" as const,
+  commuteKmRoundTrip: 20,
+  baselineCommuteMode: "private_petrol_car" as const,
+  baselineCookingFuel: "lpg_unvented" as const,
 };
-
 
 describe("RWA tools", () => {
   it("4 heaters for 100 flats is Rs 6,400 total and Rs 64 per flat", () => {

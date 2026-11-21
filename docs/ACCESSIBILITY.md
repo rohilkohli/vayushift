@@ -52,3 +52,7 @@ predates the font change (Fraunces and Geist) and the removal of the dark headli
 
 Run `npm run dev`, open each tab, press Tab through the page, and try the slider with the arrow keys. In browser dev
 tools, emulate `prefers-reduced-motion` and `forced-colors`.
+
+## Also enforced at lint time
+
+The jsx-a11y rule set runs on every component with zero warnings allowed (see eslint.config.mjs), so labels, alt text, interactive roles and keyboard handlers are checked before the axe-core tests run. Two controls added with the city picker and household guidance follow the same patterns: the city list is a labelled native <select> (grouped into live cities and demo scenarios), and the Who lives here checkboxes sit in a <fieldset> with a <legend>. The status bar is a scrollable region and takes 	abIndex={0} so keyboard users can scroll it; that is the one place the lint rule is configured to allow a tab stop on a region.

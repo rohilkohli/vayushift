@@ -59,7 +59,10 @@ export function track(e: TrackedEvent): void {
     if (trackingOptedOut()) return;
     const body = JSON.stringify(e);
     const sent = navigator.sendBeacon?.("/api/events", new Blob([body], { type: "application/json" }));
-    if (!sent) void fetch("/api/events", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => undefined);
+    if (!sent)
+      void fetch("/api/events", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(
+        () => undefined,
+      );
   } catch {
     /* analytics must never affect the app */
   }

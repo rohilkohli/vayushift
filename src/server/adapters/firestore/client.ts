@@ -1,7 +1,8 @@
+import type * as FirestoreNamespace from "@google-cloud/firestore";
 import type { Firestore } from "@google-cloud/firestore";
 import type { AppConfig } from "../../config";
 
-type FirestoreModule = typeof import("@google-cloud/firestore");
+type FirestoreModule = typeof FirestoreNamespace;
 
 let libPromise: Promise<FirestoreModule> | undefined;
 
@@ -33,7 +34,9 @@ export class FirestoreHandle {
   constructor(private readonly config: Pick<AppConfig, "gcpProject">) {}
 
   db(): Promise<Firestore> {
-    this.pending ??= firestoreLib().then(({ Firestore }) => new Firestore({ projectId: this.config.gcpProject, ignoreUndefinedProperties: true }));
+    this.pending ??= firestoreLib().then(
+      ({ Firestore }) => new Firestore({ projectId: this.config.gcpProject, ignoreUndefinedProperties: true }),
+    );
     return this.pending;
   }
 }

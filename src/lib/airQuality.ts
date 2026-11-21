@@ -22,9 +22,7 @@ export function cigaretteEquivalent(pm25: number, hours: number): number {
 /** CPCB piecewise-linear PM2.5 (µg/m³) to AQI. Values above the table extrapolate on the top band, capped at 500. */
 export function pm25ToAqi(pm25: number): number {
   const pm = Math.max(0, pm25);
-  const band =
-    CPCB_PM25_BREAKPOINTS.find((b) => pm <= b.pmHi) ??
-    CPCB_PM25_BREAKPOINTS[CPCB_PM25_BREAKPOINTS.length - 1];
+  const band = CPCB_PM25_BREAKPOINTS.find((b) => pm <= b.pmHi) ?? CPCB_PM25_BREAKPOINTS[CPCB_PM25_BREAKPOINTS.length - 1];
   const t = (Math.min(pm, band.pmHi) - band.pmLo) / (band.pmHi - band.pmLo);
   return Math.round(band.aqiLo + t * (band.aqiHi - band.aqiLo));
 }
@@ -32,9 +30,7 @@ export function pm25ToAqi(pm25: number): number {
 /** Inverse of pm25ToAqi, clamped to 0-500. */
 export function aqiToPm25(aqi: number): number {
   const a = Math.min(500, Math.max(0, aqi));
-  const band =
-    CPCB_PM25_BREAKPOINTS.find((b) => a <= b.aqiHi) ??
-    CPCB_PM25_BREAKPOINTS[CPCB_PM25_BREAKPOINTS.length - 1];
+  const band = CPCB_PM25_BREAKPOINTS.find((b) => a <= b.aqiHi) ?? CPCB_PM25_BREAKPOINTS[CPCB_PM25_BREAKPOINTS.length - 1];
   const t = (a - band.aqiLo) / (band.aqiHi - band.aqiLo);
   return round(band.pmLo + t * (band.pmHi - band.pmLo));
 }
@@ -64,7 +60,8 @@ export function ventilationAdvice(troughMean: number, dayMin: number): Ventilati
     return {
       mode: "sealed",
       minutes: 5,
-      headline: "Outdoor air stays above 300 µg/m³ all day. Keep windows shut; crack one for 5 minutes only if the room feels stuffy, then run filtration on high.",
+      headline:
+        "Outdoor air stays above 300 µg/m³ all day. Keep windows shut; crack one for 5 minutes only if the room feels stuffy, then run filtration on high.",
     };
   }
   if (troughMean > VENT_BRIEF_ABOVE_PM25) {

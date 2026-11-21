@@ -41,9 +41,7 @@ function clean(value: unknown, depth = 0): unknown {
   if (Array.isArray(value)) return depth > 2 ? "[array]" : value.slice(0, 50).map((v) => clean(v, depth + 1));
   if (value && typeof value === "object") {
     if (depth > 2) return "[object]";
-    return Object.fromEntries(
-      Object.entries(value as Fields).map(([k, v]) => [k, SENSITIVE.test(k) ? "[redacted]" : clean(v, depth + 1)]),
-    );
+    return Object.fromEntries(Object.entries(value as Fields).map(([k, v]) => [k, SENSITIVE.test(k) ? "[redacted]" : clean(v, depth + 1)]));
   }
   return value;
 }

@@ -77,9 +77,7 @@ export class MemoryAnalyticsStore implements AnalyticsStore {
 
   async totals(day: string): Promise<Record<string, number>> {
     const prefix = `${day}|`;
-    return Object.fromEntries(
-      [...this.counts].filter(([k]) => k.startsWith(prefix)).map(([k, v]) => [k.slice(prefix.length), v]),
-    );
+    return Object.fromEntries([...this.counts].filter(([k]) => k.startsWith(prefix)).map(([k, v]) => [k.slice(prefix.length), v]));
   }
 }
 

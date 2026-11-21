@@ -8,8 +8,7 @@ export interface RoomVisionProvider {
 }
 
 export type RoomVisionOutcome =
-  | { kind: "scan"; scan: RoomScan }
-  | { kind: "fallback"; reason: "ai_unavailable" | "not_a_room" | "budget_exhausted" };
+  { kind: "scan"; scan: RoomScan } | { kind: "fallback"; reason: "ai_unavailable" | "not_a_room" | "budget_exhausted" };
 
 export interface RoomVisionDeps {
   provider: RoomVisionProvider | undefined;

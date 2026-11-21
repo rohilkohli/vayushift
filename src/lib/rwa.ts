@@ -49,22 +49,24 @@ export function buildAdvisory(i: AdvisoryInput): { en: string; hi: string; combi
       ? `Night-guard heaters: ${i.guards} x Rs ${HEATER_UNIT_COST_INR} = Rs ${plan.totalCostInr} total (about Rs ${plan.perFlatInr} per flat).`
       : "";
   const heaterHi =
-    i.guards > 0
-      ? `गार्ड हीटर: ${i.guards} x ₹${HEATER_UNIT_COST_INR} = कुल ₹${plan.totalCostInr} (लगभग ₹${plan.perFlatInr} प्रति फ़्लैट)।`
-      : "";
+    i.guards > 0 ? `गार्ड हीटर: ${i.guards} x ₹${HEATER_UNIT_COST_INR} = कुल ₹${plan.totalCostInr} (लगभग ₹${plan.perFlatInr} प्रति फ़्लैट)।` : "";
   const en = [
     `*${i.locationName} Smog Advisory*`,
     `AQI ${i.aqi} | GRAP ${info.roman === "-" ? "not active" : `Stage ${info.roman} (${info.category})`}`,
     ...info.householdActions.map((a) => `- ${a}`),
     heaterEn,
     GRAP_DISCLAIMER,
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
   const hi = [
     `*${i.locationName} स्मॉग सूचना*`,
     `AQI ${i.aqi} | GRAP ${HI_STAGE[i.stage]}`,
     ...HI_ACTIONS[i.stage].map((a) => `- ${a}`),
     heaterHi,
     "यह सामान्य जानकारी है। आधिकारिक नियम caqm.nic.in पर देखें।",
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
   return { en, hi, combined: `${en}\n\n${hi}` };
 }

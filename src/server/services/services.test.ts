@@ -18,7 +18,11 @@ const receiptFor = (patch = {}) => calculateHouseholdImpact(hourly, profileFixtu
 describe("RoomVisionService", () => {
   const scan = SAMPLE_ROOMS[0].scan;
   const make = (provider: { scan: ReturnType<typeof vi.fn> } | undefined, budgetCap = 10) =>
-    new RoomVisionService({ provider: provider as RoomVisionProvider | undefined, budget: createMemoryStorage({ ...caps, geminiVision: budgetCap }).budget, log: silent });
+    new RoomVisionService({
+      provider: provider as RoomVisionProvider | undefined,
+      budget: createMemoryStorage({ ...caps, geminiVision: budgetCap }).budget,
+      log: silent,
+    });
 
   it("returns the scan on success", async () => {
     const provider = { scan: vi.fn().mockResolvedValue(scan) };
@@ -28,9 +32,18 @@ describe("RoomVisionService", () => {
 
   it("falls back, never errors, in every failure case", async () => {
     expect(await make(undefined).analyze("image/png", "x")).toEqual({ kind: "fallback", reason: "ai_unavailable" });
-    expect(await make({ scan: vi.fn().mockResolvedValue(null) }).analyze("image/png", "x")).toEqual({ kind: "fallback", reason: "not_a_room" });
-    expect(await make({ scan: vi.fn().mockResolvedValue({ ...scan, isIndoorRoom: false }) }).analyze("image/png", "x")).toEqual({ kind: "fallback", reason: "not_a_room" });
-    expect(await make({ scan: vi.fn().mockRejectedValue(new Error("timeout")) }).analyze("image/png", "x")).toEqual({ kind: "fallback", reason: "ai_unavailable" });
+    expect(await make({ scan: vi.fn().mockResolvedValue(null) }).analyze("image/png", "x")).toEqual({
+      kind: "fallback",
+      reason: "not_a_room",
+    });
+    expect(await make({ scan: vi.fn().mockResolvedValue({ ...scan, isIndoorRoom: false }) }).analyze("image/png", "x")).toEqual({
+      kind: "fallback",
+      reason: "not_a_room",
+    });
+    expect(await make({ scan: vi.fn().mockRejectedValue(new Error("timeout")) }).analyze("image/png", "x")).toEqual({
+      kind: "fallback",
+      reason: "ai_unavailable",
+    });
   });
 
   it("does not call the model once the daily budget is spent", async () => {
@@ -55,7 +68,8 @@ describe("ExplainService", () => {
     });
     return svc;
   };
-  const goodText = () => `Your choices avoid ${receiptFor().avoidedCigarettesHouseholdDay} cigarette-equivalents today and save ${receiptFor().savedCo2GramsDay} g of CO2.`;
+  const goodText = () =>
+    `Your choices avoid ${receiptFor().avoidedCigarettesHouseholdDay} cigarette-equivalents today and save ${receiptFor().savedCo2GramsDay} g of CO2.`;
 
   it("computes the receipt itself, whatever the caller claims", async () => {
     const r = await make(undefined).explain(inputs);

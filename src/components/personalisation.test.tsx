@@ -8,12 +8,22 @@ import { App } from "./App";
 
 beforeAll(() => {
   window.matchMedia ??= ((q: string) => ({
-    matches: false, media: q, onchange: null,
-    addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false,
+    matches: false,
+    media: q,
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false,
   })) as typeof window.matchMedia;
   window.HTMLElement.prototype.scrollIntoView ??= () => {};
-  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute("open", ""); };
-  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute("open"); };
+  window.HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+  };
+  window.HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+    this.removeAttribute("open");
+  };
 });
 
 /** 08:35 UTC is 14:05 in India. */
@@ -22,21 +32,35 @@ const calls: string[] = [];
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/?hour=12");
-  try { localStorage.clear(); } catch { /* ignore */ }
+  try {
+    localStorage.clear();
+  } catch {
+    /* ignore */
+  }
   calls.length = 0;
-  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
-    const url = String(input);
-    calls.push(url);
-    const q = new URL(url, "http://localhost").searchParams;
-    const body = {
-      mode: "live",
-      scenario: {
-        id: "live", name: "Your location", area: "Live forecast", lat: Number(q.get("lat")), lng: Number(q.get("lng")),
-        hourly: buildDiurnalCurve(120), source: "live", fetchedAt: FETCHED_AT, provider: "Google Air Quality API",
-      },
-    };
-    return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
-  }));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      calls.push(url);
+      const q = new URL(url, "http://localhost").searchParams;
+      const body = {
+        mode: "live",
+        scenario: {
+          id: "live",
+          name: "Your location",
+          area: "Live forecast",
+          lat: Number(q.get("lat")),
+          lng: Number(q.get("lng")),
+          hourly: buildDiurnalCurve(120),
+          source: "live",
+          fetchedAt: FETCHED_AT,
+          provider: "Google Air Quality API",
+        },
+      };
+      return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+    }),
+  );
 });
 afterEach(() => {
   cleanup();
@@ -125,6 +149,8 @@ describe("household guidance", () => {
     await user.click(screen.getByRole("checkbox", { name: "Asthma, heart or lung condition" }));
     unmount();
     render(<App />);
-    await waitFor(() => expect((screen.getByRole("checkbox", { name: "Asthma, heart or lung condition" }) as HTMLInputElement).checked).toBe(true));
+    await waitFor(() =>
+      expect((screen.getByRole("checkbox", { name: "Asthma, heart or lung condition" }) as HTMLInputElement).checked).toBe(true),
+    );
   });
 });

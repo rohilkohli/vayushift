@@ -45,10 +45,15 @@ export function createServices(config: AppConfig, overrides: Overrides = {}): Se
   const clock = overrides.clock ?? systemClock;
   const logger =
     overrides.logger ??
-    createLogger({ level: config.logLevel, service: config.service, base: { service: config.service.name, revision: config.service.revision } });
+    createLogger({
+      level: config.logLevel,
+      service: config.service,
+      base: { service: config.service.name, revision: config.service.revision },
+    });
 
   const storage =
-    overrides.storage ?? (config.storage === "firestore" ? createFirestoreStorage(config, logger) : createMemoryStorage(config.budgets, clock));
+    overrides.storage ??
+    (config.storage === "firestore" ? createFirestoreStorage(config, logger) : createMemoryStorage(config.budgets, clock));
 
   const pick = <T>(override: T | null | undefined, build: () => T | undefined): T | undefined =>
     override === undefined ? build() : (override ?? undefined);
@@ -75,7 +80,13 @@ export function createServices(config: AppConfig, overrides: Overrides = {}): Se
       now: clock,
     }),
     room: new RoomVisionService({ provider: visionProvider, budget: storage.budget, log: logger }),
-    explain: new ExplainService({ provider: explainProvider, cache: storage.cache, budget: storage.budget, log: logger, cacheMs: config.explainCacheMs }),
+    explain: new ExplainService({
+      provider: explainProvider,
+      cache: storage.cache,
+      budget: storage.budget,
+      log: logger,
+      cacheMs: config.explainCacheMs,
+    }),
     receipts: new ReceiptService({ store: storage.receipts, ttlDays: config.receiptTtlDays, now: clock }),
     analytics: new AnalyticsService(storage.analytics, clock),
     upstreams: { airQuality: Boolean(airProvider), gemini: Boolean(visionProvider || explainProvider) },

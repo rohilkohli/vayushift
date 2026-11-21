@@ -67,34 +67,37 @@ export function defineRoute(opts: RouteOptions, handler: Handler): RouteFunction
 
     let res: Response;
     try {
-      if (opts.sameOriginOnly && req.headers.get("sec-fetch-site") === "cross-site") {
-        throw forbidden("Cross-site requests are not allowed.", "cross_site");
-      }
-      if (opts.rateLimit) {
-        const decision = services.limiters.for(opts.name, opts.rateLimit).check(ip);
-        if (!decision.allowed) throw tooManyRequests(decision.retryAfterSec);
-      }
+      admit(opts, req, services, ip);
       const params = nextCtx?.params ? await nextCtx.params : {};
       res = await handler({ req, requestId, ip, log, services, params });
     } catch (err) {
       res = errorResponse(err, requestId, log);
     }
-
     const durationMs = Math.round(performance.now() - started);
-    const headers = new Headers(res.headers);
-    headers.set("X-Request-Id", requestId);
-    headers.set("Server-Timing", `app;dur=${durationMs}`);
-    if (!headers.has("Cache-Control")) headers.set("Cache-Control", "no-store");
-    const out = new Response(res.body, { status: res.status, statusText: res.statusText, headers });
-
-    log[res.status >= 500 ? "error" : res.status >= 400 ? "warn" : "info"]("request", {
-      method: req.method,
-      status: res.status,
-      durationMs,
-    });
-    return out;
+    log[levelFor(res.status)]("request", { method: req.method, status: res.status, durationMs });
+    return withStandardHeaders(res, requestId, durationMs);
   };
   return route as RouteFunction;
+}
+
+/** The checks every request passes before its handler runs: the cross-site check, then the rate limit. */
+function admit(opts: RouteOptions, req: Request, services: Services, ip: string): void {
+  if (opts.sameOriginOnly && req.headers.get("sec-fetch-site") === "cross-site") {
+    throw forbidden("Cross-site requests are not allowed.", "cross_site");
+  }
+  if (!opts.rateLimit) return;
+  const decision = services.limiters.for(opts.name, opts.rateLimit).check(ip);
+  if (!decision.allowed) throw tooManyRequests(decision.retryAfterSec);
+}
+
+const levelFor = (status: number) => (status >= 500 ? "error" : status >= 400 ? "warn" : "info");
+
+function withStandardHeaders(res: Response, requestId: string, durationMs: number): Response {
+  const headers = new Headers(res.headers);
+  headers.set("X-Request-Id", requestId);
+  headers.set("Server-Timing", `app;dur=${durationMs}`);
+  if (!headers.has("Cache-Control")) headers.set("Cache-Control", "no-store");
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
 function errorResponse(err: unknown, requestId: string, log: Logger): Response {
@@ -115,7 +118,8 @@ function errorResponse(err: unknown, requestId: string, log: Logger): Response {
  */
 export async function readJson(req: Request, maxBytes: number): Promise<unknown> {
   const declared = Number(req.headers.get("content-length"));
-  if (Number.isFinite(declared) && declared > maxBytes) throw payloadTooLarge(`Request body is larger than ${Math.round(maxBytes / 1024)} KB.`);
+  if (Number.isFinite(declared) && declared > maxBytes)
+    throw payloadTooLarge(`Request body is larger than ${Math.round(maxBytes / 1024)} KB.`);
   if (!/^application\/json\b/i.test(req.headers.get("content-type") ?? "")) {
     throw unsupportedMediaType("Content-Type must be application/json.");
   }

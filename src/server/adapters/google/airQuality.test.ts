@@ -89,6 +89,8 @@ describe("GoogleAirQualityProvider", () => {
   });
 
   it("throws when the response has too little data to use", async () => {
-    await expect(new GoogleAirQualityProvider("k", ok(body(3)) as unknown as typeof fetch).fetchScenario(1, 1)).rejects.toThrow(/too little/);
+    await expect(new GoogleAirQualityProvider("k", ok(body(3)) as unknown as typeof fetch).fetchScenario(1, 1)).rejects.toThrow(
+      /too little/,
+    );
   });
 });

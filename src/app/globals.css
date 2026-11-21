@@ -4,51 +4,176 @@
    Every colour token is a registered <color>, so when the hour changes the whole interface crossfades
    (sky, glass, ink) instead of snapping. JavaScript sets the --s*, --orb, --cloud and body variables as you
    scrub (see useLivingSky); --dur-sky / --ease-sky slow down to match Play 24h sky. */
-@property --s0 { syntax: "<color>"; inherits: true; initial-value: #1b3b5a; }
-@property --s1 { syntax: "<color>"; inherits: true; initial-value: #2a4968; }
-@property --s2 { syntax: "<color>"; inherits: true; initial-value: #436182; }
-@property --s3 { syntax: "<color>"; inherits: true; initial-value: #87a5ca; }
-@property --s4 { syntax: "<color>"; inherits: true; initial-value: #ffb59a; }
-@property --s5 { syntax: "<color>"; inherits: true; initial-value: #ffdf96; }
-@property --s6 { syntax: "<color>"; inherits: true; initial-value: #fff2e1; }
-@property --orb { syntax: "<color>"; inherits: true; initial-value: rgba(255, 240, 200, 0.6); }
-@property --cloud { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
-@property --ink { syntax: "<color>"; inherits: true; initial-value: #0b2540; }
-@property --ink-soft { syntax: "<color>"; inherits: true; initial-value: #3a4d63; }
-@property --accent { syntax: "<color>"; inherits: true; initial-value: #76391f; }
-@property --glass { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.72); }
-@property --glass-weak { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.55); }
-@property --chip { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.9); }
-@property --sel-bg { syntax: "<color>"; inherits: true; initial-value: #1b3b5a; }
-@property --sel-fg { syntax: "<color>"; inherits: true; initial-value: #ffecd1; }
-@property --good { syntax: "<color>"; inherits: true; initial-value: #0a6b63; }
-@property --wind { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
-@property --page-ink { syntax: "<color>"; inherits: true; initial-value: #0b2540; }
-@property --sheen { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.5); }
-@property --hairline { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, 0.75); }
-@property --edge { syntax: "<color>"; inherits: true; initial-value: rgba(11, 37, 64, 0.08); }
-@property --solid { syntax: "<color>"; inherits: true; initial-value: #fff8f3; }
+@property --s0 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1b3b5a;
+}
+@property --s1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2a4968;
+}
+@property --s2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #436182;
+}
+@property --s3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #87a5ca;
+}
+@property --s4 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffb59a;
+}
+@property --s5 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffdf96;
+}
+@property --s6 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fff2e1;
+}
+@property --orb {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 240, 200, 0.6);
+}
+@property --cloud {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffffff;
+}
+@property --ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0b2540;
+}
+@property --ink-soft {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3a4d63;
+}
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #76391f;
+}
+@property --glass {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.72);
+}
+@property --glass-weak {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.55);
+}
+@property --chip {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.9);
+}
+@property --sel-bg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1b3b5a;
+}
+@property --sel-fg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffecd1;
+}
+@property --good {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0a6b63;
+}
+@property --wind {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffffff;
+}
+@property --page-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0b2540;
+}
+@property --sheen {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.5);
+}
+@property --hairline {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.75);
+}
+@property --edge {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(11, 37, 64, 0.08);
+}
+@property --solid {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fff8f3;
+}
 
 :root {
-  --s0: #1b3b5a; --s1: #2a4968; --s2: #436182; --s3: #87a5ca; --s4: #ffb59a; --s5: #ffdf96; --s6: #fff2e1;
+  --s0: #1b3b5a;
+  --s1: #2a4968;
+  --s2: #436182;
+  --s3: #87a5ca;
+  --s4: #ffb59a;
+  --s5: #ffdf96;
+  --s6: #fff2e1;
   --orb: rgba(255, 240, 200, 0.6);
   --cloud: #ffffff;
   /* Scene state (all driven by the hour). Opacities and positions are eased by the transitions below. */
-  --sun-x: 82; --sun-y: 10; --sun-o: 0;
-  --moon-x: 20; --moon-y: 60; --moon-o: 0;
-  --stars-o: 0; --day-o: 1; --wind-speed: 1;
-  --dur-sky: 1100ms; --ease-sky: cubic-bezier(0.4, 0, 0.2, 1);
+  --sun-x: 82;
+  --sun-y: 10;
+  --sun-o: 0;
+  --moon-x: 20;
+  --moon-y: 60;
+  --moon-o: 0;
+  --stars-o: 0;
+  --day-o: 1;
+  --wind-speed: 1;
+  --dur-sky: 1100ms;
+  --ease-sky: cubic-bezier(0.4, 0, 0.2, 1);
   --dur-theme: 1600ms; /* the one-time day/night flip of text, glass and chips: slow enough to read as dusk */
   --sky: linear-gradient(178deg, var(--s0) 0%, var(--s1) 34%, var(--s2) 66%, var(--s3) 82%, var(--s4) 90%, var(--s5) 96%, var(--s6) 100%);
   transition:
-    --s0 var(--dur-sky) var(--ease-sky), --s1 var(--dur-sky) var(--ease-sky), --s2 var(--dur-sky) var(--ease-sky),
-    --s3 var(--dur-sky) var(--ease-sky), --s4 var(--dur-sky) var(--ease-sky), --s5 var(--dur-sky) var(--ease-sky),
-    --s6 var(--dur-sky) var(--ease-sky), --orb var(--dur-sky) var(--ease-sky), --cloud var(--dur-sky) var(--ease-sky),
-    --ink var(--dur-theme) var(--ease-sky), --ink-soft var(--dur-theme) var(--ease-sky), --accent var(--dur-theme) var(--ease-sky),
-    --glass var(--dur-theme) var(--ease-sky), --glass-weak var(--dur-theme) var(--ease-sky), --chip var(--dur-theme) var(--ease-sky),
-    --sel-bg var(--dur-theme) var(--ease-sky), --sel-fg var(--dur-theme) var(--ease-sky), --good var(--dur-theme) var(--ease-sky),
-    --wind var(--dur-theme) var(--ease-sky), --page-ink var(--dur-theme) var(--ease-sky), --sheen var(--dur-theme) var(--ease-sky),
-    --hairline var(--dur-theme) var(--ease-sky), --edge var(--dur-theme) var(--ease-sky), --solid var(--dur-theme) var(--ease-sky);
+    --s0 var(--dur-sky) var(--ease-sky),
+    --s1 var(--dur-sky) var(--ease-sky),
+    --s2 var(--dur-sky) var(--ease-sky),
+    --s3 var(--dur-sky) var(--ease-sky),
+    --s4 var(--dur-sky) var(--ease-sky),
+    --s5 var(--dur-sky) var(--ease-sky),
+    --s6 var(--dur-sky) var(--ease-sky),
+    --orb var(--dur-sky) var(--ease-sky),
+    --cloud var(--dur-sky) var(--ease-sky),
+    --ink var(--dur-theme) var(--ease-sky),
+    --ink-soft var(--dur-theme) var(--ease-sky),
+    --accent var(--dur-theme) var(--ease-sky),
+    --glass var(--dur-theme) var(--ease-sky),
+    --glass-weak var(--dur-theme) var(--ease-sky),
+    --chip var(--dur-theme) var(--ease-sky),
+    --sel-bg var(--dur-theme) var(--ease-sky),
+    --sel-fg var(--dur-theme) var(--ease-sky),
+    --good var(--dur-theme) var(--ease-sky),
+    --wind var(--dur-theme) var(--ease-sky),
+    --page-ink var(--dur-theme) var(--ease-sky),
+    --sheen var(--dur-theme) var(--ease-sky),
+    --hairline var(--dur-theme) var(--ease-sky),
+    --edge var(--dur-theme) var(--ease-sky),
+    --solid var(--dur-theme) var(--ease-sky);
   --ink: #0b2540;
   --ink-soft: #3a4d63;
   --accent: #76391f;
@@ -69,12 +194,23 @@
   --edge: rgba(11, 37, 64, 0.08);
 }
 /* useLivingSky animates the hour itself every frame, so scene values must not also ease in CSS. */
-html[data-raf] { --dur-sky: 0ms; }
+html[data-raf] {
+  --dur-sky: 0ms;
+}
 /* No animation on the very first paint. */
-html[data-boot] { --dur-sky: 0ms; --dur-theme: 0ms; }
+html[data-boot] {
+  --dur-sky: 0ms;
+  --dur-theme: 0ms;
+}
 
 :root[data-sky="night"] {
-  --s0: #0a1422; --s1: #12233a; --s2: #1b3050; --s3: #2d3552; --s4: #4a3b53; --s5: #5a4350; --s6: #5a4350;
+  --s0: #0a1422;
+  --s1: #12233a;
+  --s2: #1b3050;
+  --s3: #2d3552;
+  --s4: #4a3b53;
+  --s5: #5a4350;
+  --s6: #5a4350;
   --ink: #f7eee3;
   --ink-soft: #cdd7e4;
   --accent: #ffb59a;
@@ -98,243 +234,724 @@ html[data-boot] { --dur-sky: 0ms; --dur-theme: 0ms; }
   --font-sans: var(--font-ui), var(--font-hi-ui), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-html, body { margin: 0; }
+html,
+body {
+  margin: 0;
+}
 body {
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--ink);
-  background: var(--sky) fixed, #fff8f3;
+  background:
+    var(--sky) fixed,
+    #fff8f3;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
-h1, h2, h3 { text-wrap: balance; }
-::selection { background: #ffdbce; color: #380d00; }
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+::selection {
+  background: #ffdbce;
+  color: #380d00;
+}
 
 /* Fixed atmosphere behind everything. Layer order, back to front: stars, moon, sun, clouds, birds, dust, wind. */
-.sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
 
 /* Sun and moon each ride their own arc. Position and opacity are eased, so a body rises, crosses and
    sets (fading at the horizon) rather than jumping when the hour changes. */
 .body-track {
-  position: absolute; left: 0; top: 0; width: 0; height: 0;
-  transition: transform var(--dur-sky) var(--ease-sky), opacity var(--dur-sky) var(--ease-sky);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transition:
+    transform var(--dur-sky) var(--ease-sky),
+    opacity var(--dur-sky) var(--ease-sky);
 }
-.sun-track { transform: translate3d(calc(var(--sun-x) * 1vw), calc(var(--sun-y) * 1vh), 0); opacity: var(--sun-o); }
-.moon-track { transform: translate3d(calc(var(--moon-x) * 1vw), calc(var(--moon-y) * 1vh), 0); opacity: var(--moon-o); }
+.sun-track {
+  transform: translate3d(calc(var(--sun-x) * 1vw), calc(var(--sun-y) * 1vh), 0);
+  opacity: var(--sun-o);
+}
+.moon-track {
+  transform: translate3d(calc(var(--moon-x) * 1vw), calc(var(--moon-y) * 1vh), 0);
+  opacity: var(--moon-o);
+}
 .glow {
   --glow-size: 380px;
-  position: absolute; left: 0; top: 0; width: var(--glow-size); height: var(--glow-size);
-  margin: calc(var(--glow-size) / -2) 0 0 calc(var(--glow-size) / -2); border-radius: 9999px; filter: blur(28px);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--glow-size);
+  height: var(--glow-size);
+  margin: calc(var(--glow-size) / -2) 0 0 calc(var(--glow-size) / -2);
+  border-radius: 9999px;
+  filter: blur(28px);
   animation: pulse-sun 14s ease-in-out infinite;
 }
-.sun-orb { background: radial-gradient(circle, var(--orb) 0%, rgba(255, 240, 200, 0.22) 38%, rgba(255, 255, 255, 0) 72%); }
-.moon-orb { background: radial-gradient(circle, rgba(190, 205, 255, 0.34) 0%, rgba(160, 180, 240, 0.12) 40%, rgba(255, 255, 255, 0) 72%); }
-.sun-body, .moon-body {
+.sun-orb {
+  background: radial-gradient(circle, var(--orb) 0%, rgba(255, 240, 200, 0.22) 38%, rgba(255, 255, 255, 0) 72%);
+}
+.moon-orb {
+  background: radial-gradient(circle, rgba(190, 205, 255, 0.34) 0%, rgba(160, 180, 240, 0.12) 40%, rgba(255, 255, 255, 0) 72%);
+}
+.sun-body,
+.moon-body {
   --body-size: 84px;
-  position: absolute; left: 0; top: 0; width: var(--body-size); height: var(--body-size);
-  margin: calc(var(--body-size) / -2) 0 0 calc(var(--body-size) / -2); overflow: visible;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--body-size);
+  height: var(--body-size);
+  margin: calc(var(--body-size) / -2) 0 0 calc(var(--body-size) / -2);
+  overflow: visible;
 }
 @media (min-width: 1024px) {
-  .glow { --glow-size: 520px; }
-  .sun-body, .moon-body { --body-size: 112px; }
+  .glow {
+    --glow-size: 520px;
+  }
+  .sun-body,
+  .moon-body {
+    --body-size: 112px;
+  }
 }
-.sun-rays { transform-box: fill-box; transform-origin: 50% 50%; animation: spin 120s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.sun-rays {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: spin 120s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Stars fade in after dusk and out before dawn; each twinkles on its own rhythm. */
-.stars { opacity: var(--stars-o); transition: opacity var(--dur-sky) var(--ease-sky); }
-.star { animation: twinkle var(--tw, 4s) ease-in-out infinite alternate; animation-delay: var(--td, 0s); }
-@keyframes twinkle { from { opacity: 0.25; } to { opacity: 1; } }
+.stars {
+  opacity: var(--stars-o);
+  transition: opacity var(--dur-sky) var(--ease-sky);
+}
+.star {
+  animation: twinkle var(--tw, 4s) ease-in-out infinite alternate;
+  animation-delay: var(--td, 0s);
+}
+@keyframes twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* Daytime clouds drift slowly; they take the colour of the light (white, peach at sunset). */
-.clouds { opacity: var(--day-o); color: var(--cloud); transition: opacity var(--dur-sky) var(--ease-sky); }
-.cloud {
-  position: absolute; left: 0; height: auto; overflow: visible; filter: blur(0.6px);
-  /* A fixed pace: tying it to --wind-speed made clouds 3x faster in the afternoon and jump as it changed. */
-  animation: cloud-drift linear infinite; animation-duration: var(--dur); animation-delay: var(--delay);
+.clouds {
+  opacity: var(--day-o);
+  color: var(--cloud);
+  transition: opacity var(--dur-sky) var(--ease-sky);
 }
-@keyframes cloud-drift { from { transform: translate3d(-40vw, 0, 0); } to { transform: translate3d(125vw, 0, 0); } }
+.cloud {
+  position: absolute;
+  left: 0;
+  height: auto;
+  overflow: visible;
+  filter: blur(0.6px);
+  /* A fixed pace: tying it to --wind-speed made clouds 3x faster in the afternoon and jump as it changed. */
+  animation: cloud-drift linear infinite;
+  animation-duration: var(--dur);
+  animation-delay: var(--delay);
+}
+@keyframes cloud-drift {
+  from {
+    transform: translate3d(-40vw, 0, 0);
+  }
+  to {
+    transform: translate3d(125vw, 0, 0);
+  }
+}
 
 /* A flock crosses the sky by day; wings flap on their own pivots. */
-.birds { opacity: calc(var(--day-o) * 0.85); transition: opacity var(--dur-sky) var(--ease-sky); }
-.flock { position: absolute; left: 0; animation: bird-fly linear infinite; animation-duration: var(--dur); animation-delay: var(--delay); }
-@keyframes bird-fly { from { transform: translate3d(-15vw, 0, 0); } to { transform: translate3d(118vw, var(--rise, -7vh), 0); } }
-.wing { transform-box: view-box; transform-origin: 50% 50%; animation: flap var(--flap, 0.8s) ease-in-out infinite alternate; }
-@keyframes flap { from { transform: rotate(calc(var(--dir) * 28deg)); } to { transform: rotate(calc(var(--dir) * -22deg)); } }
+.birds {
+  opacity: calc(var(--day-o) * 0.85);
+  transition: opacity var(--dur-sky) var(--ease-sky);
+}
+.flock {
+  position: absolute;
+  left: 0;
+  animation: bird-fly linear infinite;
+  animation-duration: var(--dur);
+  animation-delay: var(--delay);
+}
+@keyframes bird-fly {
+  from {
+    transform: translate3d(-15vw, 0, 0);
+  }
+  to {
+    transform: translate3d(118vw, var(--rise, -7vh), 0);
+  }
+}
+.wing {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: flap var(--flap, 0.8s) ease-in-out infinite alternate;
+}
+@keyframes flap {
+  from {
+    transform: rotate(calc(var(--dir) * 28deg));
+  }
+  to {
+    transform: rotate(calc(var(--dir) * -22deg));
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .cloud { animation: none; transform: translate3d(var(--x0, 20vw), 0, 0); }
-  .birds { display: none; }
+  .cloud {
+    animation: none;
+    transform: translate3d(var(--x0, 20vw), 0, 0);
+  }
+  .birds {
+    display: none;
+  }
 }
-.dust { position: absolute; inset: 0; opacity: 0.6; background: radial-gradient(ellipse at 40% 60%, rgba(255,255,255,0.18) 0%, transparent 65%); animation: drift 26s ease-in-out infinite alternate; }
-@keyframes drift { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-2%,1.5%,0) scale(1.04); } 100% { transform: translate3d(0,0,0) scale(1); } }
-@keyframes pulse-sun { 0%,100% { opacity: 0.88; transform: scale(1); } 50% { opacity: 0.98; transform: scale(1.06); } }
+.dust {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  background: radial-gradient(ellipse at 40% 60%, rgba(255, 255, 255, 0.18) 0%, transparent 65%);
+  animation: drift 26s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-2%, 1.5%, 0) scale(1.04);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes pulse-sun {
+  0%,
+  100% {
+    opacity: 0.88;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.98;
+    transform: scale(1.06);
+  }
+}
 
 /* Frosted glass */
 /* Premium glass: soft top sheen, a lit hairline edge, an inner highlight and three-layer depth. */
 .glass {
   background: linear-gradient(180deg, var(--sheen) 0%, rgba(255, 255, 255, 0) 38%), var(--glass);
   color: var(--ink);
-  backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
   box-shadow:
     var(--shadow),
     0 0 0 1px var(--edge),
     inset 0 1px 0 var(--hairline),
     inset 0 -1px 0 rgba(255, 255, 255, 0.12);
 }
-.lift { transition: transform var(--dur-base, 280ms) var(--ease-out, ease-out), box-shadow var(--dur-base, 280ms) var(--ease-out, ease-out); }
-.lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift), 0 0 0 1px var(--edge), inset 0 1px 0 var(--hairline); }
+.lift {
+  transition:
+    transform var(--dur-base, 280ms) var(--ease-out, ease-out),
+    box-shadow var(--dur-base, 280ms) var(--ease-out, ease-out);
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    var(--shadow-lift),
+    0 0 0 1px var(--edge),
+    inset 0 1px 0 var(--hairline);
+}
 
 /* Fine film grain over the sky removes gradient banding and adds depth. */
 .sky::after {
-  content: ""; position: absolute; inset: 0; opacity: 0.07; mix-blend-mode: overlay;
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
-.glass-weak { background: var(--glass-weak); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-.chip { background: var(--chip); color: var(--ink); }
+.glass-weak {
+  background: var(--glass-weak);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.chip {
+  background: var(--chip);
+  color: var(--ink);
+}
 
-.serif { font-family: var(--font-serif); font-variant-numeric: lining-nums proportional-nums; letter-spacing: -0.012em; font-optical-sizing: auto; }
-.num { font-variant-numeric: tabular-nums lining-nums; }
-.label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-.hero-ink { color: var(--hero-ink); text-shadow: 0 1px 14px rgba(8, 22, 40, 0.45); }
-.hero-soft { color: var(--hero-soft); text-shadow: 0 1px 12px rgba(8, 22, 40, 0.5); }
-.page-ink { color: var(--page-ink); }
-.ink-soft { color: var(--ink-soft); }
-.accent { color: var(--accent); }
-.good { color: var(--good); }
+.serif {
+  font-family: var(--font-serif);
+  font-variant-numeric: lining-nums proportional-nums;
+  letter-spacing: -0.012em;
+  font-optical-sizing: auto;
+}
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.hero-ink {
+  color: var(--hero-ink);
+  text-shadow: 0 1px 14px rgba(8, 22, 40, 0.45);
+}
+.hero-soft {
+  color: var(--hero-soft);
+  text-shadow: 0 1px 12px rgba(8, 22, 40, 0.5);
+}
+.page-ink {
+  color: var(--page-ink);
+}
+.ink-soft {
+  color: var(--ink-soft);
+}
+.accent {
+  color: var(--accent);
+}
+.good {
+  color: var(--good);
+}
 
 /* Pills: unselected / selected */
 .pill {
-  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.75rem;
-  padding: 0 1.1rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em;
-  background: var(--chip); color: var(--ink); border: 0; cursor: pointer; transition: transform .2s, background .2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.1rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: var(--chip);
+  color: var(--ink);
+  border: 0;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
-.pill:hover { transform: translateY(-1px); }
-.pill { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(11, 37, 64, 0.12); }
-.pill:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 6px 14px -4px rgba(11, 37, 64, 0.25); }
-.pill[aria-pressed="true"], .pill[aria-selected="true"], .pill[aria-checked="true"] {
-  background: var(--sel-bg); color: var(--sel-fg);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 14px -4px rgba(11, 37, 64, 0.45);
+.pill:hover {
+  transform: translateY(-1px);
+}
+.pill {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(11, 37, 64, 0.12);
+}
+.pill:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 6px 14px -4px rgba(11, 37, 64, 0.25);
+}
+.pill[aria-pressed="true"],
+.pill[aria-selected="true"],
+.pill[aria-checked="true"] {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 14px -4px rgba(11, 37, 64, 0.45);
 }
 .btn-primary {
-  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1.4rem; border: 0; cursor: pointer;
-  border-radius: 9999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
-  position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #1b3b5a, #2b5b84); color: #ffecd1;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 18px -6px rgba(27, 59, 90, 0.55);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.4rem;
+  border: 0;
+  cursor: pointer;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1b3b5a, #2b5b84);
+  color: #ffecd1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 8px 18px -6px rgba(27, 59, 90, 0.55);
 }
-:root[data-sky="night"] .btn-primary { background: linear-gradient(135deg, #ffe7aa, #ffd77f); color: #1b3b5a; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 8px 18px -6px rgba(0, 0, 0, 0.5); }
-.btn-primary:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 26px rgba(244, 213, 141, 0.5), 0 10px 22px -6px rgba(27, 59, 90, 0.6); }
+:root[data-sky="night"] .btn-primary {
+  background: linear-gradient(135deg, #ffe7aa, #ffd77f);
+  color: #1b3b5a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 8px 18px -6px rgba(0, 0, 0, 0.5);
+}
+.btn-primary:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 26px rgba(244, 213, 141, 0.5),
+    0 10px 22px -6px rgba(27, 59, 90, 0.6);
+}
 /* One soft light sweep on hover, transform only. */
 .btn-primary::after {
-  content: ""; position: absolute; inset: 0; transform: translateX(-120%);
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
   background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
 }
-.btn-primary:hover::after { transform: translateX(120%); transition: transform 700ms var(--ease-out, ease-out); }
+.btn-primary:hover::after {
+  transform: translateX(120%);
+  transition: transform 700ms var(--ease-out, ease-out);
+}
 
 .field {
-  width: 100%; min-height: 2.75rem; margin-top: 0.25rem; padding: 0.5rem 1rem; border: 0; border-radius: 9999px;
-  background: var(--chip); color: var(--ink); font: inherit; font-size: 0.9rem;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--chip);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
 }
-.field:focus-visible { box-shadow: 0 0 0 3px rgba(226, 149, 120, 0.5); }
-input[type="range"] { accent-color: var(--sel-bg); }
-:root[data-sky="night"] input[type="range"] { accent-color: #ffdf96; }
+.field:focus-visible {
+  box-shadow: 0 0 0 3px rgba(226, 149, 120, 0.5);
+}
+input[type="range"] {
+  accent-color: var(--sel-bg);
+}
+:root[data-sky="night"] input[type="range"] {
+  accent-color: #ffdf96;
+}
 
 .msym {
-  font-family: "Material Symbols Outlined"; font-weight: normal; font-style: normal; font-size: 1.15rem; line-height: 1;
-  display: inline-block; width: 1em; overflow: hidden; white-space: nowrap; letter-spacing: normal; text-transform: none; vertical-align: middle;
-  font-feature-settings: "liga"; -webkit-font-feature-settings: "liga";
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-block;
+  width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  letter-spacing: normal;
+  text-transform: none;
+  vertical-align: middle;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
 }
 
 /* Focus: white ring plus dark halo works on both light and dark backdrops */
-:focus-visible { outline: 3px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 6px #0b2540; border-radius: 0.75rem; }
+:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px #0b2540;
+  border-radius: 0.75rem;
+}
 
-.skip-link { position: absolute; left: -9999px; top: 0; z-index: 100; background: #0b2540; color: #fff; padding: 0.75rem 1rem; border-radius: 0 0 0.75rem 0; }
-.skip-link:focus { left: 0; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-dialog::backdrop { background: rgba(8, 22, 40, 0.6); backdrop-filter: blur(4px); }
-dialog { color: var(--ink); }
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: #0b2540;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 0 0 0.75rem 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+dialog::backdrop {
+  background: rgba(8, 22, 40, 0.6);
+  backdrop-filter: blur(4px);
+}
+dialog {
+  color: var(--ink);
+}
 
-.no-scrollbar { scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-@media (forced-colors: active) { .glass, .chip, .pill { border: 1px solid CanvasText; } }
+@media (forced-colors: active) {
+  .glass,
+  .chip,
+  .pill {
+    border: 1px solid CanvasText;
+  }
+}
 
-:root { --solid: #fff8f3; }
-:root[data-sky="night"] { --solid: #12233a; }
+:root {
+  --solid: #fff8f3;
+}
+:root[data-sky="night"] {
+  --solid: #12233a;
+}
 
 /* Hindi (Devanagari) typography. Its vowel marks reach above and below the line, so the tight Latin leading would
    clip them, and letter-spacing (tight or wide) pulls apart the joined letters. These win over the utility classes
    by specificity, and apply only while the interface is in Hindi. */
-html[lang="hi"] body, html[lang="hi"] body * { letter-spacing: normal; }
-html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3, html[lang="hi"] h4 { line-height: 1.32; }
-html[lang="hi"] .serif { line-height: 1.3; }
-html[lang="hi"] body { line-height: 1.65; }
-html[lang="hi"] .label { line-height: 1.5; }
+html[lang="hi"] body,
+html[lang="hi"] body * {
+  letter-spacing: normal;
+}
+html[lang="hi"] h1,
+html[lang="hi"] h2,
+html[lang="hi"] h3,
+html[lang="hi"] h4 {
+  line-height: 1.32;
+}
+html[lang="hi"] .serif {
+  line-height: 1.3;
+}
+html[lang="hi"] body {
+  line-height: 1.65;
+}
+html[lang="hi"] .label {
+  line-height: 1.5;
+}
 
 /* Big headlines stay legible wherever the sun or moon glow lands, with a faint tight shadow on the letters
    themselves: no panel or box behind the text. */
-.halo { text-shadow: 0 1px 2px rgba(9, 24, 43, 0.35), 0 2px 18px rgba(9, 24, 43, 0.28); }
+.halo {
+  text-shadow:
+    0 1px 2px rgba(9, 24, 43, 0.35),
+    0 2px 18px rgba(9, 24, 43, 0.28);
+}
 /* Dark scrim keeps light hero copy legible wherever the sun glow lands. */
-.scrim { background: rgba(10, 28, 48, 0.62); color: #fff; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-shadow: none; }
+.scrim {
+  background: rgba(10, 28, 48, 0.62);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-shadow: none;
+}
 
 /* ---- Motion ---------------------------------------------------------------
    Tokens, then only transform/opacity effects. Reduced-motion is honoured globally below. */
-:root { --ease-out: cubic-bezier(0.22, 1, 0.36, 1); --dur-fast: 160ms; --dur-base: 280ms; --dur-slow: 600ms; }
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms;
+  --dur-base: 280ms;
+  --dur-slow: 600ms;
+}
 
-@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
-@keyframes dialog-in { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes ping-soft { 0% { transform: scale(1); opacity: 0.75; } 80%, 100% { transform: scale(2.4); opacity: 0; } }
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
 
 /* Tab panels fade up each time they are shown (display:none to block restarts the animation). */
-[role="tabpanel"]:not([hidden]) > * { animation: enter var(--dur-base) var(--ease-out) backwards; }
-[role="tabpanel"]:not([hidden]) > :nth-child(2) { animation-delay: 60ms; }
-[role="tabpanel"]:not([hidden]) > :nth-child(3) { animation-delay: 120ms; }
+[role="tabpanel"]:not([hidden]) > * {
+  animation: enter var(--dur-base) var(--ease-out) backwards;
+}
+[role="tabpanel"]:not([hidden]) > :nth-child(2) {
+  animation-delay: 60ms;
+}
+[role="tabpanel"]:not([hidden]) > :nth-child(3) {
+  animation-delay: 120ms;
+}
 
 /* Lists of cards rise in one after another. */
-.stagger > * { animation: enter var(--dur-base) var(--ease-out) backwards; }
-.stagger > :nth-child(2) { animation-delay: 60ms; }
-.stagger > :nth-child(3) { animation-delay: 120ms; }
-.stagger > :nth-child(4) { animation-delay: 180ms; }
-.stagger > :nth-child(5) { animation-delay: 240ms; }
+.stagger > * {
+  animation: enter var(--dur-base) var(--ease-out) backwards;
+}
+.stagger > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.stagger > :nth-child(3) {
+  animation-delay: 120ms;
+}
+.stagger > :nth-child(4) {
+  animation-delay: 180ms;
+}
+.stagger > :nth-child(5) {
+  animation-delay: 240ms;
+}
 
 /* Press and state feedback */
-.pill, .btn-primary, .press { transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out); }
-.pill:active, .btn-primary:active, .press:active { transform: scale(0.96); }
-.pop { animation: pop var(--dur-base) var(--ease-out) both; }
+.pill,
+.btn-primary,
+.press {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.pill:active,
+.btn-primary:active,
+.press:active {
+  transform: scale(0.96);
+}
+.pop {
+  animation: pop var(--dur-base) var(--ease-out) both;
+}
 
-.ring-progress { transition: stroke-dasharray var(--dur-slow) var(--ease-out); }
-.chart-reveal { animation: reveal 900ms var(--ease-out) both; }
+.ring-progress {
+  transition: stroke-dasharray var(--dur-slow) var(--ease-out);
+}
+.chart-reveal {
+  animation: reveal 900ms var(--ease-out) both;
+}
 
 /* Brief, finite attention pulse (the skill advises against endless decorative loops). */
-.ping-soft { animation: ping-soft 1.6s var(--ease-out) 3; }
+.ping-soft {
+  animation: ping-soft 1.6s var(--ease-out) 3;
+}
 
-dialog[open] { animation: dialog-in var(--dur-base) var(--ease-out); }
-dialog[open]::backdrop { animation: fade var(--dur-base) ease-out; }
+dialog[open] {
+  animation: dialog-in var(--dur-base) var(--ease-out);
+}
+dialog[open]::backdrop {
+  animation: fade var(--dur-base) ease-out;
+}
 
 /* Wind: streaks drift left to right and fade in and out. Transform and opacity only. */
 @keyframes wind-drift {
-  0% { transform: translate3d(-30vw, 0, 0); opacity: 0; }
-  12% { opacity: var(--o); }
-  50% { transform: translate3d(50vw, -8px, 0); }
-  88% { opacity: var(--o); }
-  100% { transform: translate3d(115vw, 6px, 0); opacity: 0; }
+  0% {
+    transform: translate3d(-30vw, 0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--o);
+  }
+  50% {
+    transform: translate3d(50vw, -8px, 0);
+  }
+  88% {
+    opacity: var(--o);
+  }
+  100% {
+    transform: translate3d(115vw, 6px, 0);
+    opacity: 0;
+  }
 }
-.wind-streak { opacity: 0; animation: wind-drift linear infinite; will-change: transform, opacity; }
-@media (prefers-reduced-motion: reduce) { .wind { display: none; } }
+.wind-streak {
+  opacity: 0;
+  animation: wind-drift linear infinite;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wind {
+    display: none;
+  }
+}
 
 /* ---- Liquid glass (cards) --------------------------------------------------
    Specular rim (bright top-left, soft bottom-right), inner glow, a highlight that follows the
    pointer, and optional refraction (Chromium only, switched on by html[data-liquid]). */
-@property --spec-a { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --spec-a {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
 :root {
   --rim-hi: rgba(255, 255, 255, 0.95);
   --rim-lo: rgba(255, 255, 255, 0.42);
@@ -350,57 +967,130 @@ dialog[open]::backdrop { animation: fade var(--dur-base) ease-out; }
 .liquid {
   background:
     radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, var(--spec-a)), rgba(255, 255, 255, 0) 65%),
-    linear-gradient(180deg, var(--sheen) 0%, rgba(255, 255, 255, 0) 38%),
-    var(--glass);
+    linear-gradient(180deg, var(--sheen) 0%, rgba(255, 255, 255, 0) 38%), var(--glass);
   box-shadow:
     var(--shadow),
     0 0 0 1px var(--edge),
     inset 1.5px 1.5px 0 var(--rim-hi),
     inset -1px -1px 0 var(--rim-lo),
     inset 0 0 26px var(--rim-glow);
-  transition: --spec-a 350ms ease-out, transform var(--dur-base, 280ms) var(--ease-out, ease-out), box-shadow var(--dur-base, 280ms) var(--ease-out, ease-out);
+  transition:
+    --spec-a 350ms ease-out,
+    transform var(--dur-base, 280ms) var(--ease-out, ease-out),
+    box-shadow var(--dur-base, 280ms) var(--ease-out, ease-out);
 }
-.liquid:hover { --spec-a: var(--spec-max); }
+.liquid:hover {
+  --spec-a: var(--spec-max);
+}
 .liquid.lift:hover {
-  box-shadow: var(--shadow-lift), 0 0 0 1px var(--edge), inset 1.5px 1.5px 0 var(--rim-hi), inset -1px -1px 0 var(--rim-lo), inset 0 0 26px var(--rim-glow);
+  box-shadow:
+    var(--shadow-lift),
+    0 0 0 1px var(--edge),
+    inset 1.5px 1.5px 0 var(--rim-hi),
+    inset -1px -1px 0 var(--rim-lo),
+    inset 0 0 26px var(--rim-glow);
 }
 html[data-liquid] .liquid {
   backdrop-filter: url(#liquid) blur(10px) saturate(170%);
 }
 /* ---- Form controls ------------------------------------------------------- */
 select.field {
-  appearance: none; -webkit-appearance: none; padding-right: 2.6rem; cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.6rem;
+  cursor: pointer;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'><path d='M1 1.5l6 6 6-6' stroke='%230b2540' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat; background-position: right 1.1rem center;
+  background-repeat: no-repeat;
+  background-position: right 1.1rem center;
 }
 :root[data-sky="night"] select.field {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'><path d='M1 1.5l6 6 6-6' stroke='%23f7eee3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
-.field[type="number"] { -moz-appearance: textfield; appearance: textfield; }
-.field[type="number"]::-webkit-inner-spin-button, .field[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.field[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.field[type="number"]::-webkit-inner-spin-button,
+.field[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 /* Range slider: filled track (set --p in %), raised thumb. */
-input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; --p: 50%; --track: rgba(11, 37, 64, 0.32); --fill: var(--sel-bg); }
-:root[data-sky="night"] input[type="range"] { --track: rgba(255, 255, 255, 0.36); --fill: #ffdf96; }
-input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 9999px; background: linear-gradient(90deg, var(--fill) var(--p), var(--track) var(--p)); }
-input[type="range"]::-moz-range-track { height: 6px; border-radius: 9999px; background: linear-gradient(90deg, var(--fill) var(--p), var(--track) var(--p)); }
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 24px; height: 24px; margin-top: -9px; border-radius: 9999px; border: 2px solid #fff;
-  background: linear-gradient(135deg, #2b5b84, #1b3b5a); box-shadow: 0 2px 6px rgba(11, 37, 64, 0.4); transition: transform 160ms var(--ease-out, ease-out);
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  --p: 50%;
+  --track: rgba(11, 37, 64, 0.32);
+  --fill: var(--sel-bg);
 }
-input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 9999px; border: 2px solid #fff; background: #1b3b5a; box-shadow: 0 2px 6px rgba(11, 37, 64, 0.4); }
-:root[data-sky="night"] input[type="range"]::-webkit-slider-thumb { background: #ffdf96; border-color: #1b3b5a; }
-:root[data-sky="night"] input[type="range"]::-moz-range-thumb { background: #ffdf96; border-color: #1b3b5a; }
-input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+:root[data-sky="night"] input[type="range"] {
+  --track: rgba(255, 255, 255, 0.36);
+  --fill: #ffdf96;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--fill) var(--p), var(--track) var(--p));
+}
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--fill) var(--p), var(--track) var(--p));
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -9px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  background: linear-gradient(135deg, #2b5b84, #1b3b5a);
+  box-shadow: 0 2px 6px rgba(11, 37, 64, 0.4);
+  transition: transform 160ms var(--ease-out, ease-out);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  background: #1b3b5a;
+  box-shadow: 0 2px 6px rgba(11, 37, 64, 0.4);
+}
+:root[data-sky="night"] input[type="range"]::-webkit-slider-thumb {
+  background: #ffdf96;
+  border-color: #1b3b5a;
+}
+:root[data-sky="night"] input[type="range"]::-moz-range-thumb {
+  background: #ffdf96;
+  border-color: #1b3b5a;
+}
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
 
 /* Checkbox */
 input[type="checkbox"] {
-  -webkit-appearance: none; appearance: none; flex: none; width: 1.4rem; height: 1.4rem; border-radius: 0.5rem; cursor: pointer;
-  background-color: var(--chip); box-shadow: inset 0 0 0 2px var(--ink-soft); transition: background-color 160ms, box-shadow 160ms;
-  background-repeat: no-repeat; background-position: center;
+  -webkit-appearance: none;
+  appearance: none;
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background-color: var(--chip);
+  box-shadow: inset 0 0 0 2px var(--ink-soft);
+  transition:
+    background-color 160ms,
+    box-shadow 160ms;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 input[type="checkbox"]:checked {
-  background-color: var(--sel-bg); box-shadow: none;
+  background-color: var(--sel-bg);
+  box-shadow: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'><path d='M3.5 8.5l3 3 6-7' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 :root[data-sky="night"] input[type="checkbox"]:checked {
@@ -408,90 +1098,254 @@ input[type="checkbox"]:checked {
 }
 
 /* File input */
-input[type="file"] { color: var(--ink); font-size: 0.85rem; }
+input[type="file"] {
+  color: var(--ink);
+  font-size: 0.85rem;
+}
 input[type="file"]::file-selector-button {
-  margin-right: 0.9rem; min-height: 2.75rem; padding: 0 1.1rem; border: 0; border-radius: 9999px; cursor: pointer; font: inherit; font-weight: 700;
-  background: var(--chip); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(11, 37, 64, 0.12);
+  margin-right: 0.9rem;
+  min-height: 2.75rem;
+  padding: 0 1.1rem;
+  border: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  background: var(--chip);
+  color: var(--ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(11, 37, 64, 0.12);
 }
 
 /* ---- Skeletons (loading) --------------------------------------------------- */
-@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
 .skeleton {
-  display: block; min-height: 0.95rem; border-radius: 0.5rem;
+  display: block;
+  min-height: 0.95rem;
+  border-radius: 0.5rem;
   background: linear-gradient(90deg, rgba(120, 145, 175, 0.2) 25%, rgba(120, 145, 175, 0.42) 50%, rgba(120, 145, 175, 0.2) 75%);
-  background-size: 200% 100%; animation: shimmer 1.5s linear infinite;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
 }
 
 /* ---- Receipt dialog: premium glass, kept fairly opaque so dense figures stay readable ---- */
 dialog.glass {
   background: linear-gradient(180deg, var(--sheen) 0%, rgba(255, 255, 255, 0) 30%), color-mix(in srgb, var(--solid) 93%, transparent);
-  backdrop-filter: blur(26px) saturate(160%); -webkit-backdrop-filter: blur(26px) saturate(160%);
-  box-shadow: var(--shadow-lift), 0 0 0 1px var(--edge), inset 1.5px 1.5px 0 var(--rim-hi), inset -1px -1px 0 var(--rim-lo), inset 0 0 28px var(--rim-glow);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  box-shadow:
+    var(--shadow-lift),
+    0 0 0 1px var(--edge),
+    inset 1.5px 1.5px 0 var(--rim-hi),
+    inset -1px -1px 0 var(--rim-lo),
+    inset 0 0 28px var(--rim-glow);
 }
 
 /* ---- Community: GRAP meter, table and message bubbles -------------------------- */
-.grap-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
-.grap-meter li {
-  display: flex; flex-direction: column; gap: 0.1rem; padding: 0.55rem 0.7rem; border-radius: 1rem; background: var(--chip); color: var(--ink);
-  box-shadow: inset 0 0 0 1px var(--edge); font-size: 0.7rem; line-height: 1.25;
+.grap-meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.grap-meter li[data-state="reached"] { background: color-mix(in srgb, var(--accent) 12%, var(--chip)); }
-.grap-meter li[data-state="current"] { background: var(--sel-bg); color: var(--sel-fg); box-shadow: 0 6px 14px -4px rgba(11, 37, 64, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22); }
-.grap-meter strong { font-size: 0.95rem; }
+.grap-meter li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 1rem;
+  background: var(--chip);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  font-size: 0.7rem;
+  line-height: 1.25;
+}
+.grap-meter li[data-state="reached"] {
+  background: color-mix(in srgb, var(--accent) 12%, var(--chip));
+}
+.grap-meter li[data-state="current"] {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+  box-shadow:
+    0 6px 14px -4px rgba(11, 37, 64, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.grap-meter strong {
+  font-size: 0.95rem;
+}
 
-.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; text-align: left; }
-.tbl th, .tbl td { padding: 0.6rem 0.75rem; }
-.tbl thead th { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; }
-.tbl tbody tr + tr > * { border-top: 1px solid var(--edge); }
-.tbl tbody tr[aria-current="true"] > * { background: var(--chip); font-weight: 700; }
-.tbl tbody tr[aria-current="true"] > :first-child { border-radius: 0.9rem 0 0 0.9rem; }
-.tbl tbody tr[aria-current="true"] > :last-child { border-radius: 0 0.9rem 0.9rem 0; }
+.tbl {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+  text-align: left;
+}
+.tbl th,
+.tbl td {
+  padding: 0.6rem 0.75rem;
+}
+.tbl thead th {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.tbl tbody tr + tr > * {
+  border-top: 1px solid var(--edge);
+}
+.tbl tbody tr[aria-current="true"] > * {
+  background: var(--chip);
+  font-weight: 700;
+}
+.tbl tbody tr[aria-current="true"] > :first-child {
+  border-radius: 0.9rem 0 0 0.9rem;
+}
+.tbl tbody tr[aria-current="true"] > :last-child {
+  border-radius: 0 0.9rem 0.9rem 0;
+}
 
-.bubble { border-radius: 1.25rem 1.25rem 1.25rem 0.3rem; box-shadow: 0 1px 2px rgba(11, 37, 64, 0.12), inset 0 0 0 1px var(--edge); }
+.bubble {
+  border-radius: 1.25rem 1.25rem 1.25rem 0.3rem;
+  box-shadow:
+    0 1px 2px rgba(11, 37, 64, 0.12),
+    inset 0 0 0 1px var(--edge);
+}
 
 /* Edge fade for horizontally scrolling rows on small screens */
-.fade-x { -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
-@media (min-width: 1024px) { .fade-x { -webkit-mask-image: none; mask-image: none; } }
+.fade-x {
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+@media (min-width: 1024px) {
+  .fade-x {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
 
 /* High-contrast mode (header button, or the device's "more contrast" setting). Solid opaque panels with real borders,
    no animated sky, pure black on white by day and white on black at night. Every pairing below is checked by
    src/lib/contrast.test.ts, which reads these very tokens from this file. */
 html[data-contrast="high"] {
-  --hc-bg: #ffffff; --hc-fg: #000000;
-  --ink: #000000; --ink-soft: #000000; --page-ink: #000000; --hero-ink: #000000; --hero-soft: #000000;
-  --accent: #6b1000; --good: #004d2c; --wind: #000000;
-  --glass: #ffffff; --glass-weak: #ffffff; --chip: #ffffff; --solid: #ffffff;
-  --sheen: transparent; --hairline: transparent; --edge: #000000;
-  --sel-bg: #000000; --sel-fg: #ffffff;
+  --hc-bg: #ffffff;
+  --hc-fg: #000000;
+  --ink: #000000;
+  --ink-soft: #000000;
+  --page-ink: #000000;
+  --hero-ink: #000000;
+  --hero-soft: #000000;
+  --accent: #6b1000;
+  --good: #004d2c;
+  --wind: #000000;
+  --glass: #ffffff;
+  --glass-weak: #ffffff;
+  --chip: #ffffff;
+  --solid: #ffffff;
+  --sheen: transparent;
+  --hairline: transparent;
+  --edge: #000000;
+  --sel-bg: #000000;
+  --sel-fg: #ffffff;
 }
 html[data-contrast="high"][data-sky="night"] {
-  --hc-bg: #000000; --hc-fg: #ffffff;
-  --ink: #ffffff; --ink-soft: #ffffff; --page-ink: #ffffff; --hero-ink: #ffffff; --hero-soft: #ffffff;
-  --accent: #ffd27a; --good: #7dffd0; --wind: #ffffff;
-  --glass: #000000; --glass-weak: #000000; --chip: #000000; --solid: #000000;
+  --hc-bg: #000000;
+  --hc-fg: #ffffff;
+  --ink: #ffffff;
+  --ink-soft: #ffffff;
+  --page-ink: #ffffff;
+  --hero-ink: #ffffff;
+  --hero-soft: #ffffff;
+  --accent: #ffd27a;
+  --good: #7dffd0;
+  --wind: #ffffff;
+  --glass: #000000;
+  --glass-weak: #000000;
+  --chip: #000000;
+  --solid: #000000;
   --edge: #ffffff;
-  --sel-bg: #ffffff; --sel-fg: #000000;
+  --sel-bg: #ffffff;
+  --sel-fg: #000000;
 }
-html[data-contrast="high"] body { background: var(--hc-bg); color: var(--ink); }
-html[data-contrast="high"] .sky { display: none; }
-html[data-contrast="high"] .glass, html[data-contrast="high"] .glass-weak, html[data-contrast="high"] .chip,
-html[data-contrast="high"] .pill, html[data-contrast="high"] .field, html[data-contrast="high"] dialog.glass {
-  background: var(--hc-bg); color: var(--ink); border: 2px solid var(--hc-fg);
-  box-shadow: none; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+html[data-contrast="high"] body {
+  background: var(--hc-bg);
+  color: var(--ink);
 }
-html[data-contrast="high"] .pill[aria-pressed="true"], html[data-contrast="high"] .pill[aria-selected="true"],
-html[data-contrast="high"] .pill[aria-checked="true"] { background: var(--sel-bg); color: var(--sel-fg); }
-html[data-contrast="high"] .btn-primary, html[data-contrast="high"][data-sky="night"] .btn-primary {
-  background: var(--hc-fg); color: var(--hc-bg); border: 2px solid var(--hc-fg); box-shadow: none;
+html[data-contrast="high"] .sky {
+  display: none;
 }
-html[data-contrast="high"] .scrim { background: #000000; color: #ffffff; border: 2px solid var(--hc-fg); backdrop-filter: none; -webkit-backdrop-filter: none; }
-html[data-contrast="high"] .hero-ink, html[data-contrast="high"] .hero-soft, html[data-contrast="high"] .halo { text-shadow: none; }
-html[data-contrast="high"] a { text-decoration: underline; }
-html[data-contrast="high"] :focus-visible { outline: 3px solid var(--hc-fg); outline-offset: 2px; box-shadow: 0 0 0 6px var(--hc-bg); }
+html[data-contrast="high"] .glass,
+html[data-contrast="high"] .glass-weak,
+html[data-contrast="high"] .chip,
+html[data-contrast="high"] .pill,
+html[data-contrast="high"] .field,
+html[data-contrast="high"] dialog.glass {
+  background: var(--hc-bg);
+  color: var(--ink);
+  border: 2px solid var(--hc-fg);
+  box-shadow: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-contrast="high"] .pill[aria-pressed="true"],
+html[data-contrast="high"] .pill[aria-selected="true"],
+html[data-contrast="high"] .pill[aria-checked="true"] {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+}
+html[data-contrast="high"] .btn-primary,
+html[data-contrast="high"][data-sky="night"] .btn-primary {
+  background: var(--hc-fg);
+  color: var(--hc-bg);
+  border: 2px solid var(--hc-fg);
+  box-shadow: none;
+}
+html[data-contrast="high"] .scrim {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid var(--hc-fg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-contrast="high"] .hero-ink,
+html[data-contrast="high"] .hero-soft,
+html[data-contrast="high"] .halo {
+  text-shadow: none;
+}
+html[data-contrast="high"] a {
+  text-decoration: underline;
+}
+html[data-contrast="high"] :focus-visible {
+  outline: 3px solid var(--hc-fg);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--hc-bg);
+}
 
 /* Respect users who ask for less transparency: solid cards, no refraction, no grain. */
 @media (prefers-reduced-transparency: reduce) {
-  dialog.glass { background: var(--solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
-  .glass, .liquid { background: var(--solid); backdrop-filter: none !important; -webkit-backdrop-filter: none; }
-  .sky::after { display: none; }
+  dialog.glass {
+    background: var(--solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass,
+  .liquid {
+    background: var(--solid);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none;
+  }
+  .sky::after {
+    display: none;
+  }
 }

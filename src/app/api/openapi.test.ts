@@ -10,7 +10,13 @@ function routePaths(dir: string): string[] {
     const full = join(dir, e.name);
     if (e.isDirectory()) return routePaths(full);
     if (e.name !== "route.ts") return [];
-    return ["/api/" + relative(apiDir, dir).split(sep).join("/").replace(/\[(\w+)\]/g, "{$1}")].map((p) => p.replace(/\/$/, ""));
+    return [
+      "/api/" +
+        relative(apiDir, dir)
+          .split(sep)
+          .join("/")
+          .replace(/\[(\w+)\]/g, "{$1}"),
+    ].map((p) => p.replace(/\/$/, ""));
   });
 }
 

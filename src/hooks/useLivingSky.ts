@@ -3,8 +3,24 @@ import { useEffect, useRef } from "react";
 import { skyForHour } from "@/lib/skyPalette";
 
 const VARS = [
-  "--s0", "--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--orb", "--cloud",
-  "--sun-x", "--sun-y", "--sun-o", "--moon-x", "--moon-y", "--moon-o", "--stars-o", "--day-o", "--wind-speed",
+  "--s0",
+  "--s1",
+  "--s2",
+  "--s3",
+  "--s4",
+  "--s5",
+  "--s6",
+  "--orb",
+  "--cloud",
+  "--sun-x",
+  "--sun-y",
+  "--sun-o",
+  "--moon-x",
+  "--moon-y",
+  "--moon-o",
+  "--stars-o",
+  "--day-o",
+  "--wind-speed",
 ];
 
 /** Smoothing time constants (ms): how quickly the displayed hour catches up with the selected one. */

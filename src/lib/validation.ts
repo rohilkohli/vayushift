@@ -18,22 +18,18 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
 
+const startsWith = (bytes: Uint8Array, sig: readonly number[], at = 0) => sig.every((b, i) => bytes[at + i] === b);
+const ascii = (bytes: Uint8Array, from: number, to: number) => String.fromCharCode(...bytes.slice(from, to));
+
 /** Checks the real file signature, not just the claimed MIME type. */
 export function sniffImageType(bytes: Uint8Array): AllowedImageType | null {
-  if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
-  if (bytes.length > 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "image/png";
-  if (
-    bytes.length > 12 &&
-    String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
-    String.fromCharCode(...bytes.slice(8, 12)) === "WEBP"
-  )
-    return "image/webp";
+  if (bytes.length > 3 && startsWith(bytes, [0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (bytes.length > 8 && startsWith(bytes, [0x89, 0x50, 0x4e, 0x47])) return "image/png";
+  if (bytes.length > 12 && ascii(bytes, 0, 4) === "RIFF" && ascii(bytes, 8, 12) === "WEBP") return "image/webp";
   return null;
 }
 
-export type ImageCheck =
-  | { ok: true; mimeType: AllowedImageType; base64: string }
-  | { ok: false; reason: string };
+export type ImageCheck = { ok: true; mimeType: AllowedImageType; base64: string } | { ok: false; reason: string };
 
 export function checkImagePayload(mimeType: unknown, base64: unknown): ImageCheck {
   if (typeof base64 !== "string" || !/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) {
@@ -49,4 +45,3 @@ export function checkImagePayload(mimeType: unknown, base64: unknown): ImageChec
   if (!sniffed) return { ok: false, reason: "File contents are not a valid JPEG, PNG or WebP image." };
   return { ok: true, mimeType: sniffed, base64 };
 }
-

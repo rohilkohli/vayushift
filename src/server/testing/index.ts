@@ -22,7 +22,13 @@ export function testServices(overrides: Overrides = {}, env: Record<string, stri
   const config = testConfig(env);
   const lines: string[] = [];
   const logger = createLogger({ level: "debug", service: config.service, sink: (l) => lines.push(l) });
-  const services: Services = createServices(config, { logger, airProvider: null, visionProvider: null, explainProvider: null, ...overrides });
+  const services: Services = createServices(config, {
+    logger,
+    airProvider: null,
+    visionProvider: null,
+    explainProvider: null,
+    ...overrides,
+  });
   return { services, config, logs: () => lines.map((l) => JSON.parse(l) as Record<string, unknown>) };
 }
 

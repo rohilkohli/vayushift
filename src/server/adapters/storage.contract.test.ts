@@ -32,7 +32,8 @@ if (emulator) {
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const uniqueDay = () => `2${String(100 + Math.floor(Math.random() * 800)).padStart(3, "0")}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, "0")}-${String(1 + Math.floor(Math.random() * 28)).padStart(2, "0")}`;
+const uniqueDay = () =>
+  `2${String(100 + Math.floor(Math.random() * 800)).padStart(3, "0")}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, "0")}-${String(1 + Math.floor(Math.random() * 28)).padStart(2, "0")}`;
 const bigCaps: Caps = { airQuality: 1000, geminiVision: 1000, geminiExplain: 1000 };
 
 function receipt(overrides: Partial<StoredReceipt> = {}): StoredReceipt {

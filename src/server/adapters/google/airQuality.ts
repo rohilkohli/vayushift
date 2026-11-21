@@ -23,6 +23,19 @@ const localHour = (iso: string) => Number(hourFormatter.format(new Date(iso)));
 export function parseForecast(body: unknown): HourlyAir[] | null {
   const list = (body as ForecastResponse)?.hourlyForecasts;
   if (!Array.isArray(list)) return null;
+  const byHour = indexByLocalHour(list);
+  if (byHour.size < 12) return null;
+  const known = [...byHour.keys()];
+  return Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    pm25: Math.round(byHour.get(hour) ?? byHour.get(nearestHour(known, hour)) ?? 0),
+  }));
+}
+
+type Forecast = NonNullable<ForecastResponse["hourlyForecasts"]>[number];
+
+/** The first usable PM2.5 reading for each local hour; entries with a bad time or value are skipped. */
+function indexByLocalHour(list: Forecast[]): Map<number, number> {
   const byHour = new Map<number, number>();
   for (const f of list) {
     const pm = f.pollutants?.find((p) => p.code === "pm25")?.concentration?.value;
@@ -30,16 +43,15 @@ export function parseForecast(body: unknown): HourlyAir[] | null {
     const h = localHour(f.dateTime);
     if (Number.isInteger(h) && !byHour.has(h)) byHour.set(h, pm);
   }
-  if (byHour.size < 12) return null;
-  const known = [...byHour.keys()];
-  return Array.from({ length: 24 }, (_, hour) => {
-    const nearest = known.reduce((best, k) => {
-      const d = (a: number) => Math.min(Math.abs(a - hour), 24 - Math.abs(a - hour));
-      return d(k) < d(best) ? k : best;
-    }, known[0]);
-    return { hour, pm25: Math.round(byHour.get(hour) ?? byHour.get(nearest)!) };
-  });
+  return byHour;
 }
+
+/** Distance between two hours of the day, going the short way round midnight. */
+const hourGap = (a: number, b: number) => Math.min(Math.abs(a - b), 24 - Math.abs(a - b));
+
+/** The known hour closest to `hour`, used to fill a gap in the forecast. */
+const nearestHour = (known: number[], hour: number) =>
+  known.reduce((best, k) => (hourGap(k, hour) < hourGap(best, hour) ? k : best), known[0]);
 
 /** Google Maps Platform Air Quality API. The key travels in a header, never in the URL. */
 export class GoogleAirQualityProvider implements AirQualityProvider {

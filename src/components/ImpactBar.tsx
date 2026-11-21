@@ -14,16 +14,25 @@ export function ImpactBar({ receipt, onOpen }: { receipt: DirectImpactReceipt; o
             <span className="label">{t.impactLabel}</span> {t.impactEmpty}
           </p>
         ) : (
-        <>
-        <p className="m-0 text-sm">
-          <span className="label">{t.lungsProtected}</span>{" "}
-          <strong className="serif text-2xl italic">−<AnimatedNumber value={receipt.avoidedCigarettesHouseholdDay} decimals={2} /></strong>{" "}
-          <abbr title={t.cigEqTitle} className="no-underline">{t.cigEqPerDay}</abbr>{t.perDay}
-        </p>
-        <p className="m-0 text-sm">
-          <span className="label">{t.skyProtected}</span> <strong className="serif text-2xl italic">−<AnimatedNumber value={receipt.savedCo2GramsDay} /></strong> {t.co2PerDay}
-        </p>
-        </>
+          <>
+            <p className="m-0 text-sm">
+              <span className="label">{t.lungsProtected}</span>{" "}
+              <strong className="serif text-2xl italic">
+                −<AnimatedNumber value={receipt.avoidedCigarettesHouseholdDay} decimals={2} />
+              </strong>{" "}
+              <abbr title={t.cigEqTitle} className="no-underline">
+                {t.cigEqPerDay}
+              </abbr>
+              {t.perDay}
+            </p>
+            <p className="m-0 text-sm">
+              <span className="label">{t.skyProtected}</span>{" "}
+              <strong className="serif text-2xl italic">
+                −<AnimatedNumber value={receipt.savedCo2GramsDay} />
+              </strong>{" "}
+              {t.co2PerDay}
+            </p>
+          </>
         )}
       </div>
       <button type="button" onClick={onOpen} aria-label={t.viewReceipt} className="btn-primary ml-auto shrink-0">

@@ -62,7 +62,11 @@ export const GRAP_INFO: Record<GrapStage, GrapInfo> = {
       "Non-essential construction and demolition paused",
       "Schools may shift younger classes to online mode",
     ],
-    householdActions: ["Keep windows sealed outside the afternoon low", "N95 for unavoidable outdoor trips", "Replace biomass heating for staff with electric heaters"],
+    householdActions: [
+      "Keep windows sealed outside the afternoon low",
+      "N95 for unavoidable outdoor trips",
+      "Replace biomass heating for staff with electric heaters",
+    ],
   },
   STAGE_4: {
     stage: "STAGE_4",

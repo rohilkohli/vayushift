@@ -78,7 +78,9 @@ describe("readJson", () => {
   });
 
   it("rejects a declared length over the cap", async () => {
-    await expect(readJson(body("x".repeat(50), { "content-type": "application/json", "content-length": "500" }), 100)).rejects.toMatchObject({ status: 413 });
+    await expect(
+      readJson(body("x".repeat(50), { "content-type": "application/json", "content-length": "500" }), 100),
+    ).rejects.toMatchObject({ status: 413 });
   });
 
   it("enforces the cap on the real stream even when Content-Length lies or is absent", async () => {
@@ -92,7 +94,9 @@ describe("readJson", () => {
   });
 
   it("rejects a missing body", async () => {
-    await expect(readJson(new Request("http://x.test", { method: "POST", headers: { "content-type": "application/json" } }), 100)).rejects.toMatchObject({ status: 400 });
+    await expect(
+      readJson(new Request("http://x.test", { method: "POST", headers: { "content-type": "application/json" } }), 100),
+    ).rejects.toMatchObject({ status: 400 });
   });
 });
 
@@ -186,7 +190,11 @@ describe("defineRoute", () => {
     await known(get("/x"));
     await boom(get("/x"));
     const access = ctx.logs().filter((l) => l.message === "request");
-    expect(access.map((l) => [l.status, l.severity])).toEqual([[200, "INFO"], [400, "WARNING"], [500, "ERROR"]]);
+    expect(access.map((l) => [l.status, l.severity])).toEqual([
+      [200, "INFO"],
+      [400, "WARNING"],
+      [500, "ERROR"],
+    ]);
     expect(JSON.stringify(ctx.logs())).not.toContain("do not log me");
   });
 });
